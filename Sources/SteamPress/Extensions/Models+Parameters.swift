@@ -58,24 +58,33 @@ protocol ParameterModel {
 //}
 
 extension Parameters {    
-    func findUser(on req: Request) -> EventLoopFuture<BlogUser> {
+    func findUser(on req: Request) async throws -> BlogUser {
         guard let idString = req.parameters.get(BlogUser.parameterKey), let id = Int(idString) else {
-            return req.eventLoop.makeFailedFuture(Abort(.badRequest))
+            throw Abort(.badRequest)
         }
-        return req.blogUserRepository.getUser(id: id).unwrap(or: Abort(.notFound))
+        guard let user = try await req.blogUserRepository.getUser(id: id) else {
+            throw Abort(.notFound)
+        }
+        return user
     }
     
-    func findPost(on req: Request) -> EventLoopFuture<BlogPost> {
+    func findPost(on req: Request) async throws -> BlogPost {
         guard let idString = req.parameters.get(BlogPost.parameterKey), let id = Int(idString) else {
-            return req.eventLoop.makeFailedFuture(Abort(.badRequest))
+            throw Abort(.badRequest)
         }
-        return req.blogPostRepository.getPost(id: id).unwrap(or: Abort(.notFound))
+        guard let post = try await req.blogPostRepository.getPost(id: id) else {
+            throw Abort(.notFound)
+        }
+        return post
     }
     
-    func findTag(on req: Request) -> EventLoopFuture<BlogTag> {
+    func findTag(on req: Request) async throws -> BlogTag {
         guard let tagName = req.parameters.get(BlogTag.parameterKey) else {
-            return req.eventLoop.makeFailedFuture(Abort(.notFound))
+            throw Abort(.notFound)
         }
-        return req.blogTagRepository.getTag(tagName).unwrap(or: Abort(.notFound))
+        guard let tag = try await req.blogTagRepository.getTag(tagName) else {
+            throw Abort(.notFound)
+        }
+        return tag
     }
 }

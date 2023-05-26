@@ -72,20 +72,19 @@ extension BlogPost {
         return snippet
     }
 
-    static func generateUniqueSlugURL(from title: String, on req: Request) throws -> EventLoopFuture<String> {
+    static func generateUniqueSlugURL(from title: String, on req: Request) async throws -> String {
         let alphanumericsWithHyphenAndSpace = CharacterSet(charactersIn: " -0123456789abcdefghijklmnopqrstuvwxyz")
         let initialSlug = title.lowercased()
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .components(separatedBy: alphanumericsWithHyphenAndSpace.inverted).joined()
             .components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }.joined(separator: " ")
             .replacingOccurrences(of: " ", with: "-", options: .regularExpression)
-        return req.blogPostRepository.getPost(slug: initialSlug).map { postWithSameSlug in
-            if postWithSameSlug != nil {
-                let randomNumber = req.randomNumberGenerator.getNumber()
-                return "\(initialSlug)-\(randomNumber)"
-            } else {
-                return initialSlug
-            }
+        let postWithSameSlug = try await req.blogPostRepository.getPost(slug: initialSlug)
+        if postWithSameSlug != nil {
+            let randomNumber = req.randomNumberGenerator.getNumber()
+            return "\(initialSlug)-\(randomNumber)"
+        } else {
+            return initialSlug
         }
     }
 }

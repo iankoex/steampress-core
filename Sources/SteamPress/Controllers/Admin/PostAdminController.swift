@@ -20,11 +20,11 @@ struct PostAdminController: RouteCollection {
     }
 
     // MARK: - Route handlers
-    func createPostHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        return try req.adminPresenter.createPostView(errors: nil, title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: false, post: nil, isDraft: nil, titleError: false, contentsError: false, pageInformation: req.adminPageInfomation())
+    func createPostHandler(_ req: Request) async throws -> View {
+        return try await req.adminPresenter.createPostView(errors: nil, title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: false, post: nil, isDraft: nil, titleError: false, contentsError: false, pageInformation: req.adminPageInfomation())
     }
 
-    func createPostPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
+    func createPostPostHandler(_ req: Request) async throws -> Response {
         let data = try req.content.decode(CreatePostData.self)
         let author = try req.auth.require(BlogUser.self)
 
@@ -33,159 +33,132 @@ struct PostAdminController: RouteCollection {
         }
 
         if let createPostErrors = validatePostCreation(data) {
-            let view = try req.adminPresenter.createPostView(errors: createPostErrors.errors, title: data.title, contents: data.contents, slugURL: nil, tags: data.tags, isEditing: false, post: nil, isDraft: nil, titleError: createPostErrors.titleError, contentsError: createPostErrors.contentsError, pageInformation: req.adminPageInfomation())
-            return view.encodeResponse(for: req)
+            let view = try await req.adminPresenter.createPostView(errors: createPostErrors.errors, title: data.title, contents: data.contents, slugURL: nil, tags: data.tags, isEditing: false, post: nil, isDraft: nil, titleError: createPostErrors.titleError, contentsError: createPostErrors.contentsError, pageInformation: req.adminPageInfomation())
+            return try await view.encodeResponse(for: req)
         }
 
         guard let title = data.title, let contents = data.contents else {
             throw Abort(.internalServerError)
         }
 
-        return try BlogPost.generateUniqueSlugURL(from: title, on: req).flatMap { uniqueSlug in
-            let newPost: BlogPost
-            do {
-                newPost = try BlogPost(title: title, contents: contents, author: author, creationDate: Date(), slugUrl: uniqueSlug, published: data.publish != nil)
-            } catch {
-                return req.eventLoop.makeFailedFuture(error)
-            }
-
-            return req.blogPostRepository.save(newPost).flatMap { post in
-                var existingTagsQuery = [EventLoopFuture<BlogTag?>]()
-                for tagName in data.tags {
-                    existingTagsQuery.append(req.blogTagRepository.getTag(tagName))
-                }
-
-                return existingTagsQuery.flatten(on: req.eventLoop).flatMap { existingTagsWithOptionals in
-                    let existingTags = existingTagsWithOptionals.compactMap { $0 }
-                    var tagsSaves = [EventLoopFuture<BlogTag>]()
-                    for tagName in data.tags {
-                        if !existingTags.contains(where: { $0.name == tagName }) {
-                            let tag = BlogTag(name: tagName)
-                            tagsSaves.append(req.blogTagRepository.save(tag))
-                        }
-                    }
-
-                    return tagsSaves.flatten(on: req.eventLoop).flatMap { tags in
-                        var tagLinks = [EventLoopFuture<Void>]()
-                        for tag in tags {
-                            tagLinks.append(req.blogTagRepository.add(tag, to: post))
-                        }
-                        for tag in existingTags {
-                            tagLinks.append(req.blogTagRepository.add(tag, to: post))
-                        }
-                        let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
-                        return tagLinks.flatten(on: req.eventLoop).transform(to: redirect)
-                    }
-                }
-            }
-        }
+        let uniqueSlug = try await BlogPost.generateUniqueSlugURL(from: title, on: req)
+        let newPost: BlogPost
+        newPost = try BlogPost(title: title, contents: contents, author: author, creationDate: Date(), slugUrl: uniqueSlug, published: data.publish != nil)
+        
+        let post = try await req.blogPostRepository.save(newPost)
+        return Response()
+//        var existingTagsQuery: [BlogTag?] = []
+//        for tagName in data.tags {
+//            existingTagsQuery.append(try await req.blogTagRepository.getTag(tagName))
+//        }
+//
+//        let existingTags = existingTagsQuery
+//        var tagsSaves: [BlogTag] = []
+//        for tagName in data.tags {
+//            if !existingTags.contains(where: { $0!.name == tagName }) {
+//                let tag = BlogTag(name: tagName)
+//                tagsSaves.append(try await req.blogTagRepository.save(tag))
+//            }
+//        }
+//
+//        return tagsSaves.flatten(on: req.eventLoop).flatMap { tags in
+//            var tagLinks = [EventLoopFuture<Void>]()
+//            for tag in tags {
+//                tagLinks.append(req.blogTagRepository.add(tag, to: post))
+//            }
+//            for tag in existingTags {
+//                tagLinks.append(req.blogTagRepository.add(tag, to: post))
+//            }
+//            let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
+//            return tagLinks.flatten(on: req.eventLoop).transform(to: redirect)
+//        }
     }
 
-    func deletePostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
-        return req.parameters.findPost(on: req).flatMap { post in
-            return req.blogTagRepository.deleteTags(for: post).flatMap {
-                let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
-                return req.blogPostRepository.delete(post).transform(to: redirect)
-            }
-        }
+    func deletePostHandler(_ req: Request) async throws -> Response {
+        let post = try await req.parameters.findPost(on: req)
+        try await req.blogTagRepository.deleteTags(for: post)
+        let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
+        try await req.blogPostRepository.delete(post)
+        return redirect
     }
 
-    func editPostHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        return req.parameters.findPost(on: req).flatMap { post in
-            return req.blogTagRepository.getTags(for: post).flatMap { tags in
-                do {
-                    return try req.adminPresenter.createPostView(errors: nil, title: post.title, contents: post.contents, slugURL: post.slugUrl, tags: tags.map { $0.name }, isEditing: true, post: post, isDraft: !post.published, titleError: false, contentsError: false, pageInformation: req.adminPageInfomation())
-                } catch {
-                    return req.eventLoop.makeFailedFuture(error)
-                }
-            }
-        }
+    func editPostHandler(_ req: Request) async throws -> View {
+        let post = try await req.parameters.findPost(on: req)
+        let tags = try await req.blogTagRepository.getTags(for: post)
+        return try await req.adminPresenter.createPostView(errors: nil, title: post.title, contents: post.contents, slugURL: post.slugUrl, tags: tags.map { $0.name }, isEditing: true, post: post, isDraft: !post.published, titleError: false, contentsError: false, pageInformation: req.adminPageInfomation())
     }
 
-    func editPostPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
+    func editPostPostHandler(_ req: Request) async throws -> Response {
         let data = try req.content.decode(CreatePostData.self)
-        return req.parameters.findPost(on: req).flatMap { post -> EventLoopFuture<Response> in
-            if let errors = self.validatePostCreation(data) {
-                do {
-                    return try req.adminPresenter.createPostView(errors: errors.errors, title: data.title, contents: data.contents, slugURL: post.slugUrl, tags: data.tags, isEditing: true, post: post, isDraft: !post.published, titleError: errors.titleError, contentsError: errors.contentsError, pageInformation: req.adminPageInfomation()).encodeResponse(for: req)
-                } catch {
-                    return req.eventLoop.makeFailedFuture(error)
-                }
-            }
-
-            guard let title = data.title, let contents = data.contents else {
-                return req.eventLoop.makeFailedFuture(Abort(.internalServerError))
-            }
-
-            post.title = title
-            post.contents = contents
-
-            let slugURLFuture: EventLoopFuture<String>
-            if let updateSlugURL = data.updateSlugURL, updateSlugURL {
-                do {
-                    slugURLFuture = try BlogPost.generateUniqueSlugURL(from: title, on: req)
-                } catch {
-                    return req.eventLoop.makeFailedFuture(error)
-                }
-            } else {
-                slugURLFuture = req.eventLoop.future(post.slugUrl)
-            }
-
-            return slugURLFuture.flatMap { slugURL in
-                post.slugUrl = slugURL
-                if post.published {
-                    post.lastEdited = Date()
-                } else {
-                    post.created = Date()
-                    if let publish = data.publish, publish {
-                        post.published = true
-                    }
-                }
-
-                return req.blogTagRepository.getTags(for: post).and(req.blogTagRepository.getAllTags()).flatMap { existingTags, allTags in
-                    let tagsToUnlink = existingTags.filter { (anExistingTag) -> Bool in
-                        for tagName in data.tags {
-                            if anExistingTag.name == tagName {
-                                return false
-                            }
-                        }
-                        return true
-                    }
-                    var removeTagLinkResults = [EventLoopFuture<Void>]()
-                    for tagToUnlink in tagsToUnlink {
-                        removeTagLinkResults.append(req.blogTagRepository.remove(tagToUnlink, from: post))
-                    }
-
-                    let newTagsNames = data.tags.filter { (tagName) -> Bool in
-                        !existingTags.contains { (existingTag) -> Bool in
-                            existingTag.name == tagName
-                        }
-                    }
-
-                    var tagCreateSaves = [EventLoopFuture<BlogTag>]()
-                    for newTagName in newTagsNames {
-                        let foundInAllTags = allTags.filter { $0.name == newTagName }.first
-                        if let existingTag = foundInAllTags {
-                            tagCreateSaves.append(req.eventLoop.future(existingTag))
-                        } else {
-                            let newTag = BlogTag(name: newTagName)
-                            tagCreateSaves.append(req.blogTagRepository.save(newTag))
-                        }
-                    }
-
-                    return removeTagLinkResults.flatten(on: req.eventLoop).and(tagCreateSaves.flatten(on: req.eventLoop)).flatMap { (_, newTags) in
-                        var postTagLinkResults = [EventLoopFuture<Void>]()
-                        for tag in newTags {
-                            postTagLinkResults.append(req.blogTagRepository.add(tag, to: post))
-                        }
-                        return postTagLinkResults.flatten(on: req.eventLoop).flatMap {
-                            let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
-                            return req.blogPostRepository.save(post).transform(to: redirect)
-                        }
-                    }
-                }
+        let post = try await req.parameters.findPost(on: req)
+        if let errors = self.validatePostCreation(data) {
+            return try await req.adminPresenter.createPostView(errors: errors.errors, title: data.title, contents: data.contents, slugURL: post.slugUrl, tags: data.tags, isEditing: true, post: post, isDraft: !post.published, titleError: errors.titleError, contentsError: errors.contentsError, pageInformation: req.adminPageInfomation()).encodeResponse(for: req)
+        }
+        
+        guard let title = data.title, let contents = data.contents else {
+            throw Abort(.internalServerError)
+        }
+        
+        post.title = title
+        post.contents = contents
+        
+        let slugURL: String
+        if let updateSlugURL = data.updateSlugURL, updateSlugURL {
+            slugURL = try await BlogPost.generateUniqueSlugURL(from: title, on: req)
+        } else {
+            slugURL = post.slugUrl
+        }
+        
+        post.slugUrl = slugURL
+        if post.published {
+            post.lastEdited = Date()
+        } else {
+            post.created = Date()
+            if let publish = data.publish, publish {
+                post.published = true
             }
         }
+        
+        let existingTags = try await req.blogTagRepository.getTags(for: post)
+        let allTags = try await req.blogTagRepository.getAllTags()
+        let tagsToUnlink = existingTags.filter { (anExistingTag) -> Bool in
+            for tagName in data.tags {
+                if anExistingTag.name == tagName {
+                    return false
+                }
+            }
+            return true
+        }
+//        var removeTagLinkResults = [EventLoopFuture<Void>]()
+        for tagToUnlink in tagsToUnlink {
+            try await req.blogTagRepository.remove(tagToUnlink, from: post)
+        }
+        
+        let newTagsNames = data.tags.filter { (tagName) -> Bool in
+            !existingTags.contains { (existingTag) -> Bool in
+                existingTag.name == tagName
+            }
+        }
+        
+        var tagCreateSaves: [BlogTag] = []
+        for newTagName in newTagsNames {
+            let foundInAllTags = allTags.filter { $0.name == newTagName }.first
+            if let existingTag = foundInAllTags {
+                tagCreateSaves.append(existingTag)
+            } else {
+                let newTag = BlogTag(name: newTagName)
+                tagCreateSaves.append(try await req.blogTagRepository.save(newTag))
+            }
+        }
+        let newTags = tagCreateSaves
+        
+        var postTagLinkResults = [EventLoopFuture<Void>]()
+        for tag in newTags {
+            try await req.blogTagRepository.add(tag, to: post)
+        }
+        let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
+        let _ = try await req.blogPostRepository.save(post)
+        return redirect
     }
 
     // MARK: - Validators

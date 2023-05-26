@@ -20,14 +20,14 @@ struct UserAdminController: RouteCollection {
     }
 
     // MARK: - Route handlers
-    func createUserHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        return try req.adminPresenter.createUserView(editing: false, errors: nil, name: nil, nameError: false, username: nil, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, pageInformation: req.adminPageInfomation())
+    func createUserHandler(_ req: Request) async throws -> View {
+        return try await req.adminPresenter.createUserView(editing: false, errors: nil, name: nil, nameError: false, username: nil, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, pageInformation: req.adminPageInfomation())
     }
 
-    func createUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
+    func createUserPostHandler(_ req: Request) async throws -> Response {
         let data = try req.content.decode(CreateUserData.self)
 
-        return try validateUserCreation(data, on: req).flatMap { createUserErrors in
+        let createUserErrors try await validateUserCreation(data, on: req).flatMap {  in
             if let errors = createUserErrors {
                 do {
                     let view = try req.adminPresenter.createUserView(editing: false, errors: errors.errors, name: data.name, nameError: errors.nameError, username: data.username, usernameErorr: errors.usernameError, passwordError: errors.passwordError, confirmPasswordError: errors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
@@ -158,7 +158,7 @@ struct UserAdminController: RouteCollection {
     }
 
     // MARK: - Validators
-    private func validateUserCreation(_ data: CreateUserData, editing: Bool = false, existingUsername: String? = nil, on req: Request) throws -> EventLoopFuture<CreateUserErrors?> {
+    private func validateUserCreation(_ data: CreateUserData, editing: Bool = false, existingUsername: String? = nil, on req: Request) async throws -> CreateUserErrors? {
         var createUserErrors = [String]()
         var passwordError = false
         var confirmPasswordError = false
@@ -201,7 +201,7 @@ struct UserAdminController: RouteCollection {
         }
 
         do {
-            try CreateUserData.validate(req)
+            try CreateUserData.validate(content: req)
         } catch {
             createUserErrors.append("The username provided is not valid")
             usernameError = true
