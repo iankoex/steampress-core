@@ -6,7 +6,7 @@ public protocol SteamPressRepository {
 }
 
 public protocol BlogTagRepository: SteamPressRepository {
-    func `for`(_ request: Request) async throws -> BlogTagRepository
+    func `for`(_ request: Request) -> BlogTagRepository
     func getAllTags() async throws -> [BlogTag]
     func getAllTagsWithPostCount() async throws -> [(BlogTag, Int)]
     func getTags(for post: BlogPost) async throws -> [BlogTag]
@@ -21,7 +21,7 @@ public protocol BlogTagRepository: SteamPressRepository {
 }
 
 public protocol BlogPostRepository: SteamPressRepository {
-    func `for`(_ request: Request) async throws -> BlogPostRepository
+    func `for`(_ request: Request) -> BlogPostRepository
     func getAllPostsSortedByPublishDate(includeDrafts: Bool) async throws -> [BlogPost]
     func getAllPostsCount(includeDrafts: Bool) async throws -> Int
     func getAllPostsSortedByPublishDate(includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost]
@@ -38,7 +38,7 @@ public protocol BlogPostRepository: SteamPressRepository {
 }
 
 public protocol BlogUserRepository: SteamPressRepository {
-    func `for`(_ request: Request) async throws -> BlogUserRepository
+    func `for`(_ request: Request) -> BlogUserRepository
     func getAllUsers() async throws -> [BlogUser]
     func getAllUsersWithPostCount() async throws -> [(BlogUser, Int)]
     func getUser(id: Int) async throws -> BlogUser?

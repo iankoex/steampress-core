@@ -51,12 +51,12 @@ struct TestDataBuilder {
         return user
     }
     
-    static func createFutureView(on eventLoop: EventLoop) -> EventLoopFuture<View> {
+    static func createFutureView() -> View {
         let string = "Some HTML"
         var byteBuffer = ByteBufferAllocator().buffer(capacity: string.count)
         byteBuffer.writeString("Some HTML")
         let view = View(data: byteBuffer)
-        return eventLoop.future(view)
+        return view
     }
 }
 

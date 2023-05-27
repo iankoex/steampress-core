@@ -26,7 +26,7 @@ class BlogAdminPresenterTests: XCTestCase {
     override func setUp() {
         eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         viewRenderer = CapturingViewRenderer(eventLoop: eventLoopGroup.next())
-        presenter = ViewBlogAdminPresenter(pathCreator: BlogPathCreator(blogPath: "blog"), viewRenderer: viewRenderer, eventLoopGroup: eventLoopGroup, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter())
+        presenter = ViewBlogAdminPresenter(pathCreator: BlogPathCreator(blogPath: "blog"), viewRenderer: viewRenderer, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter())
     }
     
     override func tearDownWithError() throws {
@@ -37,9 +37,9 @@ class BlogAdminPresenterTests: XCTestCase {
 
     // MARK: - Reset Password
 
-    func testPasswordViewGivenCorrectParameters() throws {
+    func testPasswordViewGivenCorrectParameters() async throws {
         let pageInformation = buildPageInformation(currentPageURL: resetPasswordURL)
-        _ = presenter.createResetPasswordView(errors: nil, passwordError: nil, confirmPasswordError: nil, pageInformation: pageInformation)
+        _ = try await presenter.createResetPasswordView(errors: nil, passwordError: nil, confirmPasswordError: nil, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? ResetPasswordPageContext)
         XCTAssertNil(context.errors)
@@ -51,10 +51,10 @@ class BlogAdminPresenterTests: XCTestCase {
         XCTAssertEqual(viewRenderer.templatePath, "blog/admin/resetPassword")
     }
 
-    func testPasswordViewHasCorrectParametersWhenError() throws {
+    func testPasswordViewHasCorrectParametersWhenError() async throws {
         let expectedError = "Passwords do not match"
         let pageInformation = buildPageInformation(currentPageURL: resetPasswordURL)
-        _ = presenter.createResetPasswordView(errors: [expectedError], passwordError: true, confirmPasswordError: true, pageInformation: pageInformation)
+        _ = try await presenter.createResetPasswordView(errors: [expectedError], passwordError: true, confirmPasswordError: true, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? ResetPasswordPageContext)
         XCTAssertEqual(context.errors?.count, 1)
@@ -67,12 +67,12 @@ class BlogAdminPresenterTests: XCTestCase {
 
     // MARK: - Admin Page
 
-    func testBlogAdminViewGetsCorrectParameters() throws {
+    func testBlogAdminViewGetsCorrectParameters() async throws {
         let draftPost = try TestDataBuilder.anyPost(author: currentUser, title: "[DRAFT] This will be awesome", published: false)
         let post = try TestDataBuilder.anyPost(author: currentUser)
 
         let pageInformation = buildPageInformation(currentPageURL: adminPageURL)
-        _ = presenter.createIndexView(posts: [draftPost, post], users: [currentUser], errors: nil, pageInformation: pageInformation)
+        _ = try await presenter.createIndexView(posts: [draftPost, post], users: [currentUser], errors: nil, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AdminPageContext)
 
@@ -92,10 +92,10 @@ class BlogAdminPresenterTests: XCTestCase {
         XCTAssertEqual(context.pageInformation.websiteURL.absoluteString, "https://brokenhands.io")
     }
 
-    func testAdminPageWithErrors() throws {
+    func testAdminPageWithErrors() async throws {
         let expectedError = "You cannot delete yourself!"
         let pageInformation = buildPageInformation(currentPageURL: adminPageURL)
-        _ = presenter.createIndexView(posts: [], users: [], errors: [expectedError], pageInformation: pageInformation)
+        _ = try await presenter.createIndexView(posts: [], users: [], errors: [expectedError], pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AdminPageContext)
         XCTAssertEqual(context.errors?.first, expectedError)
@@ -103,9 +103,9 @@ class BlogAdminPresenterTests: XCTestCase {
 
     // MARK: - Create/Edit User Page
 
-    func testCreateUserViewGetsCorrectParameters() throws {
+    func testCreateUserViewGetsCorrectParameters() async throws {
         let pageInformation = buildPageInformation(currentPageURL: createUserPageURL)
-        _ = presenter.createUserView(editing: false, errors: nil, name: nil, nameError: false, username: nil, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, pageInformation: pageInformation)
+        _ = try await presenter.createUserView(editing: false, errors: nil, name: nil, nameError: false, username: nil, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? CreateUserPageContext)
 
@@ -131,7 +131,7 @@ class BlogAdminPresenterTests: XCTestCase {
         XCTAssertEqual(context.pageInformation.loggedInUser.name, currentUser.name)
     }
 
-    func testCreateUserViewWhenErrors() throws {
+    func testCreateUserViewWhenErrors() async throws {
         let expectedError = "Not valid password"
         let expectedName = "Luke"
         let expectedUsername = "luke"
@@ -141,7 +141,7 @@ class BlogAdminPresenterTests: XCTestCase {
         let expectedTagline = "A son without a father"
         let pageInformation = buildPageInformation(currentPageURL: createUserPageURL)
 
-        _ = presenter.createUserView(editing: false, errors: [expectedError], name: expectedName, nameError: false, username: expectedUsername, usernameErorr: false, passwordError: true, confirmPasswordError: true, resetPasswordOnLogin: true, userID: nil, profilePicture: expectedProfilePicture, twitterHandle: expectedTwitterHandler, biography: expectedBiography, tagline: expectedTagline, pageInformation: pageInformation)
+        _ = try await presenter.createUserView(editing: false, errors: [expectedError], name: expectedName, nameError: false, username: expectedUsername, usernameErorr: false, passwordError: true, confirmPasswordError: true, resetPasswordOnLogin: true, userID: nil, profilePicture: expectedProfilePicture, twitterHandle: expectedTwitterHandler, biography: expectedBiography, tagline: expectedTagline, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? CreateUserPageContext)
         XCTAssertEqual(context.errors?.count, 1)
@@ -159,11 +159,11 @@ class BlogAdminPresenterTests: XCTestCase {
         XCTAssertEqual(context.biographySupplied, expectedBiography)
     }
 
-    func testCreateUserViewWhenNoNameOrUsernameSupplied() throws {
+    func testCreateUserViewWhenNoNameOrUsernameSupplied() async throws {
         let expectedError = "No name supplied"
         let pageInformation = buildPageInformation(currentPageURL: createUserPageURL)
 
-        _ = presenter.createUserView(editing: false, errors: [expectedError], name: nil, nameError: true, username: nil, usernameErorr: true, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: true, userID: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, pageInformation: pageInformation)
+        _ = try await presenter.createUserView(editing: false, errors: [expectedError], name: nil, nameError: true, username: nil, usernameErorr: true, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: true, userID: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? CreateUserPageContext)
         XCTAssertNil(context.nameSupplied)
@@ -172,9 +172,9 @@ class BlogAdminPresenterTests: XCTestCase {
         XCTAssertTrue(context.usernameError)
     }
 
-    func testCreateUserViewForEditing() throws {
+    func testCreateUserViewForEditing() async throws {
         let pageInformation = buildPageInformation(currentPageURL: editUserPageURL)
-        _ = presenter.createUserView(editing: true, errors: nil, name: currentUser.name, nameError: false, username: currentUser.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: currentUser.userID, profilePicture: currentUser.profilePicture, twitterHandle: currentUser.twitterHandle, biography: currentUser.biography, tagline: currentUser.tagline, pageInformation: pageInformation)
+        _ = try await presenter.createUserView(editing: true, errors: nil, name: currentUser.name, nameError: false, username: currentUser.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: currentUser.userID, profilePicture: currentUser.profilePicture, twitterHandle: currentUser.twitterHandle, biography: currentUser.biography, tagline: currentUser.tagline, pageInformation: pageInformation)
         let context = try XCTUnwrap(viewRenderer.capturedContext as? CreateUserPageContext)
         XCTAssertEqual(context.nameSupplied, currentUser.name)
         XCTAssertFalse(context.nameError)
@@ -196,12 +196,12 @@ class BlogAdminPresenterTests: XCTestCase {
         XCTAssertEqual(context.pageInformation.currentPageURL.absoluteString, "https://brokenhands.io/blog/admin/users/0/edit")
     }
 
-    func testCreateUserViewThrowsWhenTryingToEditWithoutUserId() throws {
+    func testCreateUserViewThrowsWhenTryingToEditWithoutUserId() async throws {
         let pageInformation = buildPageInformation(currentPageURL: editUserPageURL)
         var errored = false
 
         do {
-            _ = try presenter.createUserView(editing: true, errors: [], name: currentUser.name, nameError: false, username: currentUser.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: nil, profilePicture: currentUser.profilePicture, twitterHandle: currentUser.twitterHandle, biography: currentUser.biography, tagline: currentUser.tagline, pageInformation: pageInformation).wait()
+            _ = try await presenter.createUserView(editing: true, errors: [], name: currentUser.name, nameError: false, username: currentUser.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: nil, profilePicture: currentUser.profilePicture, twitterHandle: currentUser.twitterHandle, biography: currentUser.biography, tagline: currentUser.tagline, pageInformation: pageInformation)
         } catch {
             errored = true
         }
@@ -210,9 +210,9 @@ class BlogAdminPresenterTests: XCTestCase {
 
     // MARK: - Create/Edit Blog Post
 
-    func testCreateBlogPostViewGetsCorrectParameters() throws {
+    func testCreateBlogPostViewGetsCorrectParameters() async throws {
         let pageInformation = buildPageInformation(currentPageURL: createBlogPageURL)
-        _ = presenter.createPostView(errors: nil, title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: false, post: nil, isDraft: nil, titleError: false, contentsError: false, pageInformation: pageInformation)
+        _ = try await presenter.createPostView(errors: nil, title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: false, post: nil, isDraft: nil, titleError: false, contentsError: false, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? CreatePostPageContext)
 
@@ -236,11 +236,11 @@ class BlogAdminPresenterTests: XCTestCase {
         XCTAssertEqual(viewRenderer.templatePath, "blog/admin/createPost")
     }
 
-    func testCreateBlogPostViewWithErrorsAndNoTitleOrContentsSupplied() throws {
+    func testCreateBlogPostViewWithErrorsAndNoTitleOrContentsSupplied() async throws {
         let expectedError = "Please enter a title"
 
         let pageInformation = buildPageInformation(currentPageURL: createBlogPageURL)
-        _ = presenter.createPostView(errors: [expectedError], title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: false, post: nil, isDraft: nil, titleError: true, contentsError: true, pageInformation: pageInformation)
+        _ = try await presenter.createPostView(errors: [expectedError], title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: false, post: nil, isDraft: nil, titleError: true, contentsError: true, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? CreatePostPageContext)
 
@@ -254,12 +254,12 @@ class BlogAdminPresenterTests: XCTestCase {
         XCTAssertEqual(context.pageInformation.loggedInUser.name, currentUser.name)
     }
 
-    func testCreateBlogPostViewWhenEditing() throws {
+    func testCreateBlogPostViewWhenEditing() async throws {
         let postToEdit = try TestDataBuilder.anyPost(author: currentUser)
         let tag = "Engineering"
         let pageInformation = buildPageInformation(currentPageURL: editPostPageURL)
 
-        _ = presenter.createPostView(errors: nil, title: postToEdit.title, contents: postToEdit.contents, slugURL: postToEdit.slugUrl, tags: [tag], isEditing: true, post: postToEdit, isDraft: false, titleError: false, contentsError: false, pageInformation: pageInformation)
+        _ = try await presenter.createPostView(errors: nil, title: postToEdit.title, contents: postToEdit.contents, slugURL: postToEdit.slugUrl, tags: [tag], isEditing: true, post: postToEdit, isDraft: false, titleError: false, contentsError: false, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? CreatePostPageContext)
 
@@ -285,11 +285,11 @@ class BlogAdminPresenterTests: XCTestCase {
         XCTAssertEqual(viewRenderer.templatePath, "blog/admin/createPost")
     }
 
-    func testEditBlogPostViewThrowsWithNoPostToEdit() throws {
+    func testEditBlogPostViewThrowsWithNoPostToEdit() async throws {
         var errored = false
         do {
             let pageInformation = buildPageInformation(currentPageURL: editPostPageURL)
-            _ = try presenter.createPostView(errors: nil, title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: true, post: nil, isDraft: nil, titleError: false, contentsError: false, pageInformation: pageInformation).wait()
+            _ = try await presenter.createPostView(errors: nil, title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: true, post: nil, isDraft: nil, titleError: false, contentsError: false, pageInformation: pageInformation)
         } catch {
             errored = true
         }
@@ -297,11 +297,11 @@ class BlogAdminPresenterTests: XCTestCase {
         XCTAssertTrue(errored)
     }
 
-    func testDraftPassedThroughWhenEditingABlogPostThatHasNotBeenPublished() throws {
+    func testDraftPassedThroughWhenEditingABlogPostThatHasNotBeenPublished() async throws {
         let draftPost = try TestDataBuilder.anyPost(author: currentUser, published: false)
         let pageInformation = buildPageInformation(currentPageURL: editPostPageURL)
 
-        _ = presenter.createPostView(errors: nil, title: draftPost.title, contents: draftPost.contents, slugURL: draftPost.slugUrl, tags: nil, isEditing: true, post: draftPost, isDraft: true, titleError: false, contentsError: false, pageInformation: pageInformation)
+        _ = try await presenter.createPostView(errors: nil, title: draftPost.title, contents: draftPost.contents, slugURL: draftPost.slugUrl, tags: nil, isEditing: true, post: draftPost, isDraft: true, titleError: false, contentsError: false, pageInformation: pageInformation)
         let context = try XCTUnwrap(viewRenderer.capturedContext as? CreatePostPageContext)
 
         XCTAssertTrue(context.draft)

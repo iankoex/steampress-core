@@ -6,7 +6,7 @@ struct APITagController: RouteCollection {
         tagsRoute.get(use: allTagsHandler)
     }
 
-    func allTagsHandler(_ req: Request) throws -> EventLoopFuture<[BlogTag]> {
-        req.blogTagRepository.getAllTags()
+    func allTagsHandler(_ req: Request) async throws -> [BlogTag] {
+        try await req.blogTagRepository.getAllTags()
     }
 }

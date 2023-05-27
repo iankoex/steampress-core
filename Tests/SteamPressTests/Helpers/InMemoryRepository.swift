@@ -23,19 +23,19 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return self
     }
 
-    func getAllTags() -> EventLoopFuture<[BlogTag]> {
-        return eventLoop.future(tags)
+    func getAllTags() async throws -> [BlogTag] {
+        return tags
     }
 
-    func getAllTagsWithPostCount() -> EventLoopFuture<[(BlogTag, Int)]> {
+    func getAllTagsWithPostCount() async throws -> [(BlogTag, Int)] {
         let tagsWithCount = tags.map { tag -> (BlogTag, Int) in
             let postCount = postTagLinks.filter { $0.tagID == tag.tagID }.count
             return (tag, postCount)
         }
-        return eventLoop.future(tagsWithCount)
+        return tagsWithCount
     }
     
-    func getTagsForAllPosts() -> EventLoopFuture<[Int : [BlogTag]]> {
+    func getTagsForAllPosts() async throws -> [Int : [BlogTag]] {
         var dict = [Int: [BlogTag]]()
         for tag in tags {
             postTagLinks.filter { $0.tagID == tag.tagID }.forEach { link in
@@ -47,10 +47,10 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
                 }
             }
         }
-        return eventLoop.future(dict)
+        return dict
     }
 
-    func getTags(for post: BlogPost) -> EventLoopFuture<[BlogTag]> {
+    func getTags(for post: BlogPost) async throws -> [BlogTag] {
         var results = [BlogTag]()
         guard let postID = post.blogID else {
             fatalError("Post doesn't exist when it should")
@@ -62,15 +62,15 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
             }
             results.append(tag)
         }
-        return eventLoop.future(results)
+        return results
     }
 
-    func save(_ tag: BlogTag) -> EventLoopFuture<BlogTag> {
+    func save(_ tag: BlogTag) async throws -> BlogTag {
         if tag.tagID == nil {
             tag.tagID = tags.count + 1
         }
         tags.append(tag)
-        return eventLoop.future(tag)
+        return tag
     }
 
     func addTag(name: String) throws -> BlogTag {
@@ -79,12 +79,11 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return newTag
     }
 
-    func add(_ tag: BlogTag, to post: BlogPost) -> EventLoopFuture<Void> {
+    func add(_ tag: BlogTag, to post: BlogPost) async throws -> Void {
         do {
             try internalAdd(tag, to: post)
-            return eventLoop.future()
         } catch {
-            return eventLoop.future(error: SteamPressTestError(name: "Failed to add tag to post"))
+            throw SteamPressTestError(name: "Failed to add tag to post")
         }
     }
 
@@ -105,8 +104,8 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return newTag
     }
 
-    func getTag(_ name: String) -> EventLoopFuture<BlogTag?> {
-        return eventLoop.future(tags.first { $0.name == name })
+    func getTag(_ name: String) async throws -> BlogTag? {
+        return tags.first { $0.name == name }
     }
 
     func addTag(_ tag: BlogTag, to post: BlogPost) {
@@ -120,17 +119,15 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         postTagLinks.append(newLink)
     }
 
-    func deleteTags(for post: BlogPost) -> EventLoopFuture<Void> {
-        return getTags(for: post).map { tags in
-            for tag in tags {
-                self.postTagLinks.removeAll { $0.tagID == tag.tagID! && $0.postID == post.blogID! }
-            }
+    func deleteTags(for post: BlogPost) async throws -> Void {
+        let tags = try await getTags(for: post)
+        for tag in tags {
+            self.postTagLinks.removeAll { $0.tagID == tag.tagID! && $0.postID == post.blogID! }
         }
     }
 
-    func remove(_ tag: BlogTag, from post: BlogPost) -> EventLoopFuture<Void> {
+    func remove(_ tag: BlogTag, from post: BlogPost) -> Void {
         self.postTagLinks.removeAll { $0.tagID == tag.tagID! && $0.postID == post.blogID! }
-        return eventLoop.future()
     }
 
     // MARK: - BlogPostRepository
@@ -139,33 +136,33 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return self
     }
 
-    func getAllPostsSortedByPublishDate(includeDrafts: Bool) -> EventLoopFuture<[BlogPost]> {
+    func getAllPostsSortedByPublishDate(includeDrafts: Bool) async throws -> [BlogPost] {
         var sortedPosts = posts.sorted { $0.created > $1.created }
         if !includeDrafts {
             sortedPosts = sortedPosts.filter { $0.published }
         }
-        return eventLoop.future(sortedPosts)
+        return sortedPosts
     }
 
-    func getAllPostsSortedByPublishDate(includeDrafts: Bool, count: Int, offset: Int) -> EventLoopFuture<[BlogPost]> {
+    func getAllPostsSortedByPublishDate(includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost] {
         var sortedPosts = posts.sorted { $0.created > $1.created }
         if !includeDrafts {
             sortedPosts = sortedPosts.filter { $0.published }
         }
         let startIndex = min(offset, sortedPosts.count)
         let endIndex = min(offset + count, sortedPosts.count)
-        return eventLoop.future(Array(sortedPosts[startIndex..<endIndex]))
+        return Array(sortedPosts[startIndex..<endIndex])
     }
     
-    func getAllPostsCount(includeDrafts: Bool) -> EventLoopFuture<Int> {
+    func getAllPostsCount(includeDrafts: Bool) -> Int {
         var sortedPosts = posts.sorted { $0.created > $1.created }
         if !includeDrafts {
             sortedPosts = sortedPosts.filter { $0.published }
         }
-        return eventLoop.future(sortedPosts.count)
+        return sortedPosts.count
     }
 
-    func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, count: Int, offset: Int) -> EventLoopFuture<[BlogPost]> {
+    func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost] {
         let authorsPosts = posts.filter { $0.author == user.userID }
         var sortedPosts = authorsPosts.sorted { $0.created > $1.created }
         if !includeDrafts {
@@ -173,22 +170,22 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         }
         let startIndex = min(offset, sortedPosts.count)
         let endIndex = min(offset + count, sortedPosts.count)
-        return eventLoop.future(Array(sortedPosts[startIndex..<endIndex]))
+        return Array(sortedPosts[startIndex..<endIndex])
     }
 
-    func getPostCount(for user: BlogUser) -> EventLoopFuture<Int> {
-        return eventLoop.future(posts.filter { $0.author == user.userID }.count)
+    func getPostCount(for user: BlogUser) -> Int {
+        return posts.filter { $0.author == user.userID }.count
     }
 
-    func getPost(slug: String) -> EventLoopFuture<BlogPost?> {
-        return eventLoop.future(posts.first { $0.slugUrl == slug })
+    func getPost(slug: String) async throws -> BlogPost? {
+        return posts.first { $0.slugUrl == slug }
     }
 
-    func getPost(id: Int) -> EventLoopFuture<BlogPost?> {
-        return eventLoop.future(posts.first { $0.blogID == id })
+    func getPost(id: Int) async throws -> BlogPost? {
+        return posts.first { $0.blogID == id }
     }
 
-    func getSortedPublishedPosts(for tag: BlogTag, count: Int, offset: Int) -> EventLoopFuture<[BlogPost]> {
+    func getSortedPublishedPosts(for tag: BlogTag, count: Int, offset: Int) async throws -> [BlogPost] {
         var results = [BlogPost]()
         guard let tagID = tag.tagID else {
             fatalError("Tag doesn't exist when it should")
@@ -203,10 +200,10 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         let sortedPosts = results.sorted { $0.created > $1.created }.filter { $0.published }
         let startIndex = min(offset, sortedPosts.count)
         let endIndex = min(offset + count, sortedPosts.count)
-        return eventLoop.future(Array(sortedPosts[startIndex..<endIndex]))
+        return Array(sortedPosts[startIndex..<endIndex])
     }
     
-    func getPublishedPostCount(for tag: BlogTag) -> EventLoopFuture<Int> {
+    func getPublishedPostCount(for tag: BlogTag) async throws -> Int {
         var results = [BlogPost]()
         guard let tagID = tag.tagID else {
             fatalError("Tag doesn't exist when it should")
@@ -219,26 +216,26 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
             results.append(post)
         }
         let sortedPosts = results.sorted { $0.created > $1.created }.filter { $0.published }
-        return eventLoop.future(sortedPosts.count)
+        return sortedPosts.count
     }
     
-    func getPublishedPostCount(for searchTerm: String) -> EventLoopFuture<Int> {
+    func getPublishedPostCount(for searchTerm: String) async throws -> Int {
         let titleResults = posts.filter { $0.title.contains(searchTerm) }
         let results = titleResults.sorted { $0.created > $1.created }.filter { $0.published }
-        return eventLoop.future(results.count)
+        return results.count
     }
     
-    func findPublishedPostsOrdered(for searchTerm: String, count: Int, offset: Int) -> EventLoopFuture<[BlogPost]> {
+    func findPublishedPostsOrdered(for searchTerm: String, count: Int, offset: Int) async throws -> [BlogPost] {
         let titleResults = posts.filter { $0.title.contains(searchTerm) }
         let results = titleResults.sorted { $0.created > $1.created }.filter { $0.published }
         let startIndex = min(offset, results.count)
         let endIndex = min(offset + count, results.count)
-        return eventLoop.future(Array(results[startIndex..<endIndex]))
+        return Array(results[startIndex..<endIndex])
     }
 
-    func save(_ post: BlogPost) -> EventLoopFuture<BlogPost> {
+    func save(_ post: BlogPost) async throws -> BlogPost {
         self.add(post)
-        return eventLoop.future(post)
+        return post
     }
 
     func add(_ post: BlogPost) {
@@ -248,9 +245,8 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         }
     }
 
-    func delete(_ post: BlogPost) -> EventLoopFuture<Void> {
+    func delete(_ post: BlogPost) async throws -> Void {
         posts.removeAll { $0.blogID == post.blogID }
-        return eventLoop.future()
     }
 
     // MARK: - BlogUserRepository
@@ -269,40 +265,39 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         }
     }
 
-    func getUser(id: Int) -> EventLoopFuture<BlogUser?> {
-        return eventLoop.future(users.first { $0.userID == id })
+    func getUser(id: Int) -> BlogUser? {
+        return users.first { $0.userID == id }
     }
 
-    func getAllUsers() -> EventLoopFuture<[BlogUser]> {
-        return eventLoop.future(users)
+    func getAllUsers() async throws -> [BlogUser] {
+        return users
     }
 
-    func getAllUsersWithPostCount() -> EventLoopFuture<[(BlogUser, Int)]> {
+    func getAllUsersWithPostCount() async throws -> [(BlogUser, Int)] {
         let usersWithCount = users.map { user -> (BlogUser, Int) in
             let postCount = posts.filter { $0.author == user.userID }.count
             return (user, postCount)
         }
-        return eventLoop.future(usersWithCount)
+        return usersWithCount
     }
 
-    func getUser(username: String) -> EventLoopFuture<BlogUser?> {
-        return eventLoop.future(users.first { $0.username == username })
+    func getUser(username: String) async throws -> BlogUser? {
+        return users.first { $0.username == username }
     }
 
     private(set) var userUpdated = false
-    func save(_ user: BlogUser) -> EventLoopFuture<BlogUser> {
+    func save(_ user: BlogUser) async throws -> BlogUser {
         self.add(user)
         userUpdated = true
-        return eventLoop.future(user)
+        return user
     }
 
-    func delete(_ user: BlogUser) -> EventLoopFuture<Void> {
+    func delete(_ user: BlogUser) async throws -> Void {
         users.removeAll { $0.userID == user.userID }
-        return eventLoop.future()
     }
 
-    func getUsersCount() -> EventLoopFuture<Int> {
-        return eventLoop.future(users.count)
+    func getUsersCount() async throws -> Int {
+        return users.count
     }
 
 }

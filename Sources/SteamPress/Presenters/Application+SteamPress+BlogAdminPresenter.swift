@@ -37,7 +37,7 @@ extension Application.SteamPress {
         let application: Application
 
         var view: ViewBlogAdminPresenter {
-            return .init(pathCreator: self.storage.pathCreator, viewRenderer: self.application.view, eventLoopGroup: self.application.eventLoopGroup, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter())
+            return .init(pathCreator: self.storage.pathCreator, viewRenderer: self.application.view, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter())
         }
 
         var adminPresenter: BlogAdminPresenter {

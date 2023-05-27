@@ -1,10 +1,10 @@
 import Vapor
 
-struct BlogLoginRedirectAuthMiddleware: Middleware {
+struct BlogLoginRedirectAuthMiddleware: AsyncMiddleware {
 
     let pathCreator: BlogPathCreator
     
-    func respond(to request: Request, chainingTo next: Responder) -> EventLoopFuture<Response> {
+    func respond(to request: Request, chainingTo next: AsyncResponder) async throws -> Response {
         do {
             let user = try request.auth.require(BlogUser.self)
             let resetPasswordPath = pathCreator.createPath(for: "admin/resetPassword")
@@ -14,11 +14,11 @@ struct BlogLoginRedirectAuthMiddleware: Middleware {
             }
             if user.resetPasswordRequired && requestPath != resetPasswordPath {
                 let redirect = request.redirect(to: resetPasswordPath)
-                return request.eventLoop.future(redirect)
+                return redirect
             }
         } catch {
-            return request.eventLoop.future(request.redirect(to: pathCreator.createPath(for: "admin/login", query: "loginRequired")))
+            return request.redirect(to: pathCreator.createPath(for: "admin/login", query: "loginRequired"))
         }
-        return next.respond(to: request)
+        return try await next.respond(to: request)
     }
 }

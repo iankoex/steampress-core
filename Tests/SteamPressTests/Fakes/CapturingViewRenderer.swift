@@ -17,7 +17,12 @@ class CapturingViewRenderer: ViewRenderer {
     func render<E>(_ name: String, _ context: E) -> EventLoopFuture<View> where E : Encodable {
         self.capturedContext = context
         self.templatePath = name
-        return TestDataBuilder.createFutureView(on: eventLoop)
+        
+        let string = "Some HTML"
+        var byteBuffer = ByteBufferAllocator().buffer(capacity: string.count)
+        byteBuffer.writeString("Some HTML")
+        let view = View(data: byteBuffer)
+        return eventLoop.future(view)
     }
 
 }

@@ -10,6 +10,6 @@ protocol BlogAdminPresenter {
 
 extension ViewBlogAdminPresenter {
     func `for`(_ request: Request, pathCreator: BlogPathCreator) -> BlogAdminPresenter {
-        return ViewBlogAdminPresenter(pathCreator: pathCreator, viewRenderer: request.view, eventLoopGroup: request.eventLoop, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter())
+        return ViewBlogAdminPresenter(pathCreator: pathCreator, viewRenderer: request.view, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter())
     }
 }
