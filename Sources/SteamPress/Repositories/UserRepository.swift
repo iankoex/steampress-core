@@ -20,19 +20,12 @@ struct FluentUserRepository: BlogUserRepository {
     func getAllUsersWithPostCount() async throws -> [(BlogUser, Int)] {
         let users = try await BlogUser.query(on: req.db)
             .all()
-//        let posts = try await BlogPost.query(on: req.db)
-//            .filter(\.$published == true)
-//            .all()
-//        let postsByUserID = [Int: [BlogPost]](grouping: posts, by: { $0[keyPath: \.author] })
-//        return users.map { user in
-//            guard let userID = user.userID else {
-//                return (user, 0)
-//            }
-//            let userPostCount = postsByUserID[userID]?.count ?? 0
-//            return (user, userPostCount)
-//        }
-        
-        return [(users[0], 0)]
+        var result: [(BlogUser, Int)] = []
+        for user in users {
+            let count = try await user.$posts.query(on: req.db).count()
+            result.append((user, count))
+        }
+        return result
     }
     
     func getUser(id: UUID) async throws -> BlogUser? {

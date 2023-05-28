@@ -68,21 +68,17 @@ struct FluentPostRepository: BlogPostRepository {
     }
     
     func getSortedPublishedPosts(for tag: BlogTag, count: Int, offset: Int) async throws -> [BlogPost] {
-//        let query = try tag.posts.query(on: req.db)
-//            .filter(\.$published == true)
-//            .sort(\.$created, .descending)
-//        let upperLimit = count + offset
-//        return try await query.range(offset..<upperLimit).all()
-        
-        return []
+        let query = tag.$posts.query(on: req.db)
+            .filter(\.$published == true)
+            .sort(\.$created, .descending)
+        let upperLimit = count + offset
+        return try await query.range(offset..<upperLimit).all()
     }
     
     func getPublishedPostCount(for tag: BlogTag) async throws -> Int {
-//        try await tag.posts.query(on: req.db)
-//            .filter(\.$published == true)
-//            .count()
-        
-        return 0
+        try await tag.$posts.query(on: req.db)
+            .filter(\.$published == true)
+            .count()
     }
     
     func findPublishedPostsOrdered(for searchTerm: String, count: Int, offset: Int) async throws -> [BlogPost] {
