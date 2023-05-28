@@ -10,9 +10,6 @@ public final class BlogUser: Model, Codable {
     @ID
     public var id: UUID?
     
-    @OptionalField(key: "user_id")
-    public var userID: Int?
-    
     @Field(key: "name")
     public var name: String
     
@@ -43,7 +40,7 @@ public final class BlogUser: Model, Codable {
     public init () {}
 
     public init(
-        userID: Int? = nil,
+        id: UUID? = nil,
         name: String,
         username: String,
         password: String,
@@ -53,7 +50,7 @@ public final class BlogUser: Model, Codable {
         biography: String?,
         tagline: String?
     ) {
-        self.userID = userID
+        self.id = id
         self.name = name
         self.username = username.lowercased()
         self.password = password
@@ -70,7 +67,7 @@ public final class BlogUser: Model, Codable {
 
 extension BlogUser: Authenticatable {
     func authenticateSession(on req: Request) {
-        req.session.data["_BlogUserSession"] = self.userID?.description
+        req.session.data["_BlogUserSession"] = self.id?.description
         req.auth.login(self)
     }
 }

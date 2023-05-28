@@ -37,8 +37,8 @@ class AuthorTests: XCTestCase {
         _ = try testWorld.getResponse(to: allAuthorsRequestPath)
 
         XCTAssertEqual(presenter.allAuthors?.count, 2)
-        XCTAssertEqual(presenter.allAuthorsPostCount?[newAuthor.userID!], 2)
-        XCTAssertEqual(presenter.allAuthorsPostCount?[user.userID!], 1)
+        XCTAssertEqual(presenter.allAuthorsPostCount?[newAuthor.id!], 2)
+        XCTAssertEqual(presenter.allAuthorsPostCount?[user.id!], 1)
         XCTAssertEqual(presenter.allAuthors?.last?.name, user.name)
     }
 
@@ -168,12 +168,12 @@ class AuthorTests: XCTestCase {
         
         _ = try testWorld.getResponse(to: "/authors/leia")
         let tagsForPosts = try XCTUnwrap(presenter.authorPageTagsForPost)
-        XCTAssertNil(tagsForPosts[post3.post.blogID!])
-        XCTAssertEqual(tagsForPosts[post2.post.blogID!]?.count, 1)
-        XCTAssertEqual(tagsForPosts[post2.post.blogID!]?.first?.name, tag1Name)
-        XCTAssertEqual(tagsForPosts[postData.post.blogID!]?.count, 2)
-        XCTAssertEqual(tagsForPosts[postData.post.blogID!]?.first?.name, tag1Name)
-        XCTAssertEqual(tagsForPosts[postData.post.blogID!]?.last?.name, tag2Name)
+        XCTAssertNil(tagsForPosts[post3.post.id!])
+        XCTAssertEqual(tagsForPosts[post2.post.id!]?.count, 1)
+        XCTAssertEqual(tagsForPosts[post2.post.id!]?.first?.name, tag1Name)
+        XCTAssertEqual(tagsForPosts[postData.post.id!]?.count, 2)
+        XCTAssertEqual(tagsForPosts[postData.post.id!]?.first?.name, tag1Name)
+        XCTAssertEqual(tagsForPosts[postData.post.id!]?.last?.name, tag2Name)
     }
     
 }

@@ -20,7 +20,7 @@ class BlogViewTests: XCTestCase {
         eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         viewRenderer = CapturingViewRenderer(eventLoop: eventLoopGroup.next())
         presenter = ViewBlogPresenter(viewRenderer: viewRenderer, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter())
-        author = TestDataBuilder.anyUser(id: 1)
+        author = TestDataBuilder.anyUser(id: UUID())
         let createdDate = Date(timeIntervalSince1970: 1584714638)
         let lastEditedDate = Date(timeIntervalSince1970: 1584981458)
         post = try TestDataBuilder.anyPost(author: author, contents: TestDataBuilder.longContents, creationDate: createdDate, lastEditedDate: lastEditedDate)
@@ -44,13 +44,13 @@ class BlogViewTests: XCTestCase {
     }
     
     func testBlogPostPageGetsCorrectParameters() async throws {
-        let tag = BlogTag(id: 1, name: "Engineering")
+        let tag = BlogTag(id: UUID(), name: "Engineering")
         _ = try await presenter.postView(post: post, author: author, tags: [tag], pageInformation: pageInformation)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
         
         XCTAssertEqual(context.title, post.title)
-        XCTAssertEqual(context.post.blogID, post.blogID)
+        XCTAssertEqual(context.post.blogID, post.id)
         XCTAssertEqual(context.post.title, post.title)
         XCTAssertEqual(context.post.contents, post.contents)
         XCTAssertEqual(context.author.name, author.name)
@@ -108,7 +108,7 @@ class BlogViewTests: XCTestCase {
     func testGettingTagViewWithURLEncodedName() async throws {
         let tagName = "Some Tag"
         let urlEncodedName = try XCTUnwrap(tagName.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed))
-        let tag = BlogTag(id: 1, name: tagName)
+        let tag = BlogTag(id: UUID(), name: tagName)
         
         _ = try await presenter.postView(post: post, author: author, tags: [tag], pageInformation: pageInformation)
         

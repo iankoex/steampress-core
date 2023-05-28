@@ -10,7 +10,6 @@ extension BlogTag {
             
             try await database.schema(BlogTag.schema)
                 .id()
-                .field("tag_id", .int)
                 .field("name", .string, .required)
                 .create()
         }

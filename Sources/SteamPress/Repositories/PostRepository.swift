@@ -61,9 +61,9 @@ struct FluentPostRepository: BlogPostRepository {
             .first()
     }
     
-    func getPost(id: Int) async throws -> BlogPost? {
+    func getPost(id: UUID) async throws -> BlogPost? {
         try await BlogPost.query(on: req.db)
-            .filter(\.$blogID == id)
+            .filter(\.$id == id)
             .first()
     }
     

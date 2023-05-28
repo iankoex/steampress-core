@@ -11,9 +11,6 @@ public final class BlogPost: Model, Codable {
     
     @ID
     public var id: UUID?
-
-    @OptionalField(key: "blog_id")
-    public var blogID: Int?
     
     @Field(key: "title")
     public var title: String
@@ -35,6 +32,9 @@ public final class BlogPost: Model, Codable {
     
     @Field(key: "published")
     public var published: Bool
+    
+    @Siblings(through: PostTagPivot.self, from: \.$post, to: \.$tag)
+    public var tags: [BlogTag]
     
     public init() { }
 

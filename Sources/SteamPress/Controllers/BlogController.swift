@@ -62,7 +62,7 @@ struct BlogController: RouteCollection {
             throw Abort(.notFound)
         }
         let tags: [BlogTag] = try await req.repositories.blogTag.getTags(for: post)
-        guard let user = try await req.repositories.blogUser.getUser(id: post.author.userID ?? 0) else {
+        guard let user = try await req.repositories.blogUser.getUser(id: post.author.id ?? UUID()) else {
             throw Abort(.internalServerError)
         }
         let pageInformation: BlogGlobalPageInformation = try req.pageInformation()
@@ -97,8 +97,8 @@ struct BlogController: RouteCollection {
     func allTagsViewHandler(_ req: Request) async throws -> View {
         let tagswithCount = try await req.repositories.blogTag.getAllTagsWithPostCount()
         let allTags = tagswithCount.map { $0.0 }
-        let tagCounts = try tagswithCount.reduce(into: [Int: Int]()) {
-            guard let tagID = $1.0.tagID else {
+        let tagCounts = try tagswithCount.reduce(into: [UUID: Int]()) {
+            guard let tagID = $1.0.id else {
                 throw SteamPressError(identifier: "BlogController", "Tag ID not set")
             }
             return $0[tagID] = $1.1
@@ -109,8 +109,8 @@ struct BlogController: RouteCollection {
     func allAuthorsViewHandler(_ req: Request) async throws -> View {
         let allUsersWithCount = try await req.repositories.blogUser.getAllUsersWithPostCount()
         let allUsers = allUsersWithCount.map { $0.0 }
-        let authorCounts = try allUsersWithCount.reduce(into: [Int: Int]()) {
-            guard let userID = $1.0.userID else {
+        let authorCounts = try allUsersWithCount.reduce(into: [UUID: Int]()) {
+            guard let userID = $1.0.id else {
                 throw SteamPressError(identifier: "BlogController", "User ID not set")
             }
             return $0[userID] = $1.1

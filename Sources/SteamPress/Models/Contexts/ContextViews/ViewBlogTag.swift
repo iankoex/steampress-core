@@ -1,5 +1,8 @@
+
+import Vapor
+
 struct ViewBlogTag: Encodable {
-    let tagID: Int
+    let tagID: UUID
     let name: String
     let urlEncodedName: String
 }
@@ -9,7 +12,7 @@ extension BlogTag {
         guard let urlEncodedName = self.name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
             throw SteamPressError(identifier: "ViewBlogPost", "Failed to URL encode tag name")
         }
-        guard let tagID = self.tagID else {
+        guard let tagID = self.id else {
             throw SteamPressError(identifier: "ViewBlogPost", "Tag has no ID")
         }
         return ViewBlogTag(tagID: tagID, name: self.name, urlEncodedName: urlEncodedName)

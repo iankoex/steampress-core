@@ -46,12 +46,12 @@ class AdminPostTests: XCTestCase {
         XCTAssertTrue(post.created < Date())
 
         XCTAssertEqual(testWorld.context.repository.tags.count, 2)
-        let firstTagID = testWorld.context.repository.tags[0].tagID!
-        let secondTagID = testWorld.context.repository.tags[1].tagID!
+        let firstid = testWorld.context.repository.tags[0].id!
+        let secondid = testWorld.context.repository.tags[1].id!
         XCTAssertTrue(testWorld.context.repository.postTagLinks
-            .contains { $0.postID == post.blogID! && $0.tagID == firstTagID })
+            .contains { $0.postID == post.id! && $0.tagID == firstid })
         XCTAssertTrue(testWorld.context.repository.postTagLinks
-            .contains { $0.postID == post.blogID! && $0.tagID == secondTagID })
+            .contains { $0.postID == post.id! && $0.tagID == secondid })
 
         XCTAssertEqual(response.status, .seeOther)
         XCTAssertEqual(response.headers[.location].first, "/posts/post-title/")
@@ -207,12 +207,12 @@ class AdminPostTests: XCTestCase {
         let createData = CreatePostData()
         _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
 
-        let newPostID = testWorld.context.repository.posts.last?.blogID!
+        let newid = testWorld.context.repository.posts.last?.id!
 
-        XCTAssertNotEqual(existingPost.post.blogID, newPostID)
+        XCTAssertNotEqual(existingPost.post.id, newid)
         XCTAssertEqual(testWorld.context.repository.tags.count, 2)
         XCTAssertTrue(testWorld.context.repository.postTagLinks
-            .contains { $0.postID == newPostID && $0.tagID == existingTag.tagID! })
+            .contains { $0.postID == newid && $0.tagID == existingTag.id! })
     }
 
     // MARK: - Post editing
@@ -228,7 +228,7 @@ class AdminPostTests: XCTestCase {
         let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
         let updateData = UpdatePostData()
 
-        let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
+        let updatePostPath = "/admin/posts/\(testData.post.id!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
 
         XCTAssertEqual(testWorld.context.repository.posts.count, 1)
@@ -236,7 +236,7 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(post.title, updateData.title)
         XCTAssertEqual(post.contents, updateData.contents)
         XCTAssertEqual(post.slugUrl, testData.post.slugUrl)
-        XCTAssertEqual(post.blogID, testData.post.blogID)
+        XCTAssertEqual(post.id, testData.post.id)
         XCTAssertTrue(post.published)
     }
 
@@ -252,7 +252,7 @@ class AdminPostTests: XCTestCase {
         let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
         let updateData = UpdatePostData()
 
-        let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
+        let updatePostPath = "/admin/posts/\(testData.post.id!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
 
         let post = try XCTUnwrap(testWorld.context.repository.posts.first)
@@ -265,14 +265,14 @@ class AdminPostTests: XCTestCase {
         let tag2Name = "SteamPress"
         _ = try testWorld.createTag(tag1Name, on: post)
         _ = try testWorld.createTag(tag2Name, on: post)
-        _ = try testWorld.getResponse(to: "/admin/posts/\(post.blogID!)/edit", loggedInUser: user)
+        _ = try testWorld.getResponse(to: "/admin/posts/\(post.id!)/edit", loggedInUser: user)
 
         XCTAssertEqual(presenter.createPostTitle, post.title)
         XCTAssertEqual(presenter.createPostContents, post.contents)
         XCTAssertEqual(presenter.createPostSlugURL, post.slugUrl)
         let isEditing = try XCTUnwrap(presenter.createPostIsEditing)
         XCTAssertTrue(isEditing)
-        XCTAssertEqual(presenter.createPostPost?.blogID, post.blogID)
+        XCTAssertEqual(presenter.createPostPost?.id, post.id)
         XCTAssertEqual(presenter.createPostDraft, !post.published)
         XCTAssertEqual(presenter.createPostTags?.count, 2)
         let postTags = try XCTUnwrap(presenter.createPostTags)
@@ -297,7 +297,7 @@ class AdminPostTests: XCTestCase {
         }
 
         let updateData = UpdateData(title: testData.post.title)
-        let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.blogID!)/edit", body: updateData, loggedInUser: user)
+        let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.id!)/edit", body: updateData, loggedInUser: user)
 
         XCTAssertEqual(response.status, .seeOther)
         XCTAssertEqual(response.headers[.location].first, "/posts/\(testData.post.slugUrl)/")
@@ -314,7 +314,7 @@ class AdminPostTests: XCTestCase {
         }
 
         let updateData = UpdateData(title: "Some New Title")
-        let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.blogID!)/edit", body: updateData, loggedInUser: user)
+        let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.id!)/edit", body: updateData, loggedInUser: user)
 
         XCTAssertEqual(response.status, .seeOther)
         XCTAssertEqual(response.headers[.location].first, "/posts/some-new-title/")
@@ -338,16 +338,16 @@ class AdminPostTests: XCTestCase {
 
         let updateData = UpdatePostData(tags: [firstTagName, newTagName])
 
-        let updatePostPath = "/admin/posts/\(post.blogID!)/edit"
+        let updatePostPath = "/admin/posts/\(post.id!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
 
         XCTAssertTrue(testWorld.context.repository.postTagLinks
-            .contains { $0.postID == post.blogID! && $0.tagID == firstTag.tagID! })
+            .contains { $0.postID == post.id! && $0.tagID == firstTag.id! })
         XCTAssertFalse(testWorld.context.repository.postTagLinks
-            .contains { $0.postID == post.blogID! && $0.tagID == secondTag.tagID! })
+            .contains { $0.postID == post.id! && $0.tagID == secondTag.id! })
         let newTag = try XCTUnwrap(testWorld.context.repository.tags.first { $0.name.removingPercentEncoding == newTagName })
         XCTAssertTrue(testWorld.context.repository.postTagLinks
-            .contains { $0.postID == post.blogID! && $0.tagID == newTag.tagID! })
+            .contains { $0.postID == post.id! && $0.tagID == newTag.id! })
         XCTAssertEqual(testWorld.context.repository.tags.filter { $0.name.removingPercentEncoding == firstTagName}.count, 1)
     }
 
@@ -363,7 +363,7 @@ class AdminPostTests: XCTestCase {
 
         let updateData = UpdatePostData()
 
-        let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
+        let updatePostPath = "/admin/posts/\(testData.post.id!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
 
         let post = try XCTUnwrap(testWorld.context.repository.posts.first)
@@ -385,7 +385,7 @@ class AdminPostTests: XCTestCase {
 
         let updateData = UpdatePostData()
 
-        let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
+        let updatePostPath = "/admin/posts/\(testData.post.id!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
 
         let post = try XCTUnwrap(testWorld.context.repository.posts.first)
@@ -407,7 +407,7 @@ class AdminPostTests: XCTestCase {
 
         let updateData = UpdatePostData()
 
-        let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
+        let updatePostPath = "/admin/posts/\(testData.post.id!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
 
         let post = try XCTUnwrap(testWorld.context.repository.posts.first)
@@ -427,11 +427,11 @@ class AdminPostTests: XCTestCase {
         let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
         let updateData = UpdatePostData()
 
-        let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
+        let updatePostPath = "/admin/posts/\(testData.post.id!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
 
         XCTAssertEqual(presenter.createPostTitle, "")
-        XCTAssertEqual(presenter.createPostPost?.blogID, testData.post.blogID)
+        XCTAssertEqual(presenter.createPostPost?.id, testData.post.id)
         XCTAssertEqual(presenter.createPostContents, updateData.contents)
         XCTAssertEqual(presenter.createPostSlugURL, testData.post.slugUrl)
         XCTAssertEqual(presenter.createPostTags, updateData.tags)
@@ -459,7 +459,7 @@ class AdminPostTests: XCTestCase {
         let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
         let updateData = UpdatePostData()
 
-        let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
+        let updatePostPath = "/admin/posts/\(testData.post.id!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
 
         let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
@@ -474,7 +474,7 @@ class AdminPostTests: XCTestCase {
 
     func testCanDeleteBlogPost() throws {
         let testData = try testWorld.createPost()
-        let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.blogID!)/delete", method: .POST, body: EmptyContent(), loggedInUser: user)
+        let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.id!)/delete", method: .POST, body: EmptyContent(), loggedInUser: user)
 
         XCTAssertEqual(response.status, .seeOther)
         XCTAssertEqual(response.headers[.location].first, "/admin/")
@@ -488,7 +488,7 @@ class AdminPostTests: XCTestCase {
 
         XCTAssertEqual(testWorld.context.repository.postTagLinks.count, 2)
 
-        _ = try testWorld.getResponse(to: "/admin/posts/\(testData.post.blogID!)/delete", method: .POST, body: EmptyContent(), loggedInUser: user)
+        _ = try testWorld.getResponse(to: "/admin/posts/\(testData.post.id!)/delete", method: .POST, body: EmptyContent(), loggedInUser: user)
 
         XCTAssertEqual(testWorld.context.repository.postTagLinks.count, 0)
     }
@@ -560,11 +560,11 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(testWorld.context.repository.tags.count, 1)
         XCTAssertEqual(testWorld.context.repository.tags.first?.name, existingTagName)
         
-        let updatePostPath = "/admin/posts/\(post.blogID!)/edit"
+        let updatePostPath = "/admin/posts/\(post.id!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
 
         XCTAssertTrue(testWorld.context.repository.postTagLinks
-            .contains { $0.postID == post.blogID! && $0.tagID == existingTag.tagID! })
+            .contains { $0.postID == post.id! && $0.tagID == existingTag.id! })
         XCTAssertEqual(testWorld.context.repository.tags.count, 1)
     }
     

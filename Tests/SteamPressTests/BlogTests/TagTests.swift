@@ -40,8 +40,8 @@ class TagTests: XCTestCase {
 
         XCTAssertEqual(presenter.allTagsPageTags?.count, 2)
         XCTAssertEqual(presenter.allTagsPageTags?.first?.name, tag.name)
-        XCTAssertEqual(presenter.allTagsPagePostCount?[tag.tagID!], 1)
-        XCTAssertEqual(presenter.allTagsPagePostCount?[secondTag.tagID!], 2)
+        XCTAssertEqual(presenter.allTagsPagePostCount?[tag.id!], 1)
+        XCTAssertEqual(presenter.allTagsPagePostCount?[secondTag.id!], 2)
     }
 
     func testTagPageGetsOnlyPublishedPostsInDescendingOrder() throws {

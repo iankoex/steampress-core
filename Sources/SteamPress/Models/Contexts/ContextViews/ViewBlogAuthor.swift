@@ -1,5 +1,7 @@
+import Vapor
+
 struct ViewBlogAuthor: Encodable {
-    let userID: Int
+    let userID: UUID
     let name: String
     let username: String
     let resetPasswordRequired: Bool

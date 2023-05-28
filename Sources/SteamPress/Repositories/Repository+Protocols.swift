@@ -9,7 +9,7 @@ public protocol BlogTagRepository: SteamPressRepository {
     func getAllTags() async throws -> [BlogTag]
     func getAllTagsWithPostCount() async throws -> [(BlogTag, Int)]
     func getTags(for post: BlogPost) async throws -> [BlogTag]
-    func getTagsForAllPosts() async throws -> [Int: [BlogTag]]
+    func getTagsForAllPosts() async throws -> [UUID: [BlogTag]]
     func getTag(_ name: String) async throws -> BlogTag?
     func save(_ tag: BlogTag) async throws -> Void
     // Delete all the pivots between a post and collection of tags -> you should probably delete the
@@ -27,7 +27,7 @@ public protocol BlogPostRepository: SteamPressRepository {
     func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost]
     func getPostCount(for user: BlogUser) async throws -> Int
     func getPost(slug: String) async throws -> BlogPost?
-    func getPost(id: Int) async throws -> BlogPost?
+    func getPost(id: UUID) async throws -> BlogPost?
     func getSortedPublishedPosts(for tag: BlogTag, count: Int, offset: Int) async throws -> [BlogPost]
     func getPublishedPostCount(for tag: BlogTag) async throws -> Int
     func findPublishedPostsOrdered(for searchTerm: String, count: Int, offset: Int) async throws -> [BlogPost]
@@ -40,7 +40,7 @@ public protocol BlogUserRepository: SteamPressRepository {
     func `for`(_ request: Request) -> BlogUserRepository
     func getAllUsers() async throws -> [BlogUser]
     func getAllUsersWithPostCount() async throws -> [(BlogUser, Int)]
-    func getUser(id: Int) async throws -> BlogUser?
+    func getUser(id: UUID) async throws -> BlogUser?
     func getUser(username: String) async throws -> BlogUser?
     func save(_ user: BlogUser) async throws -> Void
     func delete(_ user: BlogUser) async throws -> Void

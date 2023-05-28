@@ -5,7 +5,7 @@ public final class BlogAuthSessionsMiddleware: AsyncMiddleware {
     public init() {}
     
     public func respond(to request: Request, chainingTo next: AsyncResponder) async throws -> Response {
-        if let userIDString = request.session.data["_BlogUserSession"], let userID = Int(userIDString) {
+        if let userIDString = request.session.data["_BlogUserSession"], let userID = UUID(uuidString: userIDString) {
             let user = try await request.repositories.blogUser.getUser(id: userID)
             if let user = user {
                 request.auth.login(user)

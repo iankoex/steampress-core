@@ -38,12 +38,12 @@ class AccessControlTests: XCTestCase {
 
     func testCannotAccessEditPostPageWithoutLogin() throws {
         let post = try testWorld.createPost()
-        try assertLoginRequired(method: .GET, path: "posts/\(post.post.blogID!)/edit")
+        try assertLoginRequired(method: .GET, path: "posts/\(post.post.id!)/edit")
     }
 
     func testCannotSendEditPostPageWithoutLogin() throws {
         let post = try testWorld.createPost()
-        try assertLoginRequired(method: .POST, path: "posts/\(post.post.blogID!)/edit")
+        try assertLoginRequired(method: .POST, path: "posts/\(post.post.id!)/edit")
     }
 
     func testCannotAccessCreateUserPageWithoutLogin() throws {
@@ -92,7 +92,7 @@ class AccessControlTests: XCTestCase {
 
     func testCanAccessEditPostPageWhenLoggedIn() throws {
         let post = try testWorld.createPost()
-        let response = try testWorld.getResponse(to: "/blog/admin/posts/\(post.post.blogID!)/edit", loggedInUser: user)
+        let response = try testWorld.getResponse(to: "/blog/admin/posts/\(post.post.id!)/edit", loggedInUser: user)
         XCTAssertEqual(response.status, .ok)
     }
 

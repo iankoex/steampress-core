@@ -98,11 +98,11 @@ class SearchTests: XCTestCase {
         
         _ = try testWorld.getResponse(to: "/search?term=Test")
         let tagsForPosts = try XCTUnwrap(presenter.searchPageTagsForPost)
-        XCTAssertNil(tagsForPosts[post3.post.blogID!])
-        XCTAssertEqual(tagsForPosts[post2.post.blogID!]?.count, 1)
-        XCTAssertEqual(tagsForPosts[post2.post.blogID!]?.first?.name, tag1Name)
-        XCTAssertEqual(tagsForPosts[firstData.post.blogID!]?.count, 2)
-        XCTAssertEqual(tagsForPosts[firstData.post.blogID!]?.first?.name, tag1Name)
-        XCTAssertEqual(tagsForPosts[firstData.post.blogID!]?.last?.name, tag2Name)
+        XCTAssertNil(tagsForPosts[post3.post.id!])
+        XCTAssertEqual(tagsForPosts[post2.post.id!]?.count, 1)
+        XCTAssertEqual(tagsForPosts[post2.post.id!]?.first?.name, tag1Name)
+        XCTAssertEqual(tagsForPosts[firstData.post.id!]?.count, 2)
+        XCTAssertEqual(tagsForPosts[firstData.post.id!]?.first?.name, tag1Name)
+        XCTAssertEqual(tagsForPosts[firstData.post.id!]?.last?.name, tag2Name)
     }
 }

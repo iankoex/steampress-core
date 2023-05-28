@@ -20,8 +20,8 @@ class CapturingBlogPresenter: BlogPresenter {
     private(set) var indexAuthors: [BlogUser]?
     private(set) var indexPageInformation: BlogGlobalPageInformation?
     private(set) var indexPaginationTagInfo: PaginationTagInformation?
-    private(set) var indexTagsForPosts: [Int: [BlogTag]]?
-    func indexView(posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], tagsForPosts: [Int : [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> View {
+    private(set) var indexTagsForPosts: [UUID: [BlogTag]]?
+    func indexView(posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], tagsForPosts: [UUID : [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> View {
         self.indexPosts = posts
         self.indexTags = tags
         self.indexAuthors = authors
@@ -44,9 +44,9 @@ class CapturingBlogPresenter: BlogPresenter {
     }
 
     private(set) var allAuthors: [BlogUser]?
-    private(set) var allAuthorsPostCount: [Int: Int]?
+    private(set) var allAuthorsPostCount: [UUID: Int]?
     private(set) var allAuthorsPageInformation: BlogGlobalPageInformation?
-    func allAuthorsView(authors: [BlogUser], authorPostCounts: [Int: Int], pageInformation: BlogGlobalPageInformation) -> View {
+    func allAuthorsView(authors: [BlogUser], authorPostCounts: [UUID: Int], pageInformation: BlogGlobalPageInformation) -> View {
         self.allAuthors = authors
         self.allAuthorsPostCount = authorPostCounts
         self.allAuthorsPageInformation = pageInformation
@@ -58,8 +58,8 @@ class CapturingBlogPresenter: BlogPresenter {
     private(set) var authorPostCount: Int?
     private(set) var authorPageInformation: BlogGlobalPageInformation?
     private(set) var authorPaginationTagInfo: PaginationTagInformation?
-    private(set) var authorPageTagsForPost: [Int: [BlogTag]]?
-    func authorView(author: BlogUser, posts: [BlogPost], postCount: Int, tagsForPosts: [Int : [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> View {
+    private(set) var authorPageTagsForPost: [UUID: [BlogTag]]?
+    func authorView(author: BlogUser, posts: [BlogPost], postCount: Int, tagsForPosts: [UUID : [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> View {
         self.author = author
         self.authorPosts = posts
         self.authorPostCount = postCount
@@ -70,9 +70,9 @@ class CapturingBlogPresenter: BlogPresenter {
     }
 
     private(set) var allTagsPageTags: [BlogTag]?
-    private(set) var allTagsPagePostCount: [Int: Int]?
+    private(set) var allTagsPagePostCount: [UUID: Int]?
     private(set) var allTagsPageInformation: BlogGlobalPageInformation?
-    func allTagsView(tags: [BlogTag], tagPostCounts: [Int: Int], pageInformation: BlogGlobalPageInformation) -> View {
+    func allTagsView(tags: [BlogTag], tagPostCounts: [UUID: Int], pageInformation: BlogGlobalPageInformation) -> View {
         self.allTagsPageTags = tags
         self.allTagsPagePostCount = tagPostCounts
         self.allTagsPageInformation = pageInformation
@@ -101,8 +101,8 @@ class CapturingBlogPresenter: BlogPresenter {
     private(set) var searchTotalResults: Int?
     private(set) var searchPageInformation: BlogGlobalPageInformation?
     private(set) var searchPaginationTagInfo: PaginationTagInformation?
-    private(set) var searchPageTagsForPost: [Int: [BlogTag]]?
-    func searchView(totalResults: Int, posts: [BlogPost], authors: [BlogUser], searchTerm: String?, tagsForPosts: [Int : [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> View {
+    private(set) var searchPageTagsForPost: [UUID: [BlogTag]]?
+    func searchView(totalResults: Int, posts: [BlogPost], authors: [BlogUser], searchTerm: String?, tagsForPosts: [UUID : [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> View {
         self.searchPosts = posts
         self.searchTerm = searchTerm
         self.searchPageInformation = pageInformation

@@ -9,7 +9,7 @@ class BlogAdminPresenterTests: XCTestCase {
     var presenter: ViewBlogAdminPresenter!
     var viewRenderer: CapturingViewRenderer!
 
-    private let currentUser = TestDataBuilder.anyUser(id: 0)
+    private let currentUser = TestDataBuilder.anyUser(id: UUID())
     private let websiteURL = URL(string: "https://brokenhands.io")!
     private let resetPasswordURL = URL(string: "https://brokenhands.io/blog/admin/resetPassword")!
     private let adminPageURL = URL(string: "https://brokenhands.io/blog/admin")!
@@ -174,7 +174,7 @@ class BlogAdminPresenterTests: XCTestCase {
 
     func testCreateUserViewForEditing() async throws {
         let pageInformation = buildPageInformation(currentPageURL: editUserPageURL)
-        _ = try await presenter.createUserView(editing: true, errors: nil, name: currentUser.name, nameError: false, username: currentUser.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: currentUser.userID, profilePicture: currentUser.profilePicture, twitterHandle: currentUser.twitterHandle, biography: currentUser.biography, tagline: currentUser.tagline, pageInformation: pageInformation)
+        _ = try await presenter.createUserView(editing: true, errors: nil, name: currentUser.name, nameError: false, username: currentUser.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: currentUser.id, profilePicture: currentUser.profilePicture, twitterHandle: currentUser.twitterHandle, biography: currentUser.biography, tagline: currentUser.tagline, pageInformation: pageInformation)
         let context = try XCTUnwrap(viewRenderer.capturedContext as? CreateUserPageContext)
         XCTAssertEqual(context.nameSupplied, currentUser.name)
         XCTAssertFalse(context.nameError)
@@ -187,7 +187,7 @@ class BlogAdminPresenterTests: XCTestCase {
         XCTAssertEqual(context.twitterHandleSupplied, currentUser.twitterHandle)
         XCTAssertEqual(context.taglineSupplied, currentUser.tagline)
         XCTAssertEqual(context.biographySupplied, currentUser.biography)
-        XCTAssertEqual(context.userID, currentUser.userID)
+        XCTAssertEqual(context.userID, currentUser.id)
         XCTAssertTrue(context.editing)
 
         XCTAssertEqual(viewRenderer.templatePath, "blog/admin/createUser")
@@ -269,7 +269,7 @@ class BlogAdminPresenterTests: XCTestCase {
         XCTAssertEqual(context.contentsSupplied, postToEdit.contents)
         XCTAssertEqual(context.slugURLSupplied, postToEdit.slugUrl)
         XCTAssertEqual(context.post?.title, postToEdit.title)
-        XCTAssertEqual(context.post?.blogID, postToEdit.blogID)
+        XCTAssertEqual(context.post?.id, postToEdit.id)
         XCTAssertFalse(context.draft)
         XCTAssertEqual(context.tagsSupplied?.count, 1)
         XCTAssertEqual(context.tagsSupplied?.first, tag)

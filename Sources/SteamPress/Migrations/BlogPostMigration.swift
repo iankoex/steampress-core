@@ -10,7 +10,6 @@ extension BlogPost {
             
             try await database.schema(BlogPost.schema)
                 .id()
-                .field("blog_id", .int)
                 .field("title", .string, .required)
                 .field("contents", .string, .required)
                 .field("author", .uuid, .required, .references(BlogUser.schema, .id))

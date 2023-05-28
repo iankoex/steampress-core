@@ -27,7 +27,7 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
         return try await viewRenderer.render("blog/admin/createPost", context)
     }
     
-    public func createUserView(editing: Bool, errors: [String]?, name: String?, nameError: Bool, username: String?, usernameErorr: Bool, passwordError: Bool, confirmPasswordError: Bool, resetPasswordOnLogin: Bool, userID: Int?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, pageInformation: BlogAdminPageInformation) async throws -> View {
+    public func createUserView(editing: Bool, errors: [String]?, name: String?, nameError: Bool, username: String?, usernameErorr: Bool, passwordError: Bool, confirmPasswordError: Bool, resetPasswordOnLogin: Bool, userID: UUID?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, pageInformation: BlogAdminPageInformation) async throws -> View {
         if editing {
             guard userID != nil else {
                 throw SteamPressError(identifier: "ViewBlogAdminPresenter", "User ID is nil whilst editing")

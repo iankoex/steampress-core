@@ -18,6 +18,10 @@ class BlogPresenterTests: XCTestCase {
     private let loginURL = URL(string: "https://brokenhands.io/admin/login")!
     private let websiteURL = URL(string: "https://brokenhands.io")!
     private let searchURL = URL(string: "https://brokenhands.io/search?term=vapor")!
+    private let uuidZero = UUID()
+    private let uuidOne = UUID()
+    private let uuidTwo = UUID()
+    private let uuidThree = UUID()
 
     private static let siteTwitterHandle = "brokenhandsio"
     private static let disqusName = "steampress"
@@ -28,7 +32,7 @@ class BlogPresenterTests: XCTestCase {
         eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         viewRenderer = CapturingViewRenderer(eventLoop: eventLoopGroup.next())
         presenter = ViewBlogPresenter(viewRenderer: viewRenderer, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter())
-        testTag = BlogTag(id: 1, name: "Tattoine")
+        testTag = BlogTag(id: uuidOne, name: "Tattoine")
     }
     
     override func tearDownWithError() throws {
@@ -40,7 +44,7 @@ class BlogPresenterTests: XCTestCase {
     // MARK: - All Tags Page
 
     func testParametersAreSetCorrectlyOnAllTagsPage() async throws {
-        let tags = [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
+        let tags = [BlogTag(id: uuidZero, name: "tag1"), BlogTag(id: uuidOne, name: "tag2")]
 
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL)
         _ = try await presenter.allTagsView(tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
@@ -60,35 +64,35 @@ class BlogPresenterTests: XCTestCase {
     }
 
     func testTagsPageGetsPassedTagsSortedByPostCount() async throws {
-        let tag1 = BlogTag(id: 0, name: "Engineering")
-        let tag2 = BlogTag(id: 1, name: "Tech")
+        let tag1 = BlogTag(id: uuidZero, name: "Engineering")
+        let tag2 = BlogTag(id: uuidOne, name: "Tech")
         let tags = [tag1, tag2]
-        let tagPostCount = [0: 5, 1: 20]
+        let tagPostCount = [uuidZero: 5, uuidOne: 20]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL)
         _ = try await presenter.allTagsView(tags: tags, tagPostCounts: tagPostCount, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
         XCTAssertEqual(context.tags.first?.postCount, 20)
-        XCTAssertEqual(context.tags.first?.tagID, 1)
-        XCTAssertEqual(context.tags[1].tagID, 0)
+        XCTAssertEqual(context.tags.first?.id, uuidOne)
+        XCTAssertEqual(context.tags[1].id, uuidZero)
         XCTAssertEqual(context.tags[1].postCount, 5)
     }
 
     func testTagsPageHandlesNoPostsForTagsCorrectly() async throws {
-        let tag1 = BlogTag(id: 0, name: "Engineering")
-        let tag2 = BlogTag(id: 1, name: "Tech")
+        let tag1 = BlogTag(id: uuidZero, name: "Engineering")
+        let tag2 = BlogTag(id: uuidOne, name: "Tech")
         let tags = [tag1, tag2]
-        let tagPostCount = [0: 0, 1: 20]
+        let tagPostCount = [uuidZero: 0, uuidOne: 20]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL)
         _ = try await presenter.allTagsView(tags: tags, tagPostCounts: tagPostCount, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
-        XCTAssertEqual(context.tags[1].tagID, 0)
+        XCTAssertEqual(context.tags[1].id, uuidZero)
         XCTAssertEqual(context.tags[1].postCount, 0)
     }
 
     func testTwitterHandleNotSetOnAllTagsPageIfNotGiven() async throws {
-        let tags = [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
+        let tags = [BlogTag(id: uuidZero, name: "tag1"), BlogTag(id: uuidOne, name: "tag2")]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL, siteTwitterHandle: nil)
         _ = try await presenter.allTagsView(tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
 
@@ -97,7 +101,7 @@ class BlogPresenterTests: XCTestCase {
     }
 
     func testDisqusNameNotSetOnAllTagsPageIfNotGiven() async throws {
-        let tags = [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
+        let tags = [BlogTag(id: uuidZero, name: "tag1"), BlogTag(id: uuidOne, name: "tag2")]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL, disqusName: nil)
         _ = try await presenter.allTagsView(tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
 
@@ -106,7 +110,7 @@ class BlogPresenterTests: XCTestCase {
     }
 
     func testGAIdentifierNotSetOnAllTagsPageIfNotGiven() async throws {
-        let tags = [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
+        let tags = [BlogTag(id: uuidZero, name: "tag1"), BlogTag(id: uuidOne, name: "tag2")]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL, googleAnalyticsIdentifier: nil)
         _ = try await presenter.allTagsView(tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
 
@@ -115,7 +119,7 @@ class BlogPresenterTests: XCTestCase {
     }
 
     func testLoggedInUserSetOnAllTagsPageIfPassedIn() async throws {
-        let tags = [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
+        let tags = [BlogTag(id: uuidZero, name: "tag1"), BlogTag(id: uuidOne, name: "tag2")]
         let user = TestDataBuilder.anyUser()
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL, user: user)
         _ = try await presenter.allTagsView(tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
@@ -128,8 +132,8 @@ class BlogPresenterTests: XCTestCase {
     // MARK: - All authors
 
     func testParametersAreSetCorrectlyOnAllAuthorsPage() async throws {
-        let user1 = TestDataBuilder.anyUser(id: 0)
-        let user2 = TestDataBuilder.anyUser(id: 1, name: "Han", username: "han")
+        let user1 = TestDataBuilder.anyUser(id: uuidZero)
+        let user2 = TestDataBuilder.anyUser(id: uuidOne, name: "Han", username: "han")
         let authors = [user1, user2]
         let pageInformation = buildPageInformation(currentPageURL: allAuthorsURL)
         _ = try await presenter.allAuthorsView(authors: authors, authorPostCounts: [:], pageInformation: pageInformation)
@@ -147,30 +151,30 @@ class BlogPresenterTests: XCTestCase {
     }
 
     func testAuthorsPageGetsPassedAuthorsSortedByPostCount() async throws {
-        let user1 = TestDataBuilder.anyUser(id: 0)
-        let user2 = TestDataBuilder.anyUser(id: 1, name: "Han", username: "han")
+        let user1 = TestDataBuilder.anyUser(id: uuidZero)
+        let user2 = TestDataBuilder.anyUser(id: uuidOne, name: "Han", username: "han")
         let authors = [user1, user2]
-        let authorPostCount = [0: 1, 1: 20]
+        let authorPostCount = [uuidZero: 1, uuidOne: 20]
         let pageInformation = buildPageInformation(currentPageURL: allAuthorsURL)
         _ = try await presenter.allAuthorsView(authors: authors, authorPostCounts: authorPostCount, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllAuthorsPageContext)
         XCTAssertEqual(context.authors.first?.postCount, 20)
-        XCTAssertEqual(context.authors.first?.userID, 1)
-        XCTAssertEqual(context.authors[1].userID, 0)
+        XCTAssertEqual(context.authors.first?.userID, uuidOne)
+        XCTAssertEqual(context.authors[1].userID, uuidZero)
         XCTAssertEqual(context.authors[1].postCount, 1)
     }
 
     func testAuthorsPageHandlesNoPostsForAuthorCorrectly() async throws {
-        let user1 = TestDataBuilder.anyUser(id: 0)
-        let user2 = TestDataBuilder.anyUser(id: 1, name: "Han", username: "han")
+        let user1 = TestDataBuilder.anyUser(id: uuidZero)
+        let user2 = TestDataBuilder.anyUser(id: uuidOne, name: "Han", username: "han")
         let authors = [user1, user2]
-        let authorPostCount = [0: 0, 1: 20]
+        let authorPostCount = [uuidZero: 0, uuidOne: 20]
         let pageInformation = buildPageInformation(currentPageURL: allAuthorsURL)
         _ = try await presenter.allAuthorsView(authors: authors, authorPostCounts: authorPostCount, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllAuthorsPageContext)
-        XCTAssertEqual(context.authors[1].userID, 0)
+        XCTAssertEqual(context.authors[1].userID, uuidZero)
         XCTAssertEqual(context.authors[1].postCount, 0)
     }
 
@@ -211,11 +215,11 @@ class BlogPresenterTests: XCTestCase {
     // MARK: - Tag page
 
     func testTagPageGetsTagWithCorrectParamsAndPostCount() async throws {
-        let user = TestDataBuilder.anyUser(id: 3)
+        let user = TestDataBuilder.anyUser(id: uuidThree)
         let post1 = try TestDataBuilder.anyPost(author: user)
-        post1.blogID = 1
+        post1.id = uuidOne
         let post2 = try TestDataBuilder.anyPost(author: user)
-        post2.blogID = 2
+        post2.id = uuidTwo
         let posts = [post1, post2]
         let pageInformation = buildPageInformation(currentPageURL: tagURL, user: user)
         let currentPage = 2
@@ -228,9 +232,9 @@ class BlogPresenterTests: XCTestCase {
         XCTAssertEqual(context.tag.name, testTag.name)
         XCTAssertEqual(context.posts.count, 2)
         XCTAssertEqual(context.posts.first?.title, post1.title)
-        XCTAssertEqual(context.posts.first?.blogID, post1.blogID)
+        XCTAssertEqual(context.posts.first?.blogID, post1.id)
         XCTAssertEqual(context.posts.last?.title, post2.title)
-        XCTAssertEqual(context.posts.last?.blogID, post2.blogID)
+        XCTAssertEqual(context.posts.last?.blogID, post2.id)
         XCTAssertTrue(context.tagPage)
         XCTAssertEqual(context.pageInformation.loggedInUser?.name, user.name)
         XCTAssertEqual(context.pageInformation.loggedInUser?.username, user.username)
@@ -286,21 +290,21 @@ class BlogPresenterTests: XCTestCase {
         let createdDate = Date(timeIntervalSince1970: 1584714638)
         let lastEditedDate = Date(timeIntervalSince1970: 1584981458)
         
-        let author1 = TestDataBuilder.anyUser(id: 0)
-        let author2 = TestDataBuilder.anyUser(id: 1, username: "darth")
+        let author1 = TestDataBuilder.anyUser(id: uuidZero)
+        let author2 = TestDataBuilder.anyUser(id: uuidOne, username: "darth")
         let post = try TestDataBuilder.anyPost(author: author1, contents: TestDataBuilder.longContents, creationDate: createdDate, lastEditedDate: lastEditedDate)
-        post.blogID = 1
+        post.id = uuidOne
         let post2 = try TestDataBuilder.anyPost(author: author2, title: "Another Title")
-        post2.blogID = 2
-        let tag1 = BlogTag(id: 1, name: "Engineering Stuff")
-        let tag2 = BlogTag(id: 2, name: "Fun")
+        post2.id = uuidTwo
+        let tag1 = BlogTag(id: uuidOne, name: "Engineering Stuff")
+        let tag2 = BlogTag(id: uuidTwo, name: "Fun")
         let tags = [tag1, tag2]
         let currentPage = 2
         let totalPages = 10
         let currentQuery = "?page=2"
 
         let pageInformation = buildPageInformation(currentPageURL: blogIndexURL)
-        _ = try await presenter.indexView(posts: [post, post2], tags: tags, authors: [author1, author2], tagsForPosts: [1: [tag1, tag2], 2: [tag1]], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation(currentPage: currentPage, totalPages: totalPages, currentQuery: currentQuery))
+        _ = try await presenter.indexView(posts: [post, post2], tags: tags, authors: [author1, author2], tagsForPosts: [uuidOne: [tag1, tag2], uuidTwo: [tag1]], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation(currentPage: currentPage, totalPages: totalPages, currentQuery: currentQuery))
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogIndexPageContext)
         XCTAssertEqual(context.title, "Blog")
@@ -381,11 +385,11 @@ class BlogPresenterTests: XCTestCase {
     // MARK: - Author page
 
     func testAuthorViewHasCorrectParametersSet() async throws {
-        let author = TestDataBuilder.anyUser(id: 0)
+        let author = TestDataBuilder.anyUser(id: uuidZero)
         let post1 = try TestDataBuilder.anyPost(author: author)
-        post1.blogID = 1
+        post1.id = uuidOne
         let post2 = try TestDataBuilder.anyPost(author: author, title: "Another Post", slugUrl: "another-post")
-        post2.blogID = 2
+        post2.id = uuidTwo
         let page = 2
         let totalPages = 10
         let query = "page=2"
@@ -417,18 +421,18 @@ class BlogPresenterTests: XCTestCase {
     }
 
     func testAuthorViewGetsLoggedInUserIfProvider() async throws {
-        let author = TestDataBuilder.anyUser(id: 0)
-        let user = TestDataBuilder.anyUser(id: 1, username: "hans")
+        let author = TestDataBuilder.anyUser(id: uuidZero)
+        let user = TestDataBuilder.anyUser(id: uuidOne, username: "hans")
         let pageInformation = buildPageInformation(currentPageURL: authorURL, user: user)
         _ = try await presenter.authorView(author: author, posts: [], postCount: 0, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
-        XCTAssertEqual(context.pageInformation.loggedInUser?.userID, user.userID)
+        XCTAssertEqual(context.pageInformation.loggedInUser?.id, user.id)
         XCTAssertEqual(context.pageInformation.loggedInUser?.username, user.username)
     }
 
     func testMyProfileFlagSetIfLoggedInUserIsTheSameAsAuthorOnAuthorView() async throws {
-        let author = TestDataBuilder.anyUser(id: 0)
+        let author = TestDataBuilder.anyUser(id: uuidZero)
         let pageInformation = buildPageInformation(currentPageURL: authorURL, user: author)
         _ = try await presenter.authorView(author: author, posts: [], postCount: 0, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
@@ -464,13 +468,13 @@ class BlogPresenterTests: XCTestCase {
     }
 
     func testAuthorViewGetsPostCount() async throws {
-        let author = TestDataBuilder.anyUser(id: 0)
+        let author = TestDataBuilder.anyUser(id: uuidZero)
         let post1 = try TestDataBuilder.anyPost(author: author)
-        post1.blogID = 1
+        post1.id = uuidOne
         let post2 = try TestDataBuilder.anyPost(author: author)
-        post2.blogID = 2
+        post2.id = uuidTwo
         let post3 = try TestDataBuilder.anyPost(author: author)
-        post3.blogID = 3
+        post3.id = uuidThree
         let pageInformation = buildPageInformation(currentPageURL: authorURL)
         _ = try await presenter.authorView(author: author, posts: [post1, post2, post3], postCount: 3, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
@@ -479,9 +483,9 @@ class BlogPresenterTests: XCTestCase {
     }
 
     func testAuthorViewGetsLongSnippetForPosts() async throws {
-        let author = TestDataBuilder.anyUser(id: 0)
+        let author = TestDataBuilder.anyUser(id: uuidZero)
         let post1 = try TestDataBuilder.anyPost(author: author, contents: TestDataBuilder.longContents)
-        post1.blogID = 1
+        post1.id = uuidOne
         let pageInformation = buildPageInformation(currentPageURL: authorURL)
         _ = try await presenter.authorView(author: author, posts: [post1], postCount: 1, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
@@ -522,11 +526,11 @@ class BlogPresenterTests: XCTestCase {
     }
 
     func testSearchPageGetsCorrectParameters() async throws {
-        let author = TestDataBuilder.anyUser(id: 0)
+        let author = TestDataBuilder.anyUser(id: uuidZero)
         let post1 = try TestDataBuilder.anyPost(author: author, title: "Vapor 1")
-        post1.blogID = 1
+        post1.id = uuidOne
         let post2 = try TestDataBuilder.anyPost(author: author, title: "Vapor 2")
-        post2.blogID = 2
+        post2.id = uuidTwo
         let pageInformation = buildPageInformation(currentPageURL: searchURL)
         let paginationInformation = PaginationTagInformation(currentPage: 1, totalPages: 3, currentQuery: "?term=vapor")
 

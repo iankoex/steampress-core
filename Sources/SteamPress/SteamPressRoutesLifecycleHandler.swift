@@ -15,6 +15,7 @@ public class SteamPressRoutesLifecycleHandler: LifecycleHandler {
         application.migrations.add(BlogUser.Migration())
         application.migrations.add(BlogPost.Migration())
         application.migrations.add(BlogTag.Migration())
+        application.migrations.add(PostTagPivot.Migration())
         
         try application.autoMigrate().wait()
         

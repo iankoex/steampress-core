@@ -56,10 +56,10 @@ class IndexTests: XCTestCase {
         _ = try testWorld.getResponse(to: blogIndexPath)
         
         let tagForPostInformation = try XCTUnwrap(presenter.indexTagsForPosts)
-        XCTAssertEqual(tagForPostInformation[firstData.post.blogID!]?.count, 2)
-        XCTAssertEqual(tagForPostInformation[firstData.post.blogID!]?.first?.name, tag1)
-        XCTAssertEqual(tagForPostInformation[firstData.post.blogID!]?.last?.name, tag2)
-        XCTAssertNil(tagForPostInformation[post2.blogID!])
+        XCTAssertEqual(tagForPostInformation[firstData.post.id!]?.count, 2)
+        XCTAssertEqual(tagForPostInformation[firstData.post.id!]?.first?.name, tag1)
+        XCTAssertEqual(tagForPostInformation[firstData.post.id!]?.last?.name, tag2)
+        XCTAssertNil(tagForPostInformation[post2.id!])
     }
 
     func testBlogIndexGetsAllAuthors() throws {

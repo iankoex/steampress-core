@@ -59,20 +59,20 @@ protocol ParameterModel {
 
 extension Parameters {    
     func findUser(on req: Request) async throws -> BlogUser {
-        guard let idString = req.parameters.get(BlogUser.parameterKey), let id = Int(idString) else {
+        guard let userID = req.parameters.get(BlogUser.parameterKey, as: UUID.self) else {
             throw Abort(.badRequest)
         }
-        guard let user = try await req.repositories.blogUser.getUser(id: id) else {
+        guard let user = try await req.repositories.blogUser.getUser(id: userID ) else {
             throw Abort(.notFound)
         }
         return user
     }
     
     func findPost(on req: Request) async throws -> BlogPost {
-        guard let idString = req.parameters.get(BlogPost.parameterKey), let id = Int(idString) else {
+        guard let postID = req.parameters.get(BlogPost.parameterKey, as: UUID.self) else {
             throw Abort(.badRequest)
         }
-        guard let post = try await req.repositories.blogPost.getPost(id: id) else {
+        guard let post = try await req.repositories.blogPost.getPost(id: postID) else {
             throw Abort(.notFound)
         }
         return post

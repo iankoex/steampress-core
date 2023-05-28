@@ -28,7 +28,7 @@ struct FluentTagRepository: BlogTagRepository {
         return [(tags[0], 0)]
     }
     
-    func getTagsForAllPosts() async throws -> [Int : [BlogTag]] {
+    func getTagsForAllPosts() async throws -> [UUID : [BlogTag]] {
         let tags = try await BlogTag.query(on: req.db).all()
 //        let pivots = try await BlogPostTagPivot.query(on: req.db).all()
 //        let pivotsSortedByPost = Dictionary(grouping: pivots) { (pivot) -> Int in
@@ -43,7 +43,7 @@ struct FluentTagRepository: BlogTagRepository {
 //
 //        return postsWithTags
 //
-        return [0: tags]
+        return [UUID(): tags]
     }
     
     func getTags(for post: BlogPost) async throws -> [BlogTag] {

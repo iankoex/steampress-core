@@ -33,7 +33,7 @@ struct AtomFeedGenerator {
         var feed = try self.getFeedStart(for: request)
         
         if !posts.isEmpty {
-            let postDate = (posts[0].lastEdited ?? posts[0].created) ?? Date()
+            let postDate = (posts[0].lastEdited ?? posts[0].created)
             feed += "<updated>\(self.iso8601Formatter.string(from: postDate))</updated>\n"
         } else {
             feed += "<updated>\(self.iso8601Formatter.string(from: Date()))</updated>\n"
@@ -83,11 +83,11 @@ struct AtomFeedGenerator {
 fileprivate extension BlogPost {
     func getPostAtomFeed(blogPath: String, dateFormatter: DateFormatter, for request: Request) async throws -> String {
         let updatedTime = lastEdited ?? created
-        let user = try await request.repositories.blogUser.getUser(id: author.userID ?? 0)
+        let user = try await request.repositories.blogUser.getUser(id: author.id ?? UUID())
         guard let user = user else {
             throw SteamPressError(identifier: "Invalid-relationship", "Blog user with ID \(self.author) not found")
         }
-        guard let postID = self.blogID else {
+        guard let postID = self.id else {
             throw SteamPressError(identifier: "ID-required", "Blog Post has no ID")
         }
         var postEntry = "<entry>\n<id>\(blogPath)/posts-id/\(postID)/</id>\n<title>\(self.title)</title>\n<updated>\(dateFormatter.string(from: updatedTime))</updated>\n<published>\(dateFormatter.string(from: self.created))</published>\n<author>\n<name>\(user.name)</name>\n<uri>\(blogPath)/authors/\(user.username)/</uri>\n</author>\n<summary>\(try self.description())</summary>\n<link rel=\"alternate\" href=\"\(blogPath)/posts/\(self.slugUrl)/\" />\n"

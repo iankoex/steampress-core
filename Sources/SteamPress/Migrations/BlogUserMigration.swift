@@ -10,7 +10,6 @@ extension BlogUser {
             
             try await database.schema(BlogUser.schema)
                 .id()
-                .field("user_id", .int)
                 .field("name", .string, .required)
                 .field("username", .string, .required)
                 .field("password", .string, .required)

@@ -7,7 +7,7 @@ public struct ViewBlogPresenter: BlogPresenter {
     let longDateFormatter: LongPostDateFormatter
     let numericDateFormatter: NumericPostDateFormatter
 
-    public func indexView(posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], tagsForPosts: [Int: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
+    public func indexView(posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], tagsForPosts: [UUID: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
         let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, longDateFormatter: longDateFormatter, numericDateFormatter: numericDateFormatter)
         let viewTags = try tags.map { try $0.toViewBlogTag() }
         let context = BlogIndexPageContext(posts: viewPosts, tags: viewTags, authors: authors, pageInformation: pageInformation, paginationTagInformation: paginationTagInfo)
@@ -31,9 +31,9 @@ public struct ViewBlogPresenter: BlogPresenter {
         return try await viewRenderer.render("blog/post", context)
     }
 
-    public func allAuthorsView(authors: [BlogUser], authorPostCounts: [Int: Int], pageInformation: BlogGlobalPageInformation) async throws -> View {
+    public func allAuthorsView(authors: [BlogUser], authorPostCounts: [UUID: Int], pageInformation: BlogGlobalPageInformation) async throws -> View {
         var viewAuthors = try authors.map { user -> ViewBlogAuthor in
-            guard let userID = user.userID else {
+            guard let userID = user.id else {
                 throw SteamPressError(identifier: "ViewBlogPresenter", "User ID Was Not Set")
             }
             return ViewBlogAuthor(userID: userID, name: user.name, username: user.username, resetPasswordRequired: user.resetPasswordRequired, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, postCount: authorPostCounts[userID] ?? 0)
@@ -44,10 +44,10 @@ public struct ViewBlogPresenter: BlogPresenter {
         return try await viewRenderer.render("blog/authors", context)
     }
 
-    public func authorView(author: BlogUser, posts: [BlogPost], postCount: Int, tagsForPosts: [Int: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
+    public func authorView(author: BlogUser, posts: [BlogPost], postCount: Int, tagsForPosts: [UUID: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
         let myProfile: Bool
         if let loggedInUser = pageInformation.loggedInUser {
-            myProfile = loggedInUser.userID == author.userID
+            myProfile = loggedInUser.id == author.id
         } else {
             myProfile = false
         }
@@ -56,15 +56,15 @@ public struct ViewBlogPresenter: BlogPresenter {
         return try await viewRenderer.render("blog/profile", context)
     }
 
-    public func allTagsView(tags: [BlogTag], tagPostCounts: [Int: Int], pageInformation: BlogGlobalPageInformation) async throws -> View {
+    public func allTagsView(tags: [BlogTag], tagPostCounts: [UUID: Int], pageInformation: BlogGlobalPageInformation) async throws -> View {
         var viewTags = try tags.map { tag -> BlogTagWithPostCount in
-            guard let tagID = tag.tagID else {
+            guard let tagID = tag.id else {
                 throw SteamPressError(identifier: "ViewBlogPresenter", "Tag ID Was Not Set")
             }
             guard let urlEncodedName = tag.name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
                 throw SteamPressError(identifier: "ViewBlogPresenter", "Failed to URL encoded tag name")
             }
-            return BlogTagWithPostCount(tagID: tagID, name: tag.name, postCount: tagPostCounts[tagID] ?? 0, urlEncodedName: urlEncodedName)
+            return BlogTagWithPostCount(id: tagID, name: tag.name, postCount: tagPostCounts[tagID] ?? 0, urlEncodedName: urlEncodedName)
         }
         viewTags.sort { $0.postCount > $1.postCount }
         let context = AllTagsPageContext(title: "All Tags", tags: viewTags, pageInformation: pageInformation)
@@ -72,8 +72,8 @@ public struct ViewBlogPresenter: BlogPresenter {
     }
 
     public func tagView(tag: BlogTag, posts: [BlogPost], authors: [BlogUser], totalPosts: Int, pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
-        let tagsForPosts = try posts.reduce(into: [Int: [BlogTag]]()) { dict, blog in
-            guard let blogID = blog.blogID else {
+        let tagsForPosts = try posts.reduce(into: [UUID: [BlogTag]]()) { dict, blog in
+            guard let blogID = blog.id else {
                 throw SteamPressError(identifier: "ViewBlogPresenter", "Blog has no ID set")
             }
             dict[blogID] = [tag]
@@ -84,7 +84,7 @@ public struct ViewBlogPresenter: BlogPresenter {
         return try await viewRenderer.render("blog/tag", context)
     }
 
-    public func searchView(totalResults: Int, posts: [BlogPost], authors: [BlogUser], searchTerm: String?, tagsForPosts: [Int: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
+    public func searchView(totalResults: Int, posts: [BlogPost], authors: [BlogUser], searchTerm: String?, tagsForPosts: [UUID: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
         let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, longDateFormatter: longDateFormatter, numericDateFormatter: numericDateFormatter)
         let context = SearchPageContext(searchTerm: searchTerm, posts: viewPosts, totalResults: totalResults, pageInformation: pageInformation, paginationTagInformation: paginationTagInfo)
         return try await viewRenderer.render("blog/search", context)

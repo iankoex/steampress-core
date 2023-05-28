@@ -52,7 +52,7 @@ struct UserAdminController: RouteCollection {
 
     func editUserHandler(_ req: Request) async throws -> View {
         let user = try await req.parameters.findUser(on: req)
-        return try await req.adminPresenter.createUserView(editing: true, errors: nil, name: user.name, nameError: false, username: user.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: user.resetPasswordRequired, userID: user.userID, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, pageInformation: req.adminPageInfomation())
+        return try await req.adminPresenter.createUserView(editing: true, errors: nil, name: user.name, nameError: false, username: user.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: user.resetPasswordRequired, userID: user.id, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, pageInformation: req.adminPageInfomation())
     }
 
     func editUserPostHandler(_ req: Request) async throws -> Response {
@@ -66,7 +66,7 @@ struct UserAdminController: RouteCollection {
         
         let errors = try await self.validateUserCreation(data, editing: true, existingUsername: user.username, on: req)
         if let editUserErrors = errors {
-            let view = try await req.adminPresenter.createUserView(editing: true, errors: editUserErrors.errors, name: data.name, nameError: errors?.nameError ?? false, username: data.username, usernameErorr: errors?.usernameError ?? false, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: user.userID, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
+            let view = try await req.adminPresenter.createUserView(editing: true, errors: editUserErrors.errors, name: data.name, nameError: errors?.nameError ?? false, username: data.username, usernameErorr: errors?.usernameError ?? false, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: user.id, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
             return try await view.encodeResponse(for: req)
         }
         
@@ -107,7 +107,7 @@ struct UserAdminController: RouteCollection {
         }
         
         let loggedInUser: BlogUser = try req.auth.require(BlogUser.self)
-        guard loggedInUser.userID != user.userID else {
+        guard loggedInUser.id != user.id else {
             let posts = try await req.repositories.blogPost.getAllPostsSortedByPublishDate(includeDrafts: true)
             let users = try await req.repositories.blogUser.getAllUsers()
             let view = try await req.adminPresenter.createIndexView(posts: posts, users: users, errors: ["You cannot delete yourself whilst logged in"], pageInformation: req.adminPageInfomation())

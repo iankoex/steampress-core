@@ -58,7 +58,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var createUserPasswordError: Bool?
     private(set) var createUserConfirmPasswordError: Bool?
     private(set) var createUserResetPasswordRequired: Bool?
-    private(set) var createUserUserID: Int?
+    private(set) var createUserUserID: UUID?
     private(set) var createUserProfilePicture: String?
     private(set) var createUserTwitterHandle: String?
     private(set) var createUserBiography: String?
@@ -66,7 +66,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var createUserEditing: Bool?
     private(set) var createUserNameError: Bool?
     private(set) var createUserUsernameError: Bool?
-    func createUserView(editing: Bool, errors: [String]?, name: String?, nameError: Bool, username: String?, usernameErorr: Bool, passwordError: Bool, confirmPasswordError: Bool, resetPasswordOnLogin: Bool, userID: Int?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, pageInformation: BlogAdminPageInformation) -> View {
+    func createUserView(editing: Bool, errors: [String]?, name: String?, nameError: Bool, username: String?, usernameErorr: Bool, passwordError: Bool, confirmPasswordError: Bool, resetPasswordOnLogin: Bool, userID: UUID?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, pageInformation: BlogAdminPageInformation) -> View {
         self.createUserEditing = editing
         self.createUserErrors = errors
         self.createUserName = name

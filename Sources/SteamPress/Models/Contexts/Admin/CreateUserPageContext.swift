@@ -1,3 +1,5 @@
+import Vapor
+
 struct CreateUserPageContext: Encodable {
     let title = "Create User"
     let editing: Bool
@@ -9,7 +11,7 @@ struct CreateUserPageContext: Encodable {
     let passwordError: Bool
     let confirmPasswordError: Bool
     let resetPasswordOnLoginSupplied: Bool
-    let userID: Int?
+    let userID: UUID?
     let twitterHandleSupplied: String?
     let profilePictureSupplied: String?
     let biographySupplied: String?

@@ -35,9 +35,9 @@ struct FluentUserRepository: BlogUserRepository {
         return [(users[0], 0)]
     }
     
-    func getUser(id: Int) async throws -> BlogUser? {
+    func getUser(id: UUID) async throws -> BlogUser? {
         try await BlogUser.query(on: req.db)
-            .filter(\.$userID == id)
+            .filter(\.$id == id)
             .first()
     }
     

@@ -27,16 +27,16 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
 
     func getAllTagsWithPostCount() async throws -> [(BlogTag, Int)] {
         let tagsWithCount = tags.map { tag -> (BlogTag, Int) in
-            let postCount = postTagLinks.filter { $0.tagID == tag.tagID }.count
+            let postCount = postTagLinks.filter { $0.tagID == tag.id }.count
             return (tag, postCount)
         }
         return tagsWithCount
     }
     
-    func getTagsForAllPosts() async throws -> [Int : [BlogTag]] {
-        var dict = [Int: [BlogTag]]()
+    func getTagsForAllPosts() async throws -> [UUID : [BlogTag]] {
+        var dict = [UUID: [BlogTag]]()
         for tag in tags {
-            postTagLinks.filter { $0.tagID == tag.tagID }.forEach { link in
+            postTagLinks.filter { $0.tagID == tag.id }.forEach { link in
                 if var array = dict[link.postID] {
                     array.append(tag)
                     dict[link.postID] = array
@@ -50,11 +50,11 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
 
     func getTags(for post: BlogPost) async throws -> [BlogTag] {
         var results = [BlogTag]()
-        guard let postID = post.blogID else {
+        guard let postID = post.id else {
             fatalError("Post doesn't exist when it should")
         }
         for link in postTagLinks where link.postID == postID {
-            let foundTag = tags.first { $0.tagID == link.tagID }
+            let foundTag = tags.first { $0.id == link.tagID }
             guard let tag =  foundTag else {
                 fatalError("Tag doesn't exist when it should")
             }
@@ -64,14 +64,15 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
 
     func save(_ tag: BlogTag) async throws {
-        if tag.tagID == nil {
-            tag.tagID = tags.count + 1
+        if tag.id == nil {
+//            tag.id = tags.count + 1
+            tag.id = UUID()
         }
         tags.append(tag)
     }
 
     func addTag(name: String) throws -> BlogTag {
-        let newTag = BlogTag(id: tags.count + 1, name: name)
+        let newTag = BlogTag(id: UUID(), name: name)
         tags.append(newTag)
         return newTag
     }
@@ -85,10 +86,10 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
 
     func internalAdd(_ tag: BlogTag, to post: BlogPost) throws {
-        guard let postID = post.blogID else {
+        guard let postID = post.id else {
             fatalError("Blog doesn't exist when it should")
         }
-        guard let tagID = tag.tagID else {
+        guard let tagID = tag.id else {
             fatalError("Tag ID hasn't been set")
         }
         let newLink = BlogPostTagLink(postID: postID, tagID: tagID)
@@ -106,10 +107,10 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
 
     func addTag(_ tag: BlogTag, to post: BlogPost) {
-        guard let postID = post.blogID else {
+        guard let postID = post.id else {
             fatalError("Blog doesn't exist when it should")
         }
-        guard let tagID = tag.tagID else {
+        guard let tagID = tag.id else {
             fatalError("Tag ID hasn't been set")
         }
         let newLink = BlogPostTagLink(postID: postID, tagID: tagID)
@@ -119,12 +120,12 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     func deleteTags(for post: BlogPost) async throws -> Void {
         let tags = try await getTags(for: post)
         for tag in tags {
-            self.postTagLinks.removeAll { $0.tagID == tag.tagID! && $0.postID == post.blogID! }
+            self.postTagLinks.removeAll { $0.tagID == tag.id! && $0.postID == post.id! }
         }
     }
 
     func remove(_ tag: BlogTag, from post: BlogPost) -> Void {
-        self.postTagLinks.removeAll { $0.tagID == tag.tagID! && $0.postID == post.blogID! }
+        self.postTagLinks.removeAll { $0.tagID == tag.id! && $0.postID == post.id! }
     }
 
     // MARK: - BlogPostRepository
@@ -160,7 +161,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
 
     func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost] {
-        let authorsPosts = posts.filter { $0.author.userID == user.userID }
+        let authorsPosts = posts.filter { $0.author.id == user.id }
         var sortedPosts = authorsPosts.sorted { $0.created > $1.created }
         if !includeDrafts {
             sortedPosts = sortedPosts.filter { $0.published }
@@ -171,24 +172,24 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
 
     func getPostCount(for user: BlogUser) -> Int {
-        return posts.filter { $0.author.userID == user.userID }.count
+        return posts.filter { $0.author.id == user.id }.count
     }
 
     func getPost(slug: String) async throws -> BlogPost? {
         return posts.first { $0.slugUrl == slug }
     }
 
-    func getPost(id: Int) async throws -> BlogPost? {
-        return posts.first { $0.blogID == id }
+    func getPost(id: UUID) async throws -> BlogPost? {
+        return posts.first { $0.id == id }
     }
 
     func getSortedPublishedPosts(for tag: BlogTag, count: Int, offset: Int) async throws -> [BlogPost] {
         var results = [BlogPost]()
-        guard let tagID = tag.tagID else {
+        guard let tagID = tag.id else {
             fatalError("Tag doesn't exist when it should")
         }
         for link in postTagLinks where link.tagID == tagID {
-            let foundPost = posts.first { $0.blogID == link.postID }
+            let foundPost = posts.first { $0.id == link.postID }
             guard let post =  foundPost else {
                 fatalError("Post doesn't exist when it should")
             }
@@ -202,11 +203,11 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     
     func getPublishedPostCount(for tag: BlogTag) async throws -> Int {
         var results = [BlogPost]()
-        guard let tagID = tag.tagID else {
+        guard let tagID = tag.id else {
             fatalError("Tag doesn't exist when it should")
         }
         for link in postTagLinks where link.tagID == tagID {
-            let foundPost = posts.first { $0.blogID == link.postID }
+            let foundPost = posts.first { $0.id == link.postID }
             guard let post =  foundPost else {
                 fatalError("Post doesn't exist when it should")
             }
@@ -235,14 +236,14 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
 
     func add(_ post: BlogPost) {
-        if (posts.first { $0.blogID == post.blogID } == nil) {
-            post.blogID = posts.count + 1
+        if (posts.first { $0.id == post.id } == nil) {
+            post.id = UUID()
             posts.append(post)
         }
     }
 
     func delete(_ post: BlogPost) async throws -> Void {
-        posts.removeAll { $0.blogID == post.blogID }
+        posts.removeAll { $0.id == post.id }
     }
 
     // MARK: - BlogUserRepository
@@ -252,17 +253,17 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
 
     func add(_ user: BlogUser) {
-        if (users.first { $0.userID == user.userID } == nil) {
+        if (users.first { $0.id == user.id } == nil) {
             if (users.first { $0.username == user.username} != nil) {
                 fatalError("Duplicate users added with username \(user.username)")
             }
-            user.userID = users.count + 1
+            user.id = UUID()
             users.append(user)
         }
     }
 
-    func getUser(id: Int) -> BlogUser? {
-        return users.first { $0.userID == id }
+    func getUser(id: UUID) -> BlogUser? {
+        return users.first { $0.id == id }
     }
 
     func getAllUsers() async throws -> [BlogUser] {
@@ -271,7 +272,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
 
     func getAllUsersWithPostCount() async throws -> [(BlogUser, Int)] {
         let usersWithCount = users.map { user -> (BlogUser, Int) in
-            let postCount = posts.filter { $0.author.userID == user.userID }.count
+            let postCount = posts.filter { $0.author.id == user.id }.count
             return (user, postCount)
         }
         return usersWithCount
@@ -288,7 +289,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
 
     func delete(_ user: BlogUser) async throws -> Void {
-        users.removeAll { $0.userID == user.userID }
+        users.removeAll { $0.id == user.id }
     }
 
     func getUsersCount() async throws -> Int {
@@ -298,6 +299,6 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
 }
 
 struct BlogPostTagLink: Codable {
-    let postID: Int
-    let tagID: Int
+    let postID: UUID
+    let tagID: UUID
 }
