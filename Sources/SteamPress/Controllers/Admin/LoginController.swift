@@ -57,7 +57,7 @@ struct LoginController: RouteCollection {
         } else {
             req.session.data["SteamPressRememberMe"] = nil
         }
-        let user = try await req.blogUserRepository.getUser(username: username)
+        let user = try await req.repositories.blogUser.getUser(username: username)
         guard let user = user else {
             let loginError = ["Your username or password is incorrect"]
             return try await req.blogPresenter.loginView(loginWarning: false, errors: loginError, username: loginData.username, usernameError: false, passwordError: false, rememberMe: loginData.rememberMe ?? false, pageInformation: req.pageInformation()).encodeResponse(for: req)
@@ -124,7 +124,7 @@ struct LoginController: RouteCollection {
         user.password = hashedPassword
         user.resetPasswordRequired = false
         let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
-        let _ = try await req.blogUserRepository.save(user)
+        let _ = try await req.repositories.blogUser.save(user)
         return Response()
     }
 }

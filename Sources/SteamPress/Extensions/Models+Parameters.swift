@@ -1,13 +1,13 @@
 import Vapor
 
 extension BlogUser: ParameterModel {
-//    typealias Repository = BlogUserRepository
+//    typealias Repository = repositories.blogUser
     public static let parameterKey = "blogUserID"
     public static let parameter = PathComponent(stringLiteral: ":\(BlogUser.parameterKey)")
     
 //    public typealias ResolvedParameter = EventLoopFuture<BlogUser>
-//    public static func resolveParameter(_ parameter: String, on container: Container) throws -> BlogUser.ResolvedParameter {
-//        let userRepository = try container.make(BlogUserRepository.self)
+//    public static func resolveParameter(_ parameter: String, ) throws -> BlogUser.ResolvedParameter {
+//        let userRepository = try container.make(repositories.blogUser.self)
 //        guard let userID = Int(parameter) else {
 //            throw SteamPressError(identifier: "Invalid-ID-Type", "Unable to convert \(parameter) to a User ID")
 //        }
@@ -16,13 +16,13 @@ extension BlogUser: ParameterModel {
 }
 
 extension BlogPost: ParameterModel {
-//    typealias Repository = BlogPostRepository
+//    typealias Repository = repositories.blogPost
     public static let parameterKey = "blogPostID"
     public static let parameter = PathComponent(stringLiteral: ":\(BlogPost.parameterKey)")
     
 //    public typealias ResolvedParameter = EventLoopFuture<BlogPost>
-//    public static func resolveParameter(_ parameter: String, on container: Container) throws -> EventLoopFuture<BlogPost> {
-//        let postRepository = try container.make(BlogPostRepository.self)
+//    public static func resolveParameter(_ parameter: String, ) throws -> EventLoopFuture<BlogPost> {
+//        let postRepository = try container.make(repositories.blogPost.self)
 //        guard let postID = Int(parameter) else {
 //            throw SteamPressError(identifier: "Invalid-ID-Type", "Unable to convert \(parameter) to a Post ID")
 //        }
@@ -31,13 +31,13 @@ extension BlogPost: ParameterModel {
 }
 
 extension BlogTag: ParameterModel {
-//    typealias Repository = BlogTagRepository
+//    typealias Repository = repositories.blogTag
     public static let parameterKey = "blogTagName"
     public static let parameter = PathComponent(stringLiteral: ":\(BlogTag.parameterKey)")
     
 //    public typealias ResolvedParameter = EventLoopFuture<BlogTag>
-//    public static func resolveParameter(_ parameter: String, on container: Container) throws -> EventLoopFuture<BlogTag> {
-//        let tagRepository = try container.make(BlogTagRepository.self)
+//    public static func resolveParameter(_ parameter: String, ) throws -> EventLoopFuture<BlogTag> {
+//        let tagRepository = try container.make(repositories.blogTag.self)
 //        return tagRepository.getTag(parameter, on: container).unwrap(or: Abort(.notFound))
 //    }
 }
@@ -62,7 +62,7 @@ extension Parameters {
         guard let idString = req.parameters.get(BlogUser.parameterKey), let id = Int(idString) else {
             throw Abort(.badRequest)
         }
-        guard let user = try await req.blogUserRepository.getUser(id: id) else {
+        guard let user = try await req.repositories.blogUser.getUser(id: id) else {
             throw Abort(.notFound)
         }
         return user
@@ -72,7 +72,7 @@ extension Parameters {
         guard let idString = req.parameters.get(BlogPost.parameterKey), let id = Int(idString) else {
             throw Abort(.badRequest)
         }
-        guard let post = try await req.blogPostRepository.getPost(id: id) else {
+        guard let post = try await req.repositories.blogPost.getPost(id: id) else {
             throw Abort(.notFound)
         }
         return post
@@ -82,7 +82,7 @@ extension Parameters {
         guard let tagName = req.parameters.get(BlogTag.parameterKey) else {
             throw Abort(.notFound)
         }
-        guard let tag = try await req.blogTagRepository.getTag(tagName) else {
+        guard let tag = try await req.repositories.blogTag.getTag(tagName) else {
             throw Abort(.notFound)
         }
         return tag

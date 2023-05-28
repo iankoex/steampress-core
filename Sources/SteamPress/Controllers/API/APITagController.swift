@@ -7,6 +7,6 @@ struct APITagController: RouteCollection {
     }
 
     func allTagsHandler(_ req: Request) async throws -> [BlogTag] {
-        try await req.blogTagRepository.getAllTags()
+        try await req.repositories.blogTag.getAllTags()
     }
 }

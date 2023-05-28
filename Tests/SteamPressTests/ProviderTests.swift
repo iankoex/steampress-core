@@ -8,9 +8,9 @@ class ProviderTests: XCTestCase {
         app.middleware.use(BlogRememberMeMiddleware())
         app.middleware.use(SessionsMiddleware(session: app.sessions.driver))
 
-        app.steampress.blogRepositories.use { application in
-            return InMemoryRepository(eventLoop: application.eventLoopGroup.next())
-        }
+//        app.steampress.blogRepositories.use { application in
+//            return InMemoryRepository(eventLoop: application.eventLoopGroup.next())
+//        }
         
         let numberGenerator = app.steampress.randomNumberGenerators.generator
         XCTAssertTrue(type(of: numberGenerator) == RealRandomNumberGenerator.self)

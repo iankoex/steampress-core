@@ -45,11 +45,11 @@ struct PostAdminController: RouteCollection {
         let newPost: BlogPost
         newPost = try BlogPost(title: title, contents: contents, author: author, creationDate: Date(), slugUrl: uniqueSlug, published: data.publish != nil)
         
-        let post = try await req.blogPostRepository.save(newPost)
+        let post = try await req.repositories.blogPost.save(newPost)
         return Response()
 //        var existingTagsQuery: [BlogTag?] = []
 //        for tagName in data.tags {
-//            existingTagsQuery.append(try await req.blogTagRepository.getTag(tagName))
+//            existingTagsQuery.append(try await req.repositories.blogTag.getTag(tagName))
 //        }
 //
 //        let existingTags = existingTagsQuery
@@ -57,17 +57,17 @@ struct PostAdminController: RouteCollection {
 //        for tagName in data.tags {
 //            if !existingTags.contains(where: { $0!.name == tagName }) {
 //                let tag = BlogTag(name: tagName)
-//                tagsSaves.append(try await req.blogTagRepository.save(tag))
+//                tagsSaves.append(try await req.repositories.blogTag.save(tag))
 //            }
 //        }
 //
 //        return tagsSaves.flatten(on: req.eventLoop).flatMap { tags in
 //            var tagLinks = [EventLoopFuture<Void>]()
 //            for tag in tags {
-//                tagLinks.append(req.blogTagRepository.add(tag, to: post))
+//                tagLinks.append(req.repositories.blogTag.add(tag, to: post))
 //            }
 //            for tag in existingTags {
-//                tagLinks.append(req.blogTagRepository.add(tag, to: post))
+//                tagLinks.append(req.repositories.blogTag.add(tag, to: post))
 //            }
 //            let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
 //            return tagLinks.flatten(on: req.eventLoop).transform(to: redirect)
@@ -76,15 +76,15 @@ struct PostAdminController: RouteCollection {
 
     func deletePostHandler(_ req: Request) async throws -> Response {
         let post = try await req.parameters.findPost(on: req)
-        try await req.blogTagRepository.deleteTags(for: post)
+        try await req.repositories.blogTag.deleteTags(for: post)
         let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
-        try await req.blogPostRepository.delete(post)
+        try await req.repositories.blogPost.delete(post)
         return redirect
     }
 
     func editPostHandler(_ req: Request) async throws -> View {
         let post = try await req.parameters.findPost(on: req)
-        let tags = try await req.blogTagRepository.getTags(for: post)
+        let tags = try await req.repositories.blogTag.getTags(for: post)
         return try await req.adminPresenter.createPostView(errors: nil, title: post.title, contents: post.contents, slugURL: post.slugUrl, tags: tags.map { $0.name }, isEditing: true, post: post, isDraft: !post.published, titleError: false, contentsError: false, pageInformation: req.adminPageInfomation())
     }
 
@@ -119,8 +119,8 @@ struct PostAdminController: RouteCollection {
             }
         }
         
-        let existingTags = try await req.blogTagRepository.getTags(for: post)
-        let allTags = try await req.blogTagRepository.getAllTags()
+        let existingTags = try await req.repositories.blogTag.getTags(for: post)
+        let allTags = try await req.repositories.blogTag.getAllTags()
         let tagsToUnlink = existingTags.filter { (anExistingTag) -> Bool in
             for tagName in data.tags {
                 if anExistingTag.name == tagName {
@@ -131,7 +131,7 @@ struct PostAdminController: RouteCollection {
         }
 //        var removeTagLinkResults = [EventLoopFuture<Void>]()
         for tagToUnlink in tagsToUnlink {
-            try await req.blogTagRepository.remove(tagToUnlink, from: post)
+            try await req.repositories.blogTag.remove(tagToUnlink, from: post)
         }
         
         let newTagsNames = data.tags.filter { (tagName) -> Bool in
@@ -147,17 +147,17 @@ struct PostAdminController: RouteCollection {
                 tagCreateSaves.append(existingTag)
             } else {
                 let newTag = BlogTag(name: newTagName)
-                tagCreateSaves.append(try await req.blogTagRepository.save(newTag))
+                try await req.repositories.blogTag.save(newTag)
+                tagCreateSaves.append(newTag)
             }
         }
         let newTags = tagCreateSaves
         
-        var postTagLinkResults = [EventLoopFuture<Void>]()
         for tag in newTags {
-            try await req.blogTagRepository.add(tag, to: post)
+            try await req.repositories.blogTag.add(tag, to: post)
         }
         let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
-        let _ = try await req.blogPostRepository.save(post)
+        let _ = try await req.repositories.blogPost.save(post)
         return redirect
     }
 

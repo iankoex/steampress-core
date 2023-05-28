@@ -1,8 +1,7 @@
 import Vapor
 
 public protocol SteamPressRepository {
-    //    associatedtype ModelType
-    //    func get(_ id: Int, on eventLoop: EventLoop) async throws -> ModelType
+    init(_ req: Request)
 }
 
 public protocol BlogTagRepository: SteamPressRepository {
@@ -12,7 +11,7 @@ public protocol BlogTagRepository: SteamPressRepository {
     func getTags(for post: BlogPost) async throws -> [BlogTag]
     func getTagsForAllPosts() async throws -> [Int: [BlogTag]]
     func getTag(_ name: String) async throws -> BlogTag?
-    func save(_ tag: BlogTag) async throws -> BlogTag
+    func save(_ tag: BlogTag) async throws -> Void
     // Delete all the pivots between a post and collection of tags -> you should probably delete the
     // tags that have no posts associated with a tag
     func deleteTags(for post: BlogPost) async throws -> Void
@@ -33,7 +32,7 @@ public protocol BlogPostRepository: SteamPressRepository {
     func getPublishedPostCount(for tag: BlogTag) async throws -> Int
     func findPublishedPostsOrdered(for searchTerm: String, count: Int, offset: Int) async throws -> [BlogPost]
     func getPublishedPostCount(for searchTerm: String) async throws -> Int
-    func save(_ post: BlogPost) async throws -> BlogPost
+    func save(_ post: BlogPost) async throws -> Void
     func delete(_ post: BlogPost) async throws -> Void
 }
 
@@ -43,7 +42,7 @@ public protocol BlogUserRepository: SteamPressRepository {
     func getAllUsersWithPostCount() async throws -> [(BlogUser, Int)]
     func getUser(id: Int) async throws -> BlogUser?
     func getUser(username: String) async throws -> BlogUser?
-    func save(_ user: BlogUser) async throws -> BlogUser
+    func save(_ user: BlogUser) async throws -> Void
     func delete(_ user: BlogUser) async throws -> Void
     func getUsersCount() async throws -> Int
 }

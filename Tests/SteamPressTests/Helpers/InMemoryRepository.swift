@@ -7,14 +7,12 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     private(set) var posts: [BlogPost]
     private(set) var users: [BlogUser]
     private(set) var postTagLinks: [BlogPostTagLink]
-    private(set) var eventLoop: EventLoop
 
-    init(eventLoop: EventLoop) {
+    required init(_ req: Vapor.Request) {
         tags = []
         posts = []
         users = []
         postTagLinks = []
-        self.eventLoop = eventLoop
     }
 
     // MARK: - BlogTagRepository
@@ -65,12 +63,11 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return results
     }
 
-    func save(_ tag: BlogTag) async throws -> BlogTag {
+    func save(_ tag: BlogTag) async throws {
         if tag.tagID == nil {
             tag.tagID = tags.count + 1
         }
         tags.append(tag)
-        return tag
     }
 
     func addTag(name: String) throws -> BlogTag {
@@ -163,7 +160,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
 
     func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost] {
-        let authorsPosts = posts.filter { $0.author == user.userID }
+        let authorsPosts = posts.filter { $0.author.userID == user.userID }
         var sortedPosts = authorsPosts.sorted { $0.created > $1.created }
         if !includeDrafts {
             sortedPosts = sortedPosts.filter { $0.published }
@@ -174,7 +171,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
 
     func getPostCount(for user: BlogUser) -> Int {
-        return posts.filter { $0.author == user.userID }.count
+        return posts.filter { $0.author.userID == user.userID }.count
     }
 
     func getPost(slug: String) async throws -> BlogPost? {
@@ -233,9 +230,8 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return Array(results[startIndex..<endIndex])
     }
 
-    func save(_ post: BlogPost) async throws -> BlogPost {
+    func save(_ post: BlogPost) async throws {
         self.add(post)
-        return post
     }
 
     func add(_ post: BlogPost) {
@@ -275,7 +271,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
 
     func getAllUsersWithPostCount() async throws -> [(BlogUser, Int)] {
         let usersWithCount = users.map { user -> (BlogUser, Int) in
-            let postCount = posts.filter { $0.author == user.userID }.count
+            let postCount = posts.filter { $0.author.userID == user.userID }.count
             return (user, postCount)
         }
         return usersWithCount
@@ -286,10 +282,9 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
 
     private(set) var userUpdated = false
-    func save(_ user: BlogUser) async throws -> BlogUser {
+    func save(_ user: BlogUser) async throws {
         self.add(user)
         userUpdated = true
-        return user
     }
 
     func delete(_ user: BlogUser) async throws -> Void {

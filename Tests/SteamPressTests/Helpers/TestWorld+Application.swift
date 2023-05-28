@@ -2,24 +2,34 @@
 import Vapor
 
 extension TestWorld {
-    static func getSteamPressApp(eventLoopGroup: EventLoopGroup,
-                                 repository: InMemoryRepository,
-                                 path: String?,
-                                 postsPerPage: Int,
-                                 feedInformation: FeedInformation,
-                                 blogPresenter: CapturingBlogPresenter,
-                                 adminPresenter: CapturingAdminPresenter,
-                                 enableAuthorPages: Bool,
-                                 enableTagPages: Bool,
-                                 passwordHasherToUse: PasswordHasherChoice,
-                                 randomNumberGenerator: StubbedRandomNumberGenerator) -> Application {
+    static func getSteamPressApp(
+        eventLoopGroup: EventLoopGroup,
+        repository: InMemoryRepository,
+        path: String?,
+        postsPerPage: Int,
+        feedInformation: FeedInformation,
+        blogPresenter: CapturingBlogPresenter,
+        adminPresenter: CapturingAdminPresenter,
+        enableAuthorPages: Bool,
+        enableTagPages: Bool,
+        passwordHasherToUse: PasswordHasherChoice,
+        randomNumberGenerator: StubbedRandomNumberGenerator
+    ) -> Application {
         
         let application = Application(.testing, .shared(eventLoopGroup))
         
         application.steampress.configuration = SteamPressConfiguration(blogPath: path, feedInformation: feedInformation, postsPerPage: postsPerPage, enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages)
         
-        application.steampress.blogRepositories.use { _ in
-            return repository
+        application.repositories.register(.blogPost) { req in
+            repository
+        }
+        
+        application.repositories.register(.blogTag) { req in
+            repository
+        }
+        
+        application.repositories.register(.blogUser) { req in
+            repository
         }
 
         application.steampress.randomNumberGenerators.use { _ in randomNumberGenerator }

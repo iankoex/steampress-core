@@ -46,7 +46,7 @@ struct UserAdminController: RouteCollection {
         if let resetPasswordRequired = data.resetPasswordOnLogin, resetPasswordRequired {
             newUser.resetPasswordRequired = true
         }
-        let _ = try await req.blogUserRepository.save(newUser)
+        let _ = try await req.repositories.blogUser.save(newUser)
         return req.redirect(to: self.pathCreator.createPath(for: "admin"))
     }
 
@@ -92,30 +92,30 @@ struct UserAdminController: RouteCollection {
             user.password = hashedPassword
         }
         let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
-        let _ = try await req.blogUserRepository.save(user)
+        let _ = try await req.repositories.blogUser.save(user)
         return redirect
     }
 
     func deleteUserPostHandler(_ req: Request) async throws -> Response {
         let user = try await req.parameters.findUser(on: req)
-        let userCount = try await req.blogUserRepository.getUsersCount()
+        let userCount = try await req.repositories.blogUser.getUsersCount()
         guard userCount > 1 else {
-            let posts = try await req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: true)
-            let users = try await req.blogUserRepository.getAllUsers()
+            let posts = try await req.repositories.blogPost.getAllPostsSortedByPublishDate(includeDrafts: true)
+            let users = try await req.repositories.blogUser.getAllUsers()
             let view = try await req.adminPresenter.createIndexView(posts: posts, users: users, errors: ["You cannot delete the last user"], pageInformation: req.adminPageInfomation())
             return try await view.encodeResponse(for: req)
         }
         
         let loggedInUser: BlogUser = try req.auth.require(BlogUser.self)
         guard loggedInUser.userID != user.userID else {
-            let posts = try await req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: true)
-            let users = try await req.blogUserRepository.getAllUsers()
+            let posts = try await req.repositories.blogPost.getAllPostsSortedByPublishDate(includeDrafts: true)
+            let users = try await req.repositories.blogUser.getAllUsers()
             let view = try await req.adminPresenter.createIndexView(posts: posts, users: users, errors: ["You cannot delete yourself whilst logged in"], pageInformation: req.adminPageInfomation())
             return try await view.encodeResponse(for: req)
         }
         
         let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
-        try await req.blogUserRepository.delete(user)
+        try await req.repositories.blogUser.delete(user)
         return redirect
     }
 
@@ -174,7 +174,7 @@ struct UserAdminController: RouteCollection {
             if editing && data.username == existingUsername {
                 usernameUniqueError = nil
             } else {
-                let user = try await req.blogUserRepository.getUser(username: username.lowercased())
+                let user = try await req.repositories.blogUser.getUser(username: username.lowercased())
                 if user != nil {
                     usernameUniqueError =  "Sorry that username has already been taken"
                 } else {
