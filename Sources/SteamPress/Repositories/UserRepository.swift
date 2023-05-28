@@ -31,7 +31,7 @@ struct FluentUserRepository: BlogUserRepository {
 //            let userPostCount = postsByUserID[userID]?.count ?? 0
 //            return (user, userPostCount)
 //        }
-        fatalError()
+        
         return [(users[0], 0)]
     }
     

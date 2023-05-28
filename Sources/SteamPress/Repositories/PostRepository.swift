@@ -73,7 +73,7 @@ struct FluentPostRepository: BlogPostRepository {
 //            .sort(\.$created, .descending)
 //        let upperLimit = count + offset
 //        return try await query.range(offset..<upperLimit).all()
-        fatalError()
+        
         return []
     }
     
@@ -81,7 +81,7 @@ struct FluentPostRepository: BlogPostRepository {
 //        try await tag.posts.query(on: req.db)
 //            .filter(\.$published == true)
 //            .count()
-        fatalError()
+        
         return 0
     }
     

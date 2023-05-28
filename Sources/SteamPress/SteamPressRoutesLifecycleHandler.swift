@@ -12,14 +12,11 @@ public class SteamPressRoutesLifecycleHandler: LifecycleHandler {
     public func willBoot(_ application: Application) throws {
         
         // Migrations
-//        application.migrations.add(SessionRecord.migration)
+        application.migrations.add(BlogUser.Migration())
         application.migrations.add(BlogPost.Migration())
         application.migrations.add(BlogTag.Migration())
-        application.migrations.add(BlogUser.Migration())
-//
-        print(12)
+        
         try application.autoMigrate().wait()
-        print(13)
         
         // Repositories
         application.repositories.register(.blogTag) { req in

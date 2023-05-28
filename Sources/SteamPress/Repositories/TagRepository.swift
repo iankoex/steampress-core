@@ -24,7 +24,7 @@ struct FluentTagRepository: BlogTagRepository {
 //            let postCount = try pivots.filter { try $0.tagID == tag.requireID() }.count
 //            return (tag, postCount)
 //        }
-        fatalError()
+        
         return [(tags[0], 0)]
     }
     
@@ -42,13 +42,13 @@ struct FluentTagRepository: BlogTagRepository {
 //        }.mapValues { $0.compactMap { $0 } }
 //
 //        return postsWithTags
-        fatalError()
+//
         return [0: tags]
     }
     
     func getTags(for post: BlogPost) async throws -> [BlogTag] {
 //        try await post.tags.query(on: req.db).all()
-        fatalError()
+        
         return []
     }
     
@@ -77,7 +77,7 @@ struct FluentTagRepository: BlogTagRepository {
     
     func cleanupTags(tags: [BlogTag]) async throws {
         print("Not Implemented")
-        fatalError()
+        
 //        var tagCleanups = [EventLoopFuture<Void>]()
 //        for tag in tags {
 //            let tagCleanup = try tag.posts.query(on: req.db)
