@@ -11,7 +11,7 @@ public struct ViewBlogPresenter: BlogPresenter {
         let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, longDateFormatter: longDateFormatter, numericDateFormatter: numericDateFormatter)
         let viewTags = try tags.map { try $0.toViewBlogTag() }
         let context = BlogIndexPageContext(posts: viewPosts, tags: viewTags, authors: authors, pageInformation: pageInformation, paginationTagInformation: paginationTagInfo)
-        return try await viewRenderer.render("blog/blog", context)
+        return try await viewRenderer.render("blog/index", context)
     }
 
     public func postView(post: BlogPost, author: BlogUser, tags: [BlogTag], pageInformation: BlogGlobalPageInformation) async throws -> View {
