@@ -1,5 +1,5 @@
 struct AuthorPageContext: Encodable {
-    let author: BlogUser
+    let author: BlogUser.Public
     let posts: [ViewBlogPost]
     let pageInformation: BlogGlobalPageInformation
     let myProfile: Bool

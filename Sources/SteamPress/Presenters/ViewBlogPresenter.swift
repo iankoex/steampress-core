@@ -7,14 +7,14 @@ public struct ViewBlogPresenter: BlogPresenter {
     let longDateFormatter: LongPostDateFormatter
     let numericDateFormatter: NumericPostDateFormatter
 
-    public func indexView(posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], tagsForPosts: [UUID: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
+    public func indexView(posts: [BlogPost], tags: [BlogTag], authors: [BlogUser.Public], tagsForPosts: [UUID: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
         let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, longDateFormatter: longDateFormatter, numericDateFormatter: numericDateFormatter)
         let viewTags = try tags.map { try $0.toViewBlogTag() }
         let context = BlogIndexPageContext(posts: viewPosts, tags: viewTags, authors: authors, pageInformation: pageInformation, paginationTagInformation: paginationTagInfo)
         return try await viewRenderer.render("blog/index", context)
     }
 
-    public func postView(post: BlogPost, author: BlogUser, tags: [BlogTag], pageInformation: BlogGlobalPageInformation) async throws -> View {
+    public func postView(post: BlogPost, author: BlogUser.Public, tags: [BlogTag], pageInformation: BlogGlobalPageInformation) async throws -> View {
         var postImage: String?
         var postImageAlt: String?
         if let image = try SwiftSoup.parse(markdownToHTML(post.contents)).select("img").first() {
@@ -31,12 +31,12 @@ public struct ViewBlogPresenter: BlogPresenter {
         return try await viewRenderer.render("blog/post", context)
     }
 
-    public func allAuthorsView(authors: [BlogUser], authorPostCounts: [UUID: Int], pageInformation: BlogGlobalPageInformation) async throws -> View {
+    public func allAuthorsView(authors: [BlogUser.Public], authorPostCounts: [UUID: Int], pageInformation: BlogGlobalPageInformation) async throws -> View {
         var viewAuthors = try authors.map { user -> ViewBlogAuthor in
             guard let userID = user.id else {
                 throw SteamPressError(identifier: "ViewBlogPresenter", "User ID Was Not Set")
             }
-            return ViewBlogAuthor(userID: userID, name: user.name, username: user.username, resetPasswordRequired: user.resetPasswordRequired, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, postCount: authorPostCounts[userID] ?? 0)
+            return ViewBlogAuthor(userID: userID, name: user.name, username: user.username, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, postCount: authorPostCounts[userID] ?? 0)
             
         }
         viewAuthors.sort { $0.postCount > $1.postCount }
@@ -44,7 +44,7 @@ public struct ViewBlogPresenter: BlogPresenter {
         return try await viewRenderer.render("blog/authors", context)
     }
 
-    public func authorView(author: BlogUser, posts: [BlogPost], postCount: Int, tagsForPosts: [UUID: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
+    public func authorView(author: BlogUser.Public, posts: [BlogPost], postCount: Int, tagsForPosts: [UUID: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
         let myProfile: Bool
         if let loggedInUser = pageInformation.loggedInUser {
             myProfile = loggedInUser.id == author.id
@@ -71,7 +71,7 @@ public struct ViewBlogPresenter: BlogPresenter {
         return try await viewRenderer.render("blog/tags", context)
     }
 
-    public func tagView(tag: BlogTag, posts: [BlogPost], authors: [BlogUser], totalPosts: Int, pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
+    public func tagView(tag: BlogTag, posts: [BlogPost], authors: [BlogUser.Public], totalPosts: Int, pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
         let tagsForPosts = try posts.reduce(into: [UUID: [BlogTag]]()) { dict, blog in
             guard let blogID = blog.id else {
                 throw SteamPressError(identifier: "ViewBlogPresenter", "Blog has no ID set")
@@ -84,7 +84,7 @@ public struct ViewBlogPresenter: BlogPresenter {
         return try await viewRenderer.render("blog/tag", context)
     }
 
-    public func searchView(totalResults: Int, posts: [BlogPost], authors: [BlogUser], searchTerm: String?, tagsForPosts: [UUID: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
+    public func searchView(totalResults: Int, posts: [BlogPost], authors: [BlogUser.Public], searchTerm: String?, tagsForPosts: [UUID: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
         let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, longDateFormatter: longDateFormatter, numericDateFormatter: numericDateFormatter)
         let context = SearchPageContext(searchTerm: searchTerm, posts: viewPosts, totalResults: totalResults, pageInformation: pageInformation, paginationTagInformation: paginationTagInfo)
         return try await viewRenderer.render("blog/search", context)

@@ -81,3 +81,27 @@ extension Request {
         self.auth.logout(BlogUser.self)
     }
 }
+
+extension BlogUser {
+    public struct Public: Codable {
+        var id: UUID?
+        var name: String
+        var username: String
+        var profilePicture: String?
+        var twitterHandle: String?
+        var biography: String?
+        var tagline: String?
+    }
+}
+
+extension BlogUser {
+    func convertToPublic() -> BlogUser.Public {
+        return BlogUser.Public(id: id, name: name, username: username, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
+    }
+}
+
+extension Collection where Element: BlogUser {
+    func convertToPublic() -> [BlogUser.Public] {
+        return self.map { $0.convertToPublic() }
+    }
+}

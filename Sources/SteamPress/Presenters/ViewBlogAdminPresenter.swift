@@ -7,7 +7,7 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
     let longDateFormatter: LongPostDateFormatter
     let numericDateFormatter: NumericPostDateFormatter
     
-    public func createIndexView(posts: [BlogPost], users: [BlogUser], errors: [String]?, pageInformation: BlogAdminPageInformation) async throws -> View {
+    public func createIndexView(posts: [BlogPost], users: [BlogUser.Public], errors: [String]?, pageInformation: BlogAdminPageInformation) async throws -> View {
         let publishedPosts = try posts.filter { $0.published }.convertToViewBlogPostsWithoutTags(authors: users, longDateFormatter: longDateFormatter, numericDateFormatter: numericDateFormatter)
         let draftPosts = try posts.filter { !$0.published }.convertToViewBlogPostsWithoutTags(authors: users, longDateFormatter: longDateFormatter, numericDateFormatter: numericDateFormatter)
         let context = AdminPageContext(errors: errors, publishedPosts: publishedPosts, draftPosts: draftPosts, users: users, pageInformation: pageInformation)

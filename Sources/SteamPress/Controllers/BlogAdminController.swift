@@ -29,7 +29,7 @@ struct BlogAdminController: RouteCollection {
     // MARK: Admin Handler
     func adminHandler(_ req: Request) async throws -> View {
         let posts = try await req.repositories.blogPost.getAllPostsSortedByPublishDate(includeDrafts: true)
-        let users = try await req.repositories.blogUser.getAllUsers()
+        let users = try await req.repositories.blogUser.getAllUsers().convertToPublic()
         return try await req.adminPresenter.createIndexView(posts: posts, users: users, errors: nil, pageInformation: req.adminPageInfomation())
     }
 

@@ -1,6 +1,6 @@
 import Vapor
 
-extension Array where Element: BlogUser {
+extension Array where Element == BlogUser.Public {
     func getAuthorName(id: UUID) -> String {
         return self.filter { $0.id == id }.first?.name ?? ""
     }

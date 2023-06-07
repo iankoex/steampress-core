@@ -17,7 +17,7 @@ struct LoginController: RouteCollection {
         
         let redirectMiddleware = BlogLoginRedirectAuthMiddleware(pathCreator: pathCreator)
         let protectedRoutes = routes.grouped(redirectMiddleware)
-        protectedRoutes.post("logout", use: logoutHandler)
+        protectedRoutes.get("logout", use: logoutHandler)
         protectedRoutes.get("resetPassword", use: resetPasswordHandler)
         protectedRoutes.post("resetPassword", use: resetPasswordPostHandler)
     }
