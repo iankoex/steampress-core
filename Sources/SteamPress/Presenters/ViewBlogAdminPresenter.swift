@@ -14,7 +14,7 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
         return try await viewRenderer.render("blog/admin/index", context)
     }
     
-    public func createPostView(errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?, titleError: Bool, contentsError: Bool, pageInformation: BlogAdminPageInformation) async throws -> View {
+    public func createPostView(errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String], isEditing: Bool, post: BlogPost?, isDraft: Bool?, titleError: Bool, contentsError: Bool, pageInformation: BlogAdminPageInformation) async throws -> View {
         if isEditing {
             guard post != nil else {
                 throw SteamPressError(identifier: "ViewBlogAdminPresenter", "Blog Post is empty whilst editing")

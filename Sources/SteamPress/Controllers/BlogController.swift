@@ -62,7 +62,7 @@ struct BlogController: RouteCollection {
             throw Abort(.notFound)
         }
         let tags: [BlogTag] = try await req.repositories.blogTag.getTags(for: post)
-        guard let user = try await req.repositories.blogUser.getUser(id: post.author.id ?? UUID()) else {
+        guard let user = try await req.repositories.blogUser.getUser(id: post.$author.id) else {
             throw Abort(.internalServerError)
         }
         let pageInformation: BlogGlobalPageInformation = try req.pageInformation()

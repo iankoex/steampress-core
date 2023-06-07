@@ -3,9 +3,9 @@ import Vapor
 extension Application {
     public class SteamPress {
         public let application: Application
-        let lifecycleHandler: SteamPressRoutesLifecycleHandler
+        let lifecycleHandler: SteamPressLifecycleHandler
         
-        init(application: Application, lifecycleHandler: SteamPressRoutesLifecycleHandler) {
+        init(application: Application, lifecycleHandler: SteamPressLifecycleHandler) {
             self.application = application
             self.lifecycleHandler = lifecycleHandler
         }
@@ -46,7 +46,7 @@ extension Application {
     }
     
     public var steampress: SteamPress {
-        .init(application: self, lifecycleHandler: SteamPressRoutesLifecycleHandler())
+        .init(application: self, lifecycleHandler: SteamPressLifecycleHandler())
     }
 }
 

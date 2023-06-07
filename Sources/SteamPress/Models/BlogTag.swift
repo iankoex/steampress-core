@@ -18,7 +18,7 @@ public final class BlogTag: Model, Codable {
     
     public init () {}
 
-    public init(id: UUID? = nil, name: String) {
+    public init(id: UUID? = UUID(), name: String) {
         self.id = id
         self.name = name
     }

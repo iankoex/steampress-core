@@ -1,7 +1,7 @@
 import Vapor
 import Fluent
 
-public class SteamPressRoutesLifecycleHandler: LifecycleHandler {
+public class SteamPressLifecycleHandler: LifecycleHandler {
 
     var configuration: SteamPressConfiguration
 
@@ -11,7 +11,11 @@ public class SteamPressRoutesLifecycleHandler: LifecycleHandler {
     
     public func willBoot(_ application: Application) throws {
         
+        application.sessions.use(.fluent)
+        application.passwords.use(.bcrypt)
+        
         // Migrations
+        application.migrations.add(SessionRecord.migration)
         application.migrations.add(BlogUser.Migration())
         application.migrations.add(BlogPost.Migration())
         application.migrations.add(BlogTag.Migration())
@@ -32,6 +36,7 @@ public class SteamPressRoutesLifecycleHandler: LifecycleHandler {
             FluentUserRepository(req)
         }
         
+        // Routes
         let router = application.routes
         let pathCreator = BlogPathCreator(blogPath: self.configuration.blogPath)
 

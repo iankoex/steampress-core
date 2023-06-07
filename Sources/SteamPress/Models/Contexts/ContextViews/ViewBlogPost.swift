@@ -4,7 +4,7 @@ import SwiftSoup
 import SwiftMarkdown
 
 struct ViewBlogPost: Encodable {
-    var blogID: UUID?
+    var id: UUID?
     var title: String
     var contents: String
     var author: UUID
@@ -26,7 +26,7 @@ struct ViewBlogPost: Encodable {
 }
 
 struct ViewBlogPostWithoutTags: Encodable {
-    var blogID: UUID?
+    var id: UUID?
     var title: String
     var contents: String
     var author: UUID
@@ -82,7 +82,7 @@ extension BlogPost {
         }
         
         let created = created
-        return try ViewBlogPostWithoutTags(blogID: self.id, title: self.title, contents: self.contents, author: self.author.id ?? UUID(), created: created, lastEdited: self.lastEdited, slugUrl: self.slugUrl, published: self.published, longSnippet: self.longSnippet(), createdDateLong: longFormatter.formatter.string(from: created), createdDateNumeric: numericFormatter.formatter.string(from: created), lastEditedDateNumeric: lastEditedNumeric, lastEditedDateLong: lastEditedDateLong, authorName: authorName, authorUsername: authorUsername, postImage: postImage, postImageAlt: postImageAlt, description: self.description())
+        return try ViewBlogPostWithoutTags(id: self.id, title: self.title, contents: self.contents, author: self.$author.id, created: created, lastEdited: self.lastEdited, slugUrl: self.slugUrl, published: self.published, longSnippet: self.longSnippet(), createdDateLong: longFormatter.formatter.string(from: created), createdDateNumeric: numericFormatter.formatter.string(from: created), lastEditedDateNumeric: lastEditedNumeric, lastEditedDateLong: lastEditedDateLong, authorName: authorName, authorUsername: authorUsername, postImage: postImage, postImageAlt: postImageAlt, description: self.description())
     }
     
     func toViewPost(authorName: String, authorUsername: String, longFormatter: LongPostDateFormatter, numericFormatter: NumericPostDateFormatter, tags: [BlogTag]) throws -> ViewBlogPost {
@@ -90,7 +90,7 @@ extension BlogPost {
         
         let viewTags = try tags.map { try $0.toViewBlogTag() }
         
-        return ViewBlogPost(blogID: viewPost.blogID, title: viewPost.title, contents: viewPost.contents, author: viewPost.author, created: viewPost.created, lastEdited: viewPost.lastEdited, slugUrl: viewPost.slugUrl, published: viewPost.published, longSnippet: viewPost.longSnippet, createdDateLong: viewPost.createdDateLong, createdDateNumeric: viewPost.createdDateNumeric, lastEditedDateNumeric: viewPost.lastEditedDateNumeric, lastEditedDateLong: viewPost.lastEditedDateLong, authorName: viewPost.authorName, authorUsername: viewPost.authorUsername, postImage: viewPost.postImage, postImageAlt: viewPost.postImageAlt, description: viewPost.description, tags: viewTags)
+        return ViewBlogPost(id: viewPost.id, title: viewPost.title, contents: viewPost.contents, author: viewPost.author, created: viewPost.created, lastEdited: viewPost.lastEdited, slugUrl: viewPost.slugUrl, published: viewPost.published, longSnippet: viewPost.longSnippet, createdDateLong: viewPost.createdDateLong, createdDateNumeric: viewPost.createdDateNumeric, lastEditedDateNumeric: viewPost.lastEditedDateNumeric, lastEditedDateLong: viewPost.lastEditedDateLong, authorName: viewPost.authorName, authorUsername: viewPost.authorUsername, postImage: viewPost.postImage, postImageAlt: viewPost.postImageAlt, description: viewPost.description, tags: viewTags)
     }
 }
 
@@ -100,7 +100,7 @@ extension Array where Element: BlogPost {
             guard let blogID = post.id else {
                 throw SteamPressError(identifier: "ViewBlogPost", "Post has no ID set")
             }
-            let authorID = post.author.id ?? UUID()
+            let authorID = post.$author.id
             return try post.toViewPost(authorName: authors.getAuthorName(id: authorID), authorUsername: authors.getAuthorUsername(id: authorID), longFormatter: longDateFormatter, numericFormatter: numericDateFormatter, tags: tagsForPosts[blogID] ?? [])
         }
         return viewPosts
@@ -108,7 +108,7 @@ extension Array where Element: BlogPost {
     
     func convertToViewBlogPostsWithoutTags(authors: [BlogUser], longDateFormatter: LongPostDateFormatter, numericDateFormatter: NumericPostDateFormatter) throws -> [ViewBlogPostWithoutTags] {
         let viewPosts = try self.map { post -> ViewBlogPostWithoutTags in
-            let authorID = post.author.id ?? UUID()
+            let authorID = post.$author.id
             return try post.toViewPostWithoutTags(authorName: authors.getAuthorName(id: authorID), authorUsername: authors.getAuthorUsername(id: authorID), longFormatter: longDateFormatter, numericFormatter: numericDateFormatter)
         }
         return viewPosts
