@@ -43,7 +43,7 @@ struct PostAdminController: RouteCollection {
 
         let uniqueSlug = try await BlogPost.generateUniqueSlugURL(from: title, on: req)
         let newPost: BlogPost
-        newPost = try BlogPost(title: title, contents: contents, author: author, creationDate: Date(), slugUrl: uniqueSlug, published: data.publish != nil)
+        newPost = try BlogPost(title: title, contents: contents, author: author, slugUrl: uniqueSlug, published: data.publish != nil, featureImage: "", featureImageCaption: "", creationDate: Date())
         
         try await req.repositories.blogPost.save(newPost)
         
@@ -57,7 +57,7 @@ struct PostAdminController: RouteCollection {
         var tagsSaves: [BlogTag] = []
         for tagName in data.tags {
             if !existingTags.contains(where: { $0.name == tagName }) {
-                let tag = BlogTag(name: tagName)
+                let tag = BlogTag(name: tagName, visibility: .public)
                 try await req.repositories.blogTag.save(tag)
                 tagsSaves.append(tag)
             }
@@ -144,7 +144,7 @@ struct PostAdminController: RouteCollection {
             if let existingTag = foundInAllTags {
                 tagCreateSaves.append(existingTag)
             } else {
-                let newTag = BlogTag(name: newTagName)
+                let newTag = BlogTag(name: newTagName, visibility: .public)
                 try await req.repositories.blogTag.save(newTag)
                 tagCreateSaves.append(newTag)
             }

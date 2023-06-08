@@ -21,17 +21,23 @@ public final class BlogPost: Model, Codable {
     @Parent(key: "author")
     public var author: BlogUser
     
-    @Field(key: "created")
-    public var created: Date
-    
-    @Timestamp(key: "last_edited", on: .update)
-    public var lastEdited: Date?
-    
     @Field(key: "slug_url")
     public var slugUrl: String
     
     @Field(key: "published")
     public var published: Bool
+    
+    @Field(key: "feature_image")
+    public var featureImage: String
+    
+    @Field(key: "feature_image_caption")
+    public var featureImageCaption: String
+    
+    @Field(key: "created")
+    public var created: Date
+    
+    @Timestamp(key: "last_edited", on: .update)
+    public var lastEdited: Date?
     
     @Siblings(through: PostTagPivot.self, from: \.$post, to: \.$tag)
     public var tags: [BlogTag]
@@ -42,9 +48,11 @@ public final class BlogPost: Model, Codable {
         title: String,
         contents: String,
         author: BlogUser,
-        creationDate: Date,
         slugUrl: String,
-        published: Bool
+        published: Bool,
+        featureImage: String,
+        featureImageCaption: String,
+        creationDate: Date
     ) throws {
         self.title = title
         self.contents = contents
@@ -52,30 +60,13 @@ public final class BlogPost: Model, Codable {
             throw SteamPressError(identifier: "ID-required", "Author ID not set")
         }
         self.$author.id = authorID
-        self.created = creationDate
         self.slugUrl = slugUrl
         self.lastEdited = nil
         self.published = published
+        self.featureImage = featureImage
+        self.featureImageCaption = featureImageCaption
+        self.created = creationDate
     }
-    
-//    public init(
-//        blogID: Int? = nil,
-//        title: String,
-//        contents: String,
-//        authorID: Int,
-//        creationDate: Date,
-//        slugUrl: String,
-//        published: Bool
-//    ) {
-//        self.blogID = blogID
-//        self.title = title
-//        self.contents = contents
-//        self.author = authorID
-//        self.created = creationDate
-//        self.slugUrl = slugUrl
-//        self.lastEdited = nil
-//        self.published = published
-//    }
 }
 
 // MARK: - BlogPost Utilities
