@@ -21,9 +21,9 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
             }
         }
         let postPathSuffix = pathCreator.createPath(for: "posts")
-        let postPathPrefix = website.url.appendingPathComponent(postPathSuffix)
+        let postPathPrefix = website.url.appending(postPathSuffix)
         let pageTitle = isEditing ? "Edit Blog Post" : "Create Blog Post"
-        let context = CreatePostPageContext(title: pageTitle, editing: isEditing, post: post, draft: isDraft ?? false, errors: errors, titleSupplied: title, contentsSupplied: contents, tagsSupplied: tags, slugURLSupplied: slugURL, titleError: titleError, contentsError: contentsError, postPathPrefix: postPathPrefix.absoluteString, website: website)
+        let context = CreatePostPageContext(title: pageTitle, editing: isEditing, post: post, draft: isDraft ?? false, errors: errors, titleSupplied: title, contentsSupplied: contents, tagsSupplied: tags, slugURLSupplied: slugURL, titleError: titleError, contentsError: contentsError, postPathPrefix: postPathPrefix, website: website)
         return try await viewRenderer.render("blog/admin/createPost", context)
     }
     

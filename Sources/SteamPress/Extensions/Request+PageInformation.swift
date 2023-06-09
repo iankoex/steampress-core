@@ -8,10 +8,10 @@ extension Request {
         }
         return try GlobalWebsiteInformation(
             name: "SteamPress",
-            url: self.rootUrl(),
+            url: self.rootUrl().absoluteString,
             logo: "/static/images/favicon.ico",
             loggedInUser: self.auth.get(BlogUser.self)?.convertToPublic(),
-            currentPageURL: currentURL,
+            currentPageURL: currentURL.absoluteString,
             currentPageEncodedURL: currentEncodedURL,
             disqusName: Environment.get("BLOG_DISQUS_NAME"),
             twitterHandle: Environment.get("BLOG_SITE_TWITTER_HANDLE"),

@@ -83,7 +83,7 @@ struct LoginController: RouteCollection {
     func resetPasswordPostHandler(_ req: Request) async throws -> Response {
         let data = try req.content.decode(ResetPasswordData.self)
         
-        var resetPasswordErrors = [String]()
+        var resetPasswordErrors: [String] = []
         var passwordError: Bool?
         var confirmPasswordError: Bool?
         
@@ -109,9 +109,9 @@ struct LoginController: RouteCollection {
             confirmPasswordError = true
         }
         
-        if password.count < 10 {
+        if password.count < 8 {
             passwordError = true
-            resetPasswordErrors.append("Your password must be at least 10 characters long")
+            resetPasswordErrors.append("Your password must be at least 8 characters long")
         }
         
         guard resetPasswordErrors.isEmpty else {
@@ -125,6 +125,6 @@ struct LoginController: RouteCollection {
         user.resetPasswordRequired = false
         let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
         let _ = try await req.repositories.blogUser.save(user)
-        return Response()
+        return req.redirect(to: self.pathCreator.createPath(for: "admin"))
     }
 }
