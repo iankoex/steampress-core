@@ -83,7 +83,7 @@ struct AtomFeedGenerator {
 fileprivate extension BlogPost {
     func getPostAtomFeed(blogPath: String, dateFormatter: DateFormatter, for request: Request) async throws -> String {
         let updatedTime = lastEdited ?? created
-        let user = try await request.repositories.blogUser.getUser(id: author.id ?? UUID())
+        let user = try await request.repositories.blogUser.getUser(id: self.$author.id)
         guard let user = user else {
             throw SteamPressError(identifier: "Invalid-relationship", "Blog user with ID \(self.author) not found")
         }
