@@ -3,7 +3,7 @@ struct AdminPageContext: Encodable {
     let publishedPosts: [ViewBlogPostWithoutTags]
     let draftPosts: [ViewBlogPostWithoutTags]
     let users: [BlogUser.Public]
-    let pageInformation: BlogAdminPageInformation
+    let website: GlobalWebsiteInformation
     let blogAdminPage = true
     let title = "Blog Admin"
 }

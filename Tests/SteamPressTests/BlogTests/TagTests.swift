@@ -20,7 +20,7 @@ class TagTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUpWithError() throws {
-        testWorld = try TestWorld.create(postsPerPage: postsPerPage, websiteURL: "/")
+        testWorld = try TestWorld.create(postsPerPage: postsPerPage, url: "/")
         postData = try testWorld.createPost()
         tag = try testWorld.createTag(tagName, on: postData.post)
     }
@@ -64,14 +64,14 @@ class TagTests: XCTestCase {
         XCTAssertEqual(presenter.tag?.name, tag.name)
     }
     
-    func testTagPageGetsCorrectPageInformation() throws {
+    func testTagPageGetsCorrectwebsite() throws {
         _ = try testWorld.getResponse(to: tagRequestPath)
-        XCTAssertNil(presenter.tagPageInformation?.disqusName)
-        XCTAssertNil(presenter.tagPageInformation?.googleAnalyticsIdentifier)
-        XCTAssertNil(presenter.tagPageInformation?.siteTwitterHandle)
-        XCTAssertNil(presenter.tagPageInformation?.loggedInUser)
-        XCTAssertEqual(presenter.tagPageInformation?.currentPageURL.absoluteString, tagRequestPath)
-        XCTAssertEqual(presenter.tagPageInformation?.websiteURL.absoluteString, "/")
+        XCTAssertNil(presenter.tagwebsite?.disqusName)
+        XCTAssertNil(presenter.tagwebsite?.googleAnalyticsIdentifier)
+        XCTAssertNil(presenter.tagwebsite?.twitterHandle)
+        XCTAssertNil(presenter.tagwebsite?.loggedInUser)
+        XCTAssertEqual(presenter.tagwebsite?.currentPageURL.absoluteString, tagRequestPath)
+        XCTAssertEqual(presenter.tagwebsite?.url.absoluteString, "/")
     }
     
     func testRequestToURLEncodedTag() throws {
@@ -80,12 +80,12 @@ class TagTests: XCTestCase {
         XCTAssertEqual(response.status, .ok)
     }
     
-    func testTagPageInformationGetsLoggedInUser() throws {
+    func testTagwebsiteGetsLoggedInUser() throws {
         _ = try testWorld.getResponse(to: tagRequestPath, loggedInUser: postData.author)
-        XCTAssertEqual(presenter.tagPageInformation?.loggedInUser?.username, postData.author.username)
+        XCTAssertEqual(presenter.tagwebsite?.loggedInUser?.username, postData.author.username)
     }
     
-    func testSettingEnvVarsWithPageInformation() throws {
+    func testSettingEnvVarsWithwebsite() throws {
         let googleAnalytics = "ABDJIODJWOIJIWO"
         let twitterHandle = "3483209fheihgifffe"
         let disqusName = "34829u48932fgvfbrtewerg"
@@ -93,27 +93,27 @@ class TagTests: XCTestCase {
         setenv("BLOG_SITE_TWITTER_HANDLE", twitterHandle, 1)
         setenv("BLOG_DISQUS_NAME", disqusName, 1)
         _ = try testWorld.getResponse(to: tagRequestPath)
-        XCTAssertEqual(presenter.tagPageInformation?.disqusName, disqusName)
-        XCTAssertEqual(presenter.tagPageInformation?.googleAnalyticsIdentifier, googleAnalytics)
-        XCTAssertEqual(presenter.tagPageInformation?.siteTwitterHandle, twitterHandle)
+        XCTAssertEqual(presenter.tagwebsite?.disqusName, disqusName)
+        XCTAssertEqual(presenter.tagwebsite?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(presenter.tagwebsite?.twitterHandle, twitterHandle)
     }
     
-    func testCorrectPageInformationForAllTags() throws {
+    func testCorrectwebsiteForAllTags() throws {
         _ = try testWorld.getResponse(to: allTagsRequestPath)
-        XCTAssertNil(presenter.allTagsPageInformation?.disqusName)
-        XCTAssertNil(presenter.allTagsPageInformation?.googleAnalyticsIdentifier)
-        XCTAssertNil(presenter.allTagsPageInformation?.siteTwitterHandle)
-        XCTAssertNil(presenter.allTagsPageInformation?.loggedInUser)
-        XCTAssertEqual(presenter.allTagsPageInformation?.currentPageURL.absoluteString, allTagsRequestPath)
-        XCTAssertEqual(presenter.allTagsPageInformation?.websiteURL.absoluteString, "/")
+        XCTAssertNil(presenter.allTagswebsite?.disqusName)
+        XCTAssertNil(presenter.allTagswebsite?.googleAnalyticsIdentifier)
+        XCTAssertNil(presenter.allTagswebsite?.twitterHandle)
+        XCTAssertNil(presenter.allTagswebsite?.loggedInUser)
+        XCTAssertEqual(presenter.allTagswebsite?.currentPageURL.absoluteString, allTagsRequestPath)
+        XCTAssertEqual(presenter.allTagswebsite?.url.absoluteString, "/")
     }
     
-    func testPageInformationGetsLoggedInUserForAllTags() throws {
+    func testwebsiteGetsLoggedInUserForAllTags() throws {
         _ = try testWorld.getResponse(to: allTagsRequestPath, loggedInUser: postData.author)
-        XCTAssertEqual(presenter.allTagsPageInformation?.loggedInUser?.username, postData.author.username)
+        XCTAssertEqual(presenter.allTagswebsite?.loggedInUser?.username, postData.author.username)
     }
     
-    func testSettingEnvVarsWithPageInformationForAllTags() throws {
+    func testSettingEnvVarsWithwebsiteForAllTags() throws {
         let googleAnalytics = "ABDJIODJWOIJIWO"
         let twitterHandle = "3483209fheihgifffe"
         let disqusName = "34829u48932fgvfbrtewerg"
@@ -121,9 +121,9 @@ class TagTests: XCTestCase {
         setenv("BLOG_SITE_TWITTER_HANDLE", twitterHandle, 1)
         setenv("BLOG_DISQUS_NAME", disqusName, 1)
         _ = try testWorld.getResponse(to: allTagsRequestPath)
-        XCTAssertEqual(presenter.allTagsPageInformation?.disqusName, disqusName)
-        XCTAssertEqual(presenter.allTagsPageInformation?.googleAnalyticsIdentifier, googleAnalytics)
-        XCTAssertEqual(presenter.allTagsPageInformation?.siteTwitterHandle, twitterHandle)
+        XCTAssertEqual(presenter.allTagswebsite?.disqusName, disqusName)
+        XCTAssertEqual(presenter.allTagswebsite?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(presenter.allTagswebsite?.twitterHandle, twitterHandle)
     }
 
     // MARK: - Pagination Tests

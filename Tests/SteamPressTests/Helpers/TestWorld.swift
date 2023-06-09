@@ -11,7 +11,7 @@ struct TestWorld {
         enableTagPages: Bool = true,
         passwordHasherToUse: PasswordHasherChoice = .plaintext,
         randomNumberGenerator: StubbedRandomNumberGenerator = StubbedRandomNumberGenerator(numberToReturn: 666),
-        websiteURL: String = "https://www.steampress.io"
+        url: String = "https://www.steampress.io"
     ) throws -> TestWorld {
         let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         let blogPresenter = CapturingBlogPresenter(eventLoop: eventLoopGroup.next())
@@ -42,7 +42,7 @@ struct TestWorld {
         unsetenv("BLOG_SITE_TWITTER_HANDLE")
         unsetenv("BLOG_DISQUS_NAME")
         unsetenv("WEBSITE_URL")
-        setenv("WEBSITE_URL", websiteURL, 1)
+        setenv("WEBSITE_URL", url, 1)
         try application.boot()
         return TestWorld(context: context)
     }

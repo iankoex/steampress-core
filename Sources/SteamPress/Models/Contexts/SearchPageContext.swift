@@ -3,6 +3,6 @@ struct SearchPageContext: Encodable {
     let searchTerm: String?
     let posts: [ViewBlogPost]
     let totalResults: Int
-    let pageInformation: BlogGlobalPageInformation
+    let website: GlobalWebsiteInformation
     let paginationTagInformation: PaginationTagInformation
 }

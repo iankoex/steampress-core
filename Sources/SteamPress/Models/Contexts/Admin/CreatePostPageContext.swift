@@ -11,5 +11,5 @@ struct CreatePostPageContext: Encodable {
     let titleError: Bool
     let contentsError: Bool
     let postPathPrefix: String
-    let pageInformation: BlogAdminPageInformation
+    let website: GlobalWebsiteInformation
 }

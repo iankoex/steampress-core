@@ -3,8 +3,5 @@ struct BlogPostPageContext: Encodable {
     let post: ViewBlogPost
     let author: BlogUser.Public
     let blogPostPage = true
-    let pageInformation: BlogGlobalPageInformation
-    let postImage: String?
-    let postImageAlt: String?
-    let shortSnippet: String
+    let website: GlobalWebsiteInformation
 }

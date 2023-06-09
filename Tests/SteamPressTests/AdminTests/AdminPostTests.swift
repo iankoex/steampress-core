@@ -16,7 +16,7 @@ class AdminPostTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUpWithError() throws {
-        testWorld = try TestWorld.create(websiteURL: "/")
+        testWorld = try TestWorld.create(url: "/")
         user = testWorld.createUser(username: "leia")
     }
     
@@ -95,9 +95,9 @@ class AdminPostTests: XCTestCase {
         XCTAssertNil(presenter.createPostDraft)
         XCTAssertFalse(titleError)
         XCTAssertFalse(contentsError)
-        XCTAssertEqual(presenter.createPostPageInformation?.loggedInUser.username, user.username)
-        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/createPost/")
-        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "/")
+        XCTAssertEqual(presenter.createPostwebsite?.loggedInUser.username, user.username)
+        XCTAssertEqual(presenter.createPostwebsite?.currentPageURL.absoluteString, "/admin/createPost/")
+        XCTAssertEqual(presenter.createPostwebsite?.url.absoluteString, "/")
     }
 
     func testPostCannotBeCreatedIfDraftAndPublishNotSet() throws {
@@ -130,9 +130,9 @@ class AdminPostTests: XCTestCase {
         XCTAssertTrue(createPostErrors.contains("You must specify a blog post title"))
         XCTAssertTrue(titleError)
         XCTAssertFalse(contentsError)
-        XCTAssertEqual(presenter.createPostPageInformation?.loggedInUser.username, user.username)
-        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/createPost/")
-        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "/")
+        XCTAssertEqual(presenter.createPostwebsite?.loggedInUser.username, user.username)
+        XCTAssertEqual(presenter.createPostwebsite?.currentPageURL.absoluteString, "/admin/createPost/")
+        XCTAssertEqual(presenter.createPostwebsite?.url.absoluteString, "/")
     }
 
     func testCreatePostMustIncludeContents() throws {
@@ -282,9 +282,9 @@ class AdminPostTests: XCTestCase {
         let contentsError = try XCTUnwrap(presenter.createPostContentsError)
         XCTAssertFalse(titleError)
         XCTAssertFalse(contentsError)
-        XCTAssertEqual(presenter.createPostPageInformation?.loggedInUser.username, user.username)
-        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/posts/1/edit")
-        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "/")
+        XCTAssertEqual(presenter.createPostwebsite?.loggedInUser.username, user.username)
+        XCTAssertEqual(presenter.createPostwebsite?.currentPageURL.absoluteString, "/admin/posts/1/edit")
+        XCTAssertEqual(presenter.createPostwebsite?.url.absoluteString, "/")
     }
 
     func testThatEditingPostGetsRedirectToPostPage() throws {
@@ -443,9 +443,9 @@ class AdminPostTests: XCTestCase {
         let contentsError = try XCTUnwrap(presenter.createPostContentsError)
         XCTAssertTrue(titleError)
         XCTAssertFalse(contentsError)
-        XCTAssertEqual(presenter.createPostPageInformation?.loggedInUser.username, user.username)
-        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/posts/1/edit")
-        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "/")
+        XCTAssertEqual(presenter.createPostwebsite?.loggedInUser.username, user.username)
+        XCTAssertEqual(presenter.createPostwebsite?.currentPageURL.absoluteString, "/admin/posts/1/edit")
+        XCTAssertEqual(presenter.createPostwebsite?.url.absoluteString, "/")
     }
     
     func testEditingPageWithInvalidContentsDataPassesExistingDataToPresenter() throws {
@@ -568,11 +568,11 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(testWorld.context.repository.tags.count, 1)
     }
     
-    func testPageInformationGetsWebsiteURLAndPageURLFromEnvVar() throws {
+    func testwebsiteGetsurlAndPageURLFromEnvVar() throws {
         let website = "https://www.steampress.io"
         setenv("WEBSITE_URL", website, 1)
         _ = try testWorld.getResponse(to: createPostPath, loggedInUser: user)
-        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, website)
+        XCTAssertEqual(presenter.createPostwebsite?.url.absoluteString, website)
     }
     
     func testFailingURLFromEnvVar() throws {

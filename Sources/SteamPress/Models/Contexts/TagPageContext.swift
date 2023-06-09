@@ -1,6 +1,6 @@
 struct TagPageContext: Encodable {
     let tag: BlogTag
-    let pageInformation: BlogGlobalPageInformation
+    let website: GlobalWebsiteInformation
     let posts: [ViewBlogPost]
     let tagPage = true
     let postCount: Int

@@ -16,5 +16,5 @@ struct CreateUserPageContext: Encodable {
     let profilePictureSupplied: String?
     let biographySupplied: String?
     let taglineSupplied: String?
-    let pageInformation: BlogAdminPageInformation
+    let website: GlobalWebsiteInformation
 }

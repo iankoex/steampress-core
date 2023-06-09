@@ -17,7 +17,7 @@ class PostTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUpWithError() throws {
-        testWorld = try TestWorld.create(websiteURL: "/")
+        testWorld = try TestWorld.create(url: "/")
         firstData = try testWorld.createPost(title: "Test Path", slugUrl: "test-path")
     }
     
@@ -36,22 +36,22 @@ class PostTests: XCTestCase {
         XCTAssertEqual(presenter.postAuthor?.username, firstData.author.username)
     }
     
-    func testPostPageGetsCorrectPageInformation() throws {
+    func testPostPageGetsCorrectwebsite() throws {
         _ = try testWorld.getResponse(to: blogPostPath)
-        XCTAssertNil(presenter.postPageInformation?.disqusName)
-        XCTAssertNil(presenter.postPageInformation?.googleAnalyticsIdentifier)
-        XCTAssertNil(presenter.postPageInformation?.siteTwitterHandle)
-        XCTAssertNil(presenter.postPageInformation?.loggedInUser)
-        XCTAssertEqual(presenter.postPageInformation?.currentPageURL.absoluteString, blogPostPath)
-        XCTAssertEqual(presenter.postPageInformation?.websiteURL.absoluteString, "/")
+        XCTAssertNil(presenter.postwebsite?.disqusName)
+        XCTAssertNil(presenter.postwebsite?.googleAnalyticsIdentifier)
+        XCTAssertNil(presenter.postwebsite?.twitterHandle)
+        XCTAssertNil(presenter.postwebsite?.loggedInUser)
+        XCTAssertEqual(presenter.postwebsite?.currentPageURL.absoluteString, blogPostPath)
+        XCTAssertEqual(presenter.postwebsite?.url.absoluteString, "/")
     }
     
-    func testPostPageInformationGetsLoggedInUser() throws {
+    func testPostwebsiteGetsLoggedInUser() throws {
         _ = try testWorld.getResponse(to: blogPostPath, loggedInUser: firstData.author)
-        XCTAssertEqual(presenter.postPageInformation?.loggedInUser?.username, firstData.author.username)
+        XCTAssertEqual(presenter.postwebsite?.loggedInUser?.username, firstData.author.username)
     }
     
-    func testSettingEnvVarsWithPageInformation() throws {
+    func testSettingEnvVarsWithwebsite() throws {
         let googleAnalytics = "ABDJIODJWOIJIWO"
         let twitterHandle = "3483209fheihgifffe"
         let disqusName = "34829u48932fgvfbrtewerg"
@@ -59,9 +59,9 @@ class PostTests: XCTestCase {
         setenv("BLOG_SITE_TWITTER_HANDLE", twitterHandle, 1)
         setenv("BLOG_DISQUS_NAME", disqusName, 1)
         _ = try testWorld.getResponse(to: blogPostPath)
-        XCTAssertEqual(presenter.postPageInformation?.disqusName, disqusName)
-        XCTAssertEqual(presenter.postPageInformation?.googleAnalyticsIdentifier, googleAnalytics)
-        XCTAssertEqual(presenter.postPageInformation?.siteTwitterHandle, twitterHandle)
+        XCTAssertEqual(presenter.postwebsite?.disqusName, disqusName)
+        XCTAssertEqual(presenter.postwebsite?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(presenter.postwebsite?.twitterHandle, twitterHandle)
     }
     
     func testPostPageGetsTags() throws {

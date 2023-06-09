@@ -16,7 +16,7 @@ class SearchTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUpWithError() throws {
-        testWorld = try TestWorld.create(websiteURL: "/")
+        testWorld = try TestWorld.create(url: "/")
         firstData = try testWorld.createPost(title: "Test Path", slugUrl: "test-path")
     }
     
@@ -51,22 +51,22 @@ class SearchTests: XCTestCase {
         XCTAssertNil(presenter.searchTerm)
     }
     
-    func testCorrectPageInformationForSearch() throws {
+    func testCorrectwebsiteForSearch() throws {
         _ = try testWorld.getResponse(to: "/search?term=Test")
-        XCTAssertNil(presenter.searchPageInformation?.disqusName)
-        XCTAssertNil(presenter.searchPageInformation?.googleAnalyticsIdentifier)
-        XCTAssertNil(presenter.searchPageInformation?.siteTwitterHandle)
-        XCTAssertNil(presenter.searchPageInformation?.loggedInUser)
-        XCTAssertEqual(presenter.searchPageInformation?.currentPageURL.absoluteString, "/search")
-        XCTAssertEqual(presenter.searchPageInformation?.websiteURL.absoluteString, "/")
+        XCTAssertNil(presenter.searchwebsite?.disqusName)
+        XCTAssertNil(presenter.searchwebsite?.googleAnalyticsIdentifier)
+        XCTAssertNil(presenter.searchwebsite?.twitterHandle)
+        XCTAssertNil(presenter.searchwebsite?.loggedInUser)
+        XCTAssertEqual(presenter.searchwebsite?.currentPageURL.absoluteString, "/search")
+        XCTAssertEqual(presenter.searchwebsite?.url.absoluteString, "/")
     }
     
-    func testPageInformationGetsLoggedInUserForSearch() throws {
+    func testwebsiteGetsLoggedInUserForSearch() throws {
         _ = try testWorld.getResponse(to: "/search?term=Test", loggedInUser: firstData.author)
-        XCTAssertEqual(presenter.searchPageInformation?.loggedInUser?.username, firstData.author.username)
+        XCTAssertEqual(presenter.searchwebsite?.loggedInUser?.username, firstData.author.username)
     }
     
-    func testSettingEnvVarsWithPageInformationForSearch() throws {
+    func testSettingEnvVarsWithwebsiteForSearch() throws {
         let googleAnalytics = "ABDJIODJWOIJIWO"
         let twitterHandle = "3483209fheihgifffe"
         let disqusName = "34829u48932fgvfbrtewerg"
@@ -74,9 +74,9 @@ class SearchTests: XCTestCase {
         setenv("BLOG_SITE_TWITTER_HANDLE", twitterHandle, 1)
         setenv("BLOG_DISQUS_NAME", disqusName, 1)
         _ = try testWorld.getResponse(to: "/search?term=Test")
-        XCTAssertEqual(presenter.searchPageInformation?.disqusName, disqusName)
-        XCTAssertEqual(presenter.searchPageInformation?.googleAnalyticsIdentifier, googleAnalytics)
-        XCTAssertEqual(presenter.searchPageInformation?.siteTwitterHandle, twitterHandle)
+        XCTAssertEqual(presenter.searchwebsite?.disqusName, disqusName)
+        XCTAssertEqual(presenter.searchwebsite?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(presenter.searchwebsite?.twitterHandle, twitterHandle)
     }
     
     func testPaginationInfoSetCorrectly() throws {

@@ -17,7 +17,7 @@ class IndexTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUpWithError() throws {
-        testWorld = try TestWorld.create(postsPerPage: postsPerPage, websiteURL: "/")
+        testWorld = try TestWorld.create(postsPerPage: postsPerPage, url: "/")
         firstData = try testWorld.createPost(title: "Test Path", slugUrl: "test-path")
     }
     
@@ -125,30 +125,30 @@ class IndexTests: XCTestCase {
     
     // MARK: - Page Information
     
-    func testIndexGetsCorrectPageInformation() throws {
+    func testIndexGetsCorrectwebsite() throws {
         _ = try testWorld.getResponse(to: blogIndexPath)
-        XCTAssertNil(presenter.indexPageInformation?.disqusName)
-        XCTAssertNil(presenter.indexPageInformation?.googleAnalyticsIdentifier)
-        XCTAssertNil(presenter.indexPageInformation?.siteTwitterHandle)
-        XCTAssertNil(presenter.indexPageInformation?.loggedInUser)
-        XCTAssertEqual(presenter.indexPageInformation?.currentPageURL.absoluteString, "/")
-        XCTAssertEqual(presenter.indexPageInformation?.websiteURL.absoluteString, "/")
+        XCTAssertNil(presenter.indexwebsite?.disqusName)
+        XCTAssertNil(presenter.indexwebsite?.googleAnalyticsIdentifier)
+        XCTAssertNil(presenter.indexwebsite?.twitterHandle)
+        XCTAssertNil(presenter.indexwebsite?.loggedInUser)
+        XCTAssertEqual(presenter.indexwebsite?.currentPageURL.absoluteString, "/")
+        XCTAssertEqual(presenter.indexwebsite?.url.absoluteString, "/")
     }
     
     func testIndexPageCurrentPageWhenAtSubPath() throws {
         try testWorld.shutdown()
-        testWorld = try TestWorld.create(path: "blog", websiteURL: "/")
+        testWorld = try TestWorld.create(path: "blog", url: "/")
         _ = try testWorld.getResponse(to: "/blog")
-        XCTAssertEqual(presenter.indexPageInformation?.currentPageURL.absoluteString, "/blog")
-        XCTAssertEqual(presenter.indexPageInformation?.websiteURL.absoluteString, "/")
+        XCTAssertEqual(presenter.indexwebsite?.currentPageURL.absoluteString, "/blog")
+        XCTAssertEqual(presenter.indexwebsite?.url.absoluteString, "/")
     }
     
-    func testIndexPageInformationGetsLoggedInUser() throws {
+    func testIndexwebsiteGetsLoggedInUser() throws {
         _ = try testWorld.getResponse(to: blogIndexPath, loggedInUser: firstData.author)
-        XCTAssertEqual(presenter.indexPageInformation?.loggedInUser?.username, firstData.author.username)
+        XCTAssertEqual(presenter.indexwebsite?.loggedInUser?.username, firstData.author.username)
     }
     
-    func testSettingEnvVarsWithPageInformation() throws {
+    func testSettingEnvVarsWithwebsite() throws {
         let googleAnalytics = "ABDJIODJWOIJIWO"
         let twitterHandle = "3483209fheihgifffe"
         let disqusName = "34829u48932fgvfbrtewerg"
@@ -156,8 +156,8 @@ class IndexTests: XCTestCase {
         setenv("BLOG_SITE_TWITTER_HANDLE", twitterHandle, 1)
         setenv("BLOG_DISQUS_NAME", disqusName, 1)
         _ = try testWorld.getResponse(to: blogIndexPath)
-        XCTAssertEqual(presenter.indexPageInformation?.disqusName, disqusName)
-        XCTAssertEqual(presenter.indexPageInformation?.googleAnalyticsIdentifier, googleAnalytics)
-        XCTAssertEqual(presenter.indexPageInformation?.siteTwitterHandle, twitterHandle)
+        XCTAssertEqual(presenter.indexwebsite?.disqusName, disqusName)
+        XCTAssertEqual(presenter.indexwebsite?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(presenter.indexwebsite?.twitterHandle, twitterHandle)
     }
 }
