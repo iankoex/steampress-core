@@ -24,6 +24,7 @@ struct LoginController: RouteCollection {
     
     // MARK: - Route handlers
     func loginHandler(_ req: Request) async throws -> View {
+        try await req.repositories.blogUser.createInitialAdminUser()
         let loginRequied = (try? req.query.get(Bool.self, at: "loginRequired")) != nil
         return try await req.blogPresenter.loginView(loginWarning: loginRequied, errors: nil, username: nil, usernameError: false, passwordError: false, rememberMe: false, website: req.websiteInformation())
     }

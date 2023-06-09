@@ -45,4 +45,5 @@ public protocol BlogUserRepository: SteamPressRepository {
     func save(_ user: BlogUser) async throws -> Void
     func delete(_ user: BlogUser) async throws -> Void
     func getUsersCount() async throws -> Int
+    func createInitialAdminUser() async throws -> Void
 }
