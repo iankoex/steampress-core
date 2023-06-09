@@ -10,7 +10,7 @@ public class SteamPressLifecycleHandler: LifecycleHandler {
     }
     
     public func willBoot(_ application: Application) throws {
-        
+        application.routes.defaultMaxBodySize = "100mb"
         application.sessions.use(.fluent)
         application.passwords.use(.bcrypt)
         
