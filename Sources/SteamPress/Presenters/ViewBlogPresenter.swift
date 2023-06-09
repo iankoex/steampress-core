@@ -15,16 +15,6 @@ public struct ViewBlogPresenter: BlogPresenter {
     }
 
     public func postView(post: BlogPost, author: BlogUser.Public, tags: [BlogTag], website: GlobalWebsiteInformation) async throws -> View {
-        var postImage: String?
-        var postImageAlt: String?
-        if let image = try SwiftSoup.parse(markdownToHTML(post.contents)).select("img").first() {
-            postImage = try image.attr("src")
-            let imageAlt = try image.attr("alt")
-            if imageAlt != "" {
-                postImageAlt = imageAlt
-            }
-        }
-        let shortSnippet = post.shortSnippet()
         let viewPost = try post.toViewPost(authorName: author.name, authorUsername: author.username, longFormatter: longDateFormatter, numericFormatter: numericDateFormatter, tags: tags)
         
         let context = BlogPostPageContext(title: post.title, post: viewPost, author: author, website: website)

@@ -27,12 +27,6 @@ public final class BlogPost: Model, Codable {
     @Field(key: "published")
     public var published: Bool
     
-    @Field(key: "feature_image")
-    public var featureImage: String
-    
-    @Field(key: "feature_image_caption")
-    public var featureImageCaption: String
-    
     @Field(key: "created")
     public var created: Date
     
@@ -63,8 +57,6 @@ public final class BlogPost: Model, Codable {
         self.slugUrl = slugUrl
         self.lastEdited = nil
         self.published = published
-        self.featureImage = featureImage
-        self.featureImageCaption = featureImageCaption
         self.created = creationDate
     }
 }
