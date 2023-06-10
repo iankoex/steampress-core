@@ -83,9 +83,9 @@ class LoginTests: XCTestCase {
         XCTAssertNil(presenter.resetPasswordErrors)
         XCTAssertNil(presenter.resetPasswordError)
         XCTAssertNil(presenter.resetPasswordConfirmError)
-        XCTAssertEqual(presenter.resetPasswordwebsite?.loggedInUser.username, user.username)
-        XCTAssertEqual(presenter.resetPasswordwebsite?.url.absoluteString, "/")
-        XCTAssertEqual(presenter.resetPasswordwebsite?.currentPageURL.absoluteString, "/blog/admin/resetPassword")
+        XCTAssertEqual(presenter.resetPasswordsite?.loggedInUser.username, user.username)
+        XCTAssertEqual(presenter.resetPasswordsite?.url.absoluteString, "/")
+        XCTAssertEqual(presenter.resetPasswordsite?.currentPageURL.absoluteString, "/blog/admin/resetPassword")
     }
 
     func testUserCanResetPassword() throws {
@@ -121,9 +121,9 @@ class LoginTests: XCTestCase {
         XCTAssertTrue(passwordErrors.contains("Your passwords must match!"))
         XCTAssertTrue(resetPasswordError)
         XCTAssertTrue(confirmPasswordError)
-        XCTAssertEqual(presenter.resetPasswordwebsite?.loggedInUser.username, user.username)
-        XCTAssertEqual(presenter.resetPasswordwebsite?.url.absoluteString, "/")
-        XCTAssertEqual(presenter.resetPasswordwebsite?.currentPageURL.absoluteString, "/blog/admin/resetPassword")
+        XCTAssertEqual(presenter.resetPasswordsite?.loggedInUser.username, user.username)
+        XCTAssertEqual(presenter.resetPasswordsite?.url.absoluteString, "/")
+        XCTAssertEqual(presenter.resetPasswordsite?.currentPageURL.absoluteString, "/blog/admin/resetPassword")
     }
 
     func testUserCannotResetPasswordWithoutPassword() throws {
@@ -274,17 +274,17 @@ class LoginTests: XCTestCase {
         XCTAssertEqual(loginResponse.cookies["steampress-session"]?.expires, response.cookies["steampress-session"]?.expires)
     }
     
-    func testCorrectwebsiteForLogin() throws {
+    func testCorrectsiteForLogin() throws {
         _ = try testWorld.getResponse(to: "/blog/admin/login")
-        XCTAssertNil(blogPresenter.loginwebsite?.disqusName)
-        XCTAssertNil(blogPresenter.loginwebsite?.googleAnalyticsIdentifier)
-        XCTAssertNil(blogPresenter.loginwebsite?.twitterHandle)
-        XCTAssertNil(blogPresenter.loginwebsite?.loggedInUser)
-        XCTAssertEqual(blogPresenter.loginwebsite?.currentPageURL.absoluteString, "/blog/admin/login")
-        XCTAssertEqual(blogPresenter.loginwebsite?.url.absoluteString, "/")
+        XCTAssertNil(blogPresenter.loginsite?.disqusName)
+        XCTAssertNil(blogPresenter.loginsite?.googleAnalyticsIdentifier)
+        XCTAssertNil(blogPresenter.loginsite?.twitterHandle)
+        XCTAssertNil(blogPresenter.loginsite?.loggedInUser)
+        XCTAssertEqual(blogPresenter.loginsite?.currentPageURL.absoluteString, "/blog/admin/login")
+        XCTAssertEqual(blogPresenter.loginsite?.url.absoluteString, "/")
     }
 
-    func testSettingEnvVarsWithwebsiteForLoginPage() throws {
+    func testSettingEnvVarsWithsiteForLoginPage() throws {
         let googleAnalytics = "ABDJIODJWOIJIWO"
         let twitterHandle = "3483209fheihgifffe"
         let disqusName = "34829u48932fgvfbrtewerg"
@@ -292,8 +292,8 @@ class LoginTests: XCTestCase {
         setenv("BLOG_SITE_TWITTER_HANDLE", twitterHandle, 1)
         setenv("BLOG_DISQUS_NAME", disqusName, 1)
         _ = try testWorld.getResponse(to: "/blog/admin/login")
-        XCTAssertEqual(blogPresenter.loginwebsite?.disqusName, disqusName)
-        XCTAssertEqual(blogPresenter.loginwebsite?.googleAnalyticsIdentifier, googleAnalytics)
-        XCTAssertEqual(blogPresenter.loginwebsite?.twitterHandle, twitterHandle)
+        XCTAssertEqual(blogPresenter.loginsite?.disqusName, disqusName)
+        XCTAssertEqual(blogPresenter.loginsite?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(blogPresenter.loginsite?.twitterHandle, twitterHandle)
     }
 }

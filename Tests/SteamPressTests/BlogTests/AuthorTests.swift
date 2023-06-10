@@ -73,23 +73,23 @@ class AuthorTests: XCTestCase {
         XCTAssertEqual(presenter.authorPosts?.first?.contents, postData.post.contents)
     }
     
-    func testAuthorPageGetsCorrectwebsite() throws {
+    func testAuthorPageGetsCorrectsite() throws {
         _ = try testWorld.getResponse(to: authorsRequestPath)
-        XCTAssertNil(presenter.authorwebsite?.disqusName)
-        XCTAssertNil(presenter.authorwebsite?.googleAnalyticsIdentifier)
-        XCTAssertNil(presenter.authorwebsite?.twitterHandle)
-        XCTAssertNil(presenter.authorwebsite?.loggedInUser)
-        XCTAssertEqual(presenter.authorwebsite?.currentPageURL.absoluteString, authorsRequestPath)
-        XCTAssertEqual(presenter.authorwebsite?.url.absoluteString, "/")
+        XCTAssertNil(presenter.authorsite?.disqusName)
+        XCTAssertNil(presenter.authorsite?.googleAnalyticsIdentifier)
+        XCTAssertNil(presenter.authorsite?.twitterHandle)
+        XCTAssertNil(presenter.authorsite?.loggedInUser)
+        XCTAssertEqual(presenter.authorsite?.currentPageURL.absoluteString, authorsRequestPath)
+        XCTAssertEqual(presenter.authorsite?.url.absoluteString, "/")
     }
     
-    func testAuthorwebsiteGetsLoggedInUser() throws {
+    func testAuthorsiteGetsLoggedInUser() throws {
         let user = testWorld.createUser()
         _ = try testWorld.getResponse(to: authorsRequestPath, loggedInUser: user)
-        XCTAssertEqual(presenter.authorwebsite?.loggedInUser?.username, user.username)
+        XCTAssertEqual(presenter.authorsite?.loggedInUser?.username, user.username)
     }
     
-    func testSettingEnvVarsWithwebsite() throws {
+    func testSettingEnvVarsWithsite() throws {
         let googleAnalytics = "ABDJIODJWOIJIWO"
         let twitterHandle = "3483209fheihgifffe"
         let disqusName = "34829u48932fgvfbrtewerg"
@@ -97,28 +97,28 @@ class AuthorTests: XCTestCase {
         setenv("BLOG_SITE_TWITTER_HANDLE", twitterHandle, 1)
         setenv("BLOG_DISQUS_NAME", disqusName, 1)
         _ = try testWorld.getResponse(to: authorsRequestPath)
-        XCTAssertEqual(presenter.authorwebsite?.disqusName, disqusName)
-        XCTAssertEqual(presenter.authorwebsite?.googleAnalyticsIdentifier, googleAnalytics)
-        XCTAssertEqual(presenter.authorwebsite?.twitterHandle, twitterHandle)
+        XCTAssertEqual(presenter.authorsite?.disqusName, disqusName)
+        XCTAssertEqual(presenter.authorsite?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(presenter.authorsite?.twitterHandle, twitterHandle)
     }
     
-    func testCorrectwebsiteForAllAuthors() throws {
+    func testCorrectsiteForAllAuthors() throws {
         _ = try testWorld.getResponse(to: allAuthorsRequestPath)
-        XCTAssertNil(presenter.allAuthorswebsite?.disqusName)
-        XCTAssertNil(presenter.allAuthorswebsite?.googleAnalyticsIdentifier)
-        XCTAssertNil(presenter.allAuthorswebsite?.twitterHandle)
-        XCTAssertNil(presenter.allAuthorswebsite?.loggedInUser)
-        XCTAssertEqual(presenter.allAuthorswebsite?.currentPageURL.absoluteString, allAuthorsRequestPath)
-        XCTAssertEqual(presenter.allAuthorswebsite?.url.absoluteString, "/")
+        XCTAssertNil(presenter.allAuthorssite?.disqusName)
+        XCTAssertNil(presenter.allAuthorssite?.googleAnalyticsIdentifier)
+        XCTAssertNil(presenter.allAuthorssite?.twitterHandle)
+        XCTAssertNil(presenter.allAuthorssite?.loggedInUser)
+        XCTAssertEqual(presenter.allAuthorssite?.currentPageURL.absoluteString, allAuthorsRequestPath)
+        XCTAssertEqual(presenter.allAuthorssite?.url.absoluteString, "/")
     }
     
-    func testwebsiteGetsLoggedInUserForAllAuthors() throws {
+    func testsiteGetsLoggedInUserForAllAuthors() throws {
         let user = testWorld.createUser()
         _ = try testWorld.getResponse(to: allAuthorsRequestPath, loggedInUser: user)
-        XCTAssertEqual(presenter.allAuthorswebsite?.loggedInUser?.username, user.username)
+        XCTAssertEqual(presenter.allAuthorssite?.loggedInUser?.username, user.username)
     }
     
-    func testSettingEnvVarsWithwebsiteForAllAuthors() throws {
+    func testSettingEnvVarsWithsiteForAllAuthors() throws {
         let googleAnalytics = "ABDJIODJWOIJIWO"
         let twitterHandle = "3483209fheihgifffe"
         let disqusName = "34829u48932fgvfbrtewerg"
@@ -126,9 +126,9 @@ class AuthorTests: XCTestCase {
         setenv("BLOG_SITE_TWITTER_HANDLE", twitterHandle, 1)
         setenv("BLOG_DISQUS_NAME", disqusName, 1)
         _ = try testWorld.getResponse(to: allAuthorsRequestPath)
-        XCTAssertEqual(presenter.allAuthorswebsite?.disqusName, disqusName)
-        XCTAssertEqual(presenter.allAuthorswebsite?.googleAnalyticsIdentifier, googleAnalytics)
-        XCTAssertEqual(presenter.allAuthorswebsite?.twitterHandle, twitterHandle)
+        XCTAssertEqual(presenter.allAuthorssite?.disqusName, disqusName)
+        XCTAssertEqual(presenter.allAuthorssite?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(presenter.allAuthorssite?.twitterHandle, twitterHandle)
     }
     
 

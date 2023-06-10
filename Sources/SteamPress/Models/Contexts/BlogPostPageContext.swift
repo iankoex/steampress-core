@@ -3,5 +3,5 @@ struct BlogPostPageContext: Encodable {
     let post: ViewBlogPost
     let author: BlogUser.Public
     let blogPostPage = true
-    let website: GlobalWebsiteInformation
+    let site: GlobalWebsiteInformation
 }

@@ -36,22 +36,22 @@ class PostTests: XCTestCase {
         XCTAssertEqual(presenter.postAuthor?.username, firstData.author.username)
     }
     
-    func testPostPageGetsCorrectwebsite() throws {
+    func testPostPageGetsCorrectsite() throws {
         _ = try testWorld.getResponse(to: blogPostPath)
-        XCTAssertNil(presenter.postwebsite?.disqusName)
-        XCTAssertNil(presenter.postwebsite?.googleAnalyticsIdentifier)
-        XCTAssertNil(presenter.postwebsite?.twitterHandle)
-        XCTAssertNil(presenter.postwebsite?.loggedInUser)
-        XCTAssertEqual(presenter.postwebsite?.currentPageURL.absoluteString, blogPostPath)
-        XCTAssertEqual(presenter.postwebsite?.url.absoluteString, "/")
+        XCTAssertNil(presenter.postsite?.disqusName)
+        XCTAssertNil(presenter.postsite?.googleAnalyticsIdentifier)
+        XCTAssertNil(presenter.postsite?.twitterHandle)
+        XCTAssertNil(presenter.postsite?.loggedInUser)
+        XCTAssertEqual(presenter.postsite?.currentPageURL.absoluteString, blogPostPath)
+        XCTAssertEqual(presenter.postsite?.url.absoluteString, "/")
     }
     
-    func testPostwebsiteGetsLoggedInUser() throws {
+    func testPostsiteGetsLoggedInUser() throws {
         _ = try testWorld.getResponse(to: blogPostPath, loggedInUser: firstData.author)
-        XCTAssertEqual(presenter.postwebsite?.loggedInUser?.username, firstData.author.username)
+        XCTAssertEqual(presenter.postsite?.loggedInUser?.username, firstData.author.username)
     }
     
-    func testSettingEnvVarsWithwebsite() throws {
+    func testSettingEnvVarsWithsite() throws {
         let googleAnalytics = "ABDJIODJWOIJIWO"
         let twitterHandle = "3483209fheihgifffe"
         let disqusName = "34829u48932fgvfbrtewerg"
@@ -59,9 +59,9 @@ class PostTests: XCTestCase {
         setenv("BLOG_SITE_TWITTER_HANDLE", twitterHandle, 1)
         setenv("BLOG_DISQUS_NAME", disqusName, 1)
         _ = try testWorld.getResponse(to: blogPostPath)
-        XCTAssertEqual(presenter.postwebsite?.disqusName, disqusName)
-        XCTAssertEqual(presenter.postwebsite?.googleAnalyticsIdentifier, googleAnalytics)
-        XCTAssertEqual(presenter.postwebsite?.twitterHandle, twitterHandle)
+        XCTAssertEqual(presenter.postsite?.disqusName, disqusName)
+        XCTAssertEqual(presenter.postsite?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(presenter.postsite?.twitterHandle, twitterHandle)
     }
     
     func testPostPageGetsTags() throws {

@@ -125,30 +125,30 @@ class IndexTests: XCTestCase {
     
     // MARK: - Page Information
     
-    func testIndexGetsCorrectwebsite() throws {
+    func testIndexGetsCorrectsite() throws {
         _ = try testWorld.getResponse(to: blogIndexPath)
-        XCTAssertNil(presenter.indexwebsite?.disqusName)
-        XCTAssertNil(presenter.indexwebsite?.googleAnalyticsIdentifier)
-        XCTAssertNil(presenter.indexwebsite?.twitterHandle)
-        XCTAssertNil(presenter.indexwebsite?.loggedInUser)
-        XCTAssertEqual(presenter.indexwebsite?.currentPageURL.absoluteString, "/")
-        XCTAssertEqual(presenter.indexwebsite?.url.absoluteString, "/")
+        XCTAssertNil(presenter.indexsite?.disqusName)
+        XCTAssertNil(presenter.indexsite?.googleAnalyticsIdentifier)
+        XCTAssertNil(presenter.indexsite?.twitterHandle)
+        XCTAssertNil(presenter.indexsite?.loggedInUser)
+        XCTAssertEqual(presenter.indexsite?.currentPageURL.absoluteString, "/")
+        XCTAssertEqual(presenter.indexsite?.url.absoluteString, "/")
     }
     
     func testIndexPageCurrentPageWhenAtSubPath() throws {
         try testWorld.shutdown()
         testWorld = try TestWorld.create(path: "blog", url: "/")
         _ = try testWorld.getResponse(to: "/blog")
-        XCTAssertEqual(presenter.indexwebsite?.currentPageURL.absoluteString, "/blog")
-        XCTAssertEqual(presenter.indexwebsite?.url.absoluteString, "/")
+        XCTAssertEqual(presenter.indexsite?.currentPageURL.absoluteString, "/blog")
+        XCTAssertEqual(presenter.indexsite?.url.absoluteString, "/")
     }
     
-    func testIndexwebsiteGetsLoggedInUser() throws {
+    func testIndexsiteGetsLoggedInUser() throws {
         _ = try testWorld.getResponse(to: blogIndexPath, loggedInUser: firstData.author)
-        XCTAssertEqual(presenter.indexwebsite?.loggedInUser?.username, firstData.author.username)
+        XCTAssertEqual(presenter.indexsite?.loggedInUser?.username, firstData.author.username)
     }
     
-    func testSettingEnvVarsWithwebsite() throws {
+    func testSettingEnvVarsWithsite() throws {
         let googleAnalytics = "ABDJIODJWOIJIWO"
         let twitterHandle = "3483209fheihgifffe"
         let disqusName = "34829u48932fgvfbrtewerg"
@@ -156,8 +156,8 @@ class IndexTests: XCTestCase {
         setenv("BLOG_SITE_TWITTER_HANDLE", twitterHandle, 1)
         setenv("BLOG_DISQUS_NAME", disqusName, 1)
         _ = try testWorld.getResponse(to: blogIndexPath)
-        XCTAssertEqual(presenter.indexwebsite?.disqusName, disqusName)
-        XCTAssertEqual(presenter.indexwebsite?.googleAnalyticsIdentifier, googleAnalytics)
-        XCTAssertEqual(presenter.indexwebsite?.twitterHandle, twitterHandle)
+        XCTAssertEqual(presenter.indexsite?.disqusName, disqusName)
+        XCTAssertEqual(presenter.indexsite?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(presenter.indexsite?.twitterHandle, twitterHandle)
     }
 }

@@ -51,22 +51,22 @@ class SearchTests: XCTestCase {
         XCTAssertNil(presenter.searchTerm)
     }
     
-    func testCorrectwebsiteForSearch() throws {
+    func testCorrectsiteForSearch() throws {
         _ = try testWorld.getResponse(to: "/search?term=Test")
-        XCTAssertNil(presenter.searchwebsite?.disqusName)
-        XCTAssertNil(presenter.searchwebsite?.googleAnalyticsIdentifier)
-        XCTAssertNil(presenter.searchwebsite?.twitterHandle)
-        XCTAssertNil(presenter.searchwebsite?.loggedInUser)
-        XCTAssertEqual(presenter.searchwebsite?.currentPageURL.absoluteString, "/search")
-        XCTAssertEqual(presenter.searchwebsite?.url.absoluteString, "/")
+        XCTAssertNil(presenter.searchsite?.disqusName)
+        XCTAssertNil(presenter.searchsite?.googleAnalyticsIdentifier)
+        XCTAssertNil(presenter.searchsite?.twitterHandle)
+        XCTAssertNil(presenter.searchsite?.loggedInUser)
+        XCTAssertEqual(presenter.searchsite?.currentPageURL.absoluteString, "/search")
+        XCTAssertEqual(presenter.searchsite?.url.absoluteString, "/")
     }
     
-    func testwebsiteGetsLoggedInUserForSearch() throws {
+    func testsiteGetsLoggedInUserForSearch() throws {
         _ = try testWorld.getResponse(to: "/search?term=Test", loggedInUser: firstData.author)
-        XCTAssertEqual(presenter.searchwebsite?.loggedInUser?.username, firstData.author.username)
+        XCTAssertEqual(presenter.searchsite?.loggedInUser?.username, firstData.author.username)
     }
     
-    func testSettingEnvVarsWithwebsiteForSearch() throws {
+    func testSettingEnvVarsWithsiteForSearch() throws {
         let googleAnalytics = "ABDJIODJWOIJIWO"
         let twitterHandle = "3483209fheihgifffe"
         let disqusName = "34829u48932fgvfbrtewerg"
@@ -74,9 +74,9 @@ class SearchTests: XCTestCase {
         setenv("BLOG_SITE_TWITTER_HANDLE", twitterHandle, 1)
         setenv("BLOG_DISQUS_NAME", disqusName, 1)
         _ = try testWorld.getResponse(to: "/search?term=Test")
-        XCTAssertEqual(presenter.searchwebsite?.disqusName, disqusName)
-        XCTAssertEqual(presenter.searchwebsite?.googleAnalyticsIdentifier, googleAnalytics)
-        XCTAssertEqual(presenter.searchwebsite?.twitterHandle, twitterHandle)
+        XCTAssertEqual(presenter.searchsite?.disqusName, disqusName)
+        XCTAssertEqual(presenter.searchsite?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(presenter.searchsite?.twitterHandle, twitterHandle)
     }
     
     func testPaginationInfoSetCorrectly() throws {

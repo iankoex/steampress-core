@@ -1,4 +1,4 @@
 struct AllAuthorsPageContext: Encodable {
-    let website: GlobalWebsiteInformation
+    let site: GlobalWebsiteInformation
     let authors: [ViewBlogAuthor]
 }

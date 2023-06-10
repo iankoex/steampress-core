@@ -17,12 +17,12 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var adminViewErrors: [String]?
     private(set) var adminViewPosts: [BlogPost]?
     private(set) var adminViewUsers: [BlogUser]?
-    private(set) var adminViewwebsite: GlobalWebsiteInformation?
-    func createIndexView(posts: [BlogPost], users: [BlogUser], errors: [String]?, website: GlobalWebsiteInformation) -> View {
+    private(set) var adminViewsite: GlobalWebsiteInformation?
+    func createIndexView(posts: [BlogPost], users: [BlogUser], errors: [String]?, site: GlobalWebsiteInformation) -> View {
         self.adminViewErrors = errors
         self.adminViewPosts = posts
         self.adminViewUsers = users
-        self.adminViewwebsite = website
+        self.adminViewsite = site
         return TestDataBuilder.createFutureView()
     }
 
@@ -36,8 +36,8 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var createPostSlugURL: String?
     private(set) var createPostTitleError: Bool?
     private(set) var createPostContentsError: Bool?
-    private(set) var createPostwebsite: GlobalWebsiteInformation?
-    func createPostView(errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?, titleError: Bool, contentsError: Bool, website: GlobalWebsiteInformation) -> View {
+    private(set) var createPostsite: GlobalWebsiteInformation?
+    func createPostView(errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?, titleError: Bool, contentsError: Bool, site: GlobalWebsiteInformation) -> View {
         self.createPostErrors = errors
         self.createPostTitle = title
         self.createPostContents = contents
@@ -48,7 +48,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         self.createPostDraft = isDraft
         self.createPostTitleError = titleError
         self.createPostContentsError = contentsError
-        self.createPostwebsite = website
+        self.createPostsite = site
         return TestDataBuilder.createFutureView()
     }
 
@@ -66,7 +66,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var createUserEditing: Bool?
     private(set) var createUserNameError: Bool?
     private(set) var createUserUsernameError: Bool?
-    func createUserView(editing: Bool, errors: [String]?, name: String?, nameError: Bool, username: String?, usernameErorr: Bool, passwordError: Bool, confirmPasswordError: Bool, resetPasswordOnLogin: Bool, userID: UUID?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, website: GlobalWebsiteInformation) -> View {
+    func createUserView(editing: Bool, errors: [String]?, name: String?, nameError: Bool, username: String?, usernameErorr: Bool, passwordError: Bool, confirmPasswordError: Bool, resetPasswordOnLogin: Bool, userID: UUID?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, site: GlobalWebsiteInformation) -> View {
         self.createUserEditing = editing
         self.createUserErrors = errors
         self.createUserName = name
@@ -87,12 +87,12 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var resetPasswordErrors: [String]?
     private(set) var resetPasswordError: Bool?
     private(set) var resetPasswordConfirmError: Bool?
-    private(set) var resetPasswordwebsite: GlobalWebsiteInformation?
-    func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?, website: GlobalWebsiteInformation) -> View {
+    private(set) var resetPasswordsite: GlobalWebsiteInformation?
+    func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?, site: GlobalWebsiteInformation) -> View {
         self.resetPasswordErrors = errors
         self.resetPasswordError = passwordError
         self.resetPasswordConfirmError = confirmPasswordError
-        self.resetPasswordwebsite = website
+        self.resetPasswordsite = site
         return TestDataBuilder.createFutureView()
     }
 }

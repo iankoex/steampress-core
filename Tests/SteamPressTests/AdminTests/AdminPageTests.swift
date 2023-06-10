@@ -20,9 +20,9 @@ class AdminPageTests: XCTestCase {
         XCTAssertEqual(presenter.adminViewUsers?.count, 1)
         XCTAssertEqual(presenter.adminViewUsers?.last?.username, user.username)
         
-        XCTAssertEqual(presenter.adminViewwebsite?.loggedInUser.username, user.username)
-        XCTAssertEqual(presenter.adminViewwebsite?.url.absoluteString, "/")
-        XCTAssertEqual(presenter.adminViewwebsite?.currentPageURL.absoluteString, "/admin/")
+        XCTAssertEqual(presenter.adminViewsite?.loggedInUser.username, user.username)
+        XCTAssertEqual(presenter.adminViewsite?.url.absoluteString, "/")
+        XCTAssertEqual(presenter.adminViewsite?.currentPageURL.absoluteString, "/admin/")
         
         try testWorld.shutdown()
     }

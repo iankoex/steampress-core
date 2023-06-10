@@ -18,7 +18,7 @@
 
 SteamPress is a Swift blogging engine for use with the Vapor Framework to deploy blogs to sites that run on top of Vapor. It uses protocols to define database storage, so will work with any database that has a `SteamPressRepository` implementation, or you can write your own! It also incorporates a [Markdown Provider](https://github.com/vapor-community/markdown-provider) allowing you to write your posts in Markdown and then use Leaf to render the markdown.
 
-The blog can either be used as the root of your website (i.e. appearing at https://www.acme.org) or in a subpath (i.e. https://www.acme.org/blog/).
+The blog can either be used as the root of your site (i.e. appearing at https://www.acme.org) or in a subpath (i.e. https://www.acme.org/blog/).
 
 There is an example of how it can work in a site (and what it requires in terms of Leaf templates and the parameters is passes to them) at https://github.com/brokenhandsio/SteamPressExample.
 
@@ -167,7 +167,7 @@ let feedInformation = FeedInformation(
 application.steampress.configuration = SteamPressConfiguration(blogPath: "blog", feedInformation: feedInformation, postsPerPage: 5)
 ```
 
-Additionally, you should set the `WEBSITE_URL` environment variable to the root address of your website, e.g. `https://www.steampress.io`. This is used to set various parameters throughout SteamPress.
+Additionally, you should set the `WEBSITE_URL` environment variable to the root address of your site, e.g. `https://www.steampress.io`. This is used to set various parameters throughout SteamPress.
 
 ## Logging In
 
@@ -191,7 +191,7 @@ The Twitter handle of the site can be configured with a `BLOG_SITE_TWITTER_HANDL
 
 SteamPress makes it easy to integrate Google Analytics into your blog. Just start the application with the `BLOG_GOOGLE_ANALYTICS_IDENTIFIER` environment variable set to you Google Analytics identifier. (You can get your identifier from the Google Analytics console, it will look something like UA-12345678-1)
 
-This will pass a `googleAnalyticsIdentifier` parameter through to all of the public pages in the `website` variable, which you can include and then use the [Example Site's javascript](https://github.com/brokenhandsio/SteamPressExample/blob/master/Public/static/js/analytics.js) to integrate with.
+This will pass a `googleAnalyticsIdentifier` parameter through to all of the public pages in the `site` variable, which you can include and then use the [Example Site's javascript](https://github.com/brokenhandsio/SteamPressExample/blob/master/Public/static/js/analytics.js) to integrate with.
 
 ## Atom/RSS Support
 
@@ -210,20 +210,20 @@ SteamPress has a built in blog search. It will register a route, `/search`, unde
 
 SteamPress expects there to be a number of Leaf template files in the correct location in `Resources/Views`. All these files should be in a `blog` directory, with the admin template files being in an `admin` directory. For an example of how it SteamPress works with the leaf templates, see the [Example SteamPress site](https://github.com/brokenhandsio/SteamPressExample).
 
-For every public Leaf template, a `website` parameter will be passed in with the following information:
+For every public Leaf template, a `site` parameter will be passed in with the following information:
 
 * `disqusName`: The site Disqus name, as discussed above
 * `twitterHandle`: The site twitter handle, as discussed above
 * `googleAnalyticsIdentifier`: The Google Analytics identifer as discussed above
 * `loggedInUser`: The currently logged in user, if a user is logged in. This is useful for displaying a 'Create Post' link throughout the site when logged in etc.
-* `url`: The URL for the website
+* `url`: The URL for the site
 * `currentPageURL`: The URL of the current page
 * `currentPageEncodedURL`: An URL encoded representation of the current page
 
-For admin pages, the `website` parameter has the following information:
+For admin pages, the `site` parameter has the following information:
 
 * `loggedInUser`: The currently logged in user, if a user is logged in. This is useful for displaying a 'Create Post' link throughout the site when logged in etc.
-* `url`: The URL for the website
+* `url`: The URL for the site
 * `currentPageURL`: The URL of the current page
 
 The basic structure of your `Resources/View` directory should be:
@@ -252,7 +252,7 @@ This is the index page of the blog. The parameters it will receive are:
 * `posts` - an array containing `ViewBlogPost`s. This contains all the post information and extra stuff that's useful, such as other date formats and snippets.
 * `tags` - an array of `ViewBlogTag`s if there are any
 * `authors` - an array of the authors if there are any
-* `website` - general page information (see above)
+* `site` - general page information (see above)
 * `title` - the title for the page
 * `blogIndexPage` - a boolean saying we are on the index page of the blog - useful for navbars
 * `paginationTagInformation` - information for enabling pagination on the page. See `PaginationTagInformation` for more details.
@@ -265,7 +265,7 @@ This is the page for viewing a single entire blog post. The parameters set are:
 * `post` - the blog post as a `ViewBlogPost`
 * `author` - the author of the post
 * `blogPostPage` - a boolean saying we are on the blog post page
-* `website` - general page information (see above)
+* `site` - general page information (see above)
 * `postImage` - The first image in the blog post if one is there. Useful for OpenGraph and Twitter Cards
 * `postImageAlt` - The alt text of the first image if it exists. Useful for Twitter Cards
 * `shortSnippet`: The HTML of the short snippet of the post on a single line with all HTML tags stripped out for the `description` tags
@@ -278,7 +278,7 @@ This is the page for a tag. A blog post can be tagged with many tags and a tag c
 * `posts` - an array of `ViewBlogPost`s that have been tagged with this tag. Note that this may not be all the posts due to pagination
 * `tagPage` - a boolean saying we are on the tag page
 * `postCount` - the number of posts in total that have this tag
-* `website` - general page information (see above)
+* `site` - general page information (see above)
 * `paginationTagInformation` - information for enabling pagination on the page. See `PaginationTagInformation` for more details.
 
 ### `profile.leaf`
@@ -290,7 +290,7 @@ This is the page for viewing a profile of a user. This is generally used for vie
 * `profilePage` - a boolean set to to true if we are viewing the profile page
 * `myProfile` - a boolean set if the currently logged in user is viewing their own profile page
 * `postCount` - the number of posts in total that have this tag
-* `website` - general page information (see above)
+* `site` - general page information (see above)
 * `paginationTagInformation` - information for enabling pagination on the page. See `PaginationTagInformation` for more details.
 
 ### `tags.leaf`
@@ -299,14 +299,14 @@ This is the page for viewing all of the tags on the blog. This provides some mor
 
 * `title` - a title for the page
 * `tags` - an array of `BlogTagWithPostCount`s. This is the tags with the number of posts tagged with that tag
-* `website` - general page information (see above)
+* `site` - general page information (see above)
 
 ### `authors.leaf`
 
 This is the page for viewing all of the authors on the blog. It provides a useful page for user's to see everyone who has contributed to the site.
 
 * `authors` - an array of all the `ViewBlogAuthor`s on the blog
-* `website` - general page information (see above)
+* `site` - general page information (see above)
 
 ### `search.leaf`
 
@@ -316,7 +316,7 @@ This is the page that will display search results. It has a number of parameters
 * `searchTerm` - the search term if provided
 * `totalResults` - the number of results returned from the search
 * `posts` - an array of `ViewBlogPost`s returned in the search. Note that this may not be all the posts due to pagination.
-* `website` - general page information (see above)
+* `site` - general page information (see above)
 * `paginationTagInformation` - information for enabling pagination on the page. See `PaginationTagInformation` for more details.
 
 ### `login.leaf`
@@ -329,7 +329,7 @@ This is the page for logging in to the admin section of the blog. The parameters
 * `usernameError` - a boolean set if there was an issue with the username
 * `passwordError` - a boolean set if there was an error with the password (note that we do not pass any password submitted back to any pages if there was an error for security reasons)
 * `rememberMe` - set if the remember me checkbox was checked and there was an error, useful for pre-populating
-* `website` - general page information (see above)
+* `site` - general page information (see above)
 
 ## Admin Site
 
@@ -343,7 +343,7 @@ This is the main Admin page for the blog where you can create and edit users and
 * `errors` - any error messages for errors that have occurred when trying to delete posts or users (for instance trying to delete yourself or the last user)
 * `blogAdminPage` - a boolean set to true, useful for navigation
 * `title` - the title for the page
-* `website` - general page information as `GlobalWebsiteInformation` - see above
+* `site` - general page information as `GlobalWebsiteInformation` - see above
 
 ### `resetPassword.leaf`
 
@@ -352,7 +352,7 @@ This is the page you will be redirected to if you need to reset your password. T
 * `errors` - an array of errors if there were any errors resetting your password
 * `passwordError` - a boolean set if there was an error with the password (for instance it was blank)
 * `confirmPasswordError` - a boolean set if there was an error with the password confirm (for instance it was blank)
-* `website` - general page information as `GlobalWebsiteInformation` - see above
+* `site` - general page information as `GlobalWebsiteInformation` - see above
 
 ### `createPost.leaf`
 
@@ -371,7 +371,7 @@ This is the page for creating a new blog post, or editing an existing one. The p
 * `contentsError` - a boolean set to true if there was an error with the blog contents
 let postPathPrefix: String
 * `postPathPrefix` - the path to the post page that would be created or we are editing
-* `website` - general page information as `GlobalWebsiteInformation` - see above
+* `site` - general page information as `GlobalWebsiteInformation` - see above
 
 ### `createUser.leaf`
 
@@ -392,7 +392,7 @@ This is the page for creating a new user, or editing an existing one. The parame
 * `profilePictureSupplied` - the URL of the profile picture of the user we are editing or that we failed to create
 * `biographySupplied` - the biography of the user we are editing or that we failed to create
 * `taglineSupplied` - the tagline of the user we are editing or that we failed to create
-* `website` - general page information as `GlobalWebsiteInformation` - see above
+* `site` - general page information as `GlobalWebsiteInformation` - see above
 
 ## `POST` Routes
 

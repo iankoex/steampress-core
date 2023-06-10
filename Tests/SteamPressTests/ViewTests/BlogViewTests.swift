@@ -10,7 +10,7 @@ class BlogViewTests: XCTestCase {
     var author: BlogUser!
     var post: BlogPost!
     var viewRenderer: CapturingViewRenderer!
-    var website: GlobalWebsiteInformation!
+    var site: GlobalWebsiteInformation!
     var url: URL!
     var currentPageURL: URL!
 
@@ -26,7 +26,7 @@ class BlogViewTests: XCTestCase {
         post = try TestDataBuilder.anyPost(author: author, contents: TestDataBuilder.longContents, creationDate: createdDate, lastEditedDate: lastEditedDate)
         url = URL(string: "https://www.brokenhands.io")!
         currentPageURL = url.appendingPathComponent("blog").appendingPathComponent("posts").appendingPathComponent("test-post")
-        website = GlobalWebsiteInformation(disqusName: "disqusName", twitterHandle: "twitterHandleSomething", googleAnalyticsIdentifier: "GAString....", loggedInUser: author, url: url, currentPageURL: currentPageURL, currentPageEncodedURL: currentPageURL.absoluteString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)
+        site = GlobalWebsiteInformation(disqusName: "disqusName", twitterHandle: "twitterHandleSomething", googleAnalyticsIdentifier: "GAString....", loggedInUser: author, url: url, currentPageURL: currentPageURL, currentPageEncodedURL: currentPageURL.absoluteString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)
     }
     
     override func tearDownWithError() throws {
@@ -36,7 +36,7 @@ class BlogViewTests: XCTestCase {
     // MARK: - Tests
     
     func testDescriptionOnBlogPostPageIsShortSnippetTextCleaned() async throws {
-        _ = try await presenter.postView(post: post, author: author, tags: [], website: website)
+        _ = try await presenter.postView(post: post, author: author, tags: [], site: site)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
         let expectedDescription = "Welcome to SteamPress!\nSteamPress started out as an idea - after all, I was porting sites and backends over to Swift and would like to have a blog as well. Being early days for Server-Side Swift, and embracing Vapor, there wasn't anything available to put a blog on my site, so I did what any self-respecting engineer would do - I made one! Besides, what better way to learn a framework than build a blog!"
@@ -45,7 +45,7 @@ class BlogViewTests: XCTestCase {
     
     func testBlogPostPageGetsCorrectParameters() async throws {
         let tag = BlogTag(id: UUID(), name: "Engineering")
-        _ = try await presenter.postView(post: post, author: author, tags: [tag], website: website)
+        _ = try await presenter.postView(post: post, author: author, tags: [tag], site: site)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
         
@@ -55,14 +55,14 @@ class BlogViewTests: XCTestCase {
         XCTAssertEqual(context.post.contents, post.contents)
         XCTAssertEqual(context.author.name, author.name)
         XCTAssertTrue(context.blogPostPage)
-        XCTAssertEqual(context.website.disqusName, website.disqusName)
-        XCTAssertEqual(context.website.twitterHandle, website.twitterHandle)
-        XCTAssertEqual(context.website.googleAnalyticsIdentifier, website.googleAnalyticsIdentifier)
-        XCTAssertEqual(context.website.loggedInUser?.username, website.loggedInUser?.username)
+        XCTAssertEqual(context.site.disqusName, site.disqusName)
+        XCTAssertEqual(context.site.twitterHandle, site.twitterHandle)
+        XCTAssertEqual(context.site.googleAnalyticsIdentifier, site.googleAnalyticsIdentifier)
+        XCTAssertEqual(context.site.loggedInUser?.username, site.loggedInUser?.username)
         XCTAssertEqual(context.postImage, "https://user-images.githubusercontent.com/9938337/29742058-ed41dcc0-8a6f-11e7-9cfc-680501cdfb97.png")
         XCTAssertEqual(context.postImageAlt, "SteamPress Logo")
-        XCTAssertEqual(context.website.currentPageURL.absoluteString, "https://www.brokenhands.io/blog/posts/test-post")
-        XCTAssertEqual(context.website.url.absoluteString, "https://www.brokenhands.io")
+        XCTAssertEqual(context.site.currentPageURL.absoluteString, "https://www.brokenhands.io/blog/posts/test-post")
+        XCTAssertEqual(context.site.url.absoluteString, "https://www.brokenhands.io")
         XCTAssertEqual(context.post.tags.first?.name, tag.name)
         XCTAssertEqual(context.post.authorName, author.name)
         XCTAssertEqual(context.post.authorUsername, author.username)
@@ -82,27 +82,27 @@ class BlogViewTests: XCTestCase {
     }
     
     func testDisqusNameNotPassedToBlogPostPageIfNotPassedIn() async throws {
-        let websiteWithoutDisqus = GlobalWebsiteInformation(disqusName: nil, twitterHandle: "twitter", googleAnalyticsIdentifier: "google", loggedInUser: author, url: url, currentPageURL: currentPageURL, currentPageEncodedURL: currentPageURL.absoluteString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)
-        _ = try await presenter.postView(post: post, author: author, tags: [], website: websiteWithoutDisqus)
+        let siteWithoutDisqus = GlobalWebsiteInformation(disqusName: nil, twitterHandle: "twitter", googleAnalyticsIdentifier: "google", loggedInUser: author, url: url, currentPageURL: currentPageURL, currentPageEncodedURL: currentPageURL.absoluteString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)
+        _ = try await presenter.postView(post: post, author: author, tags: [], site: siteWithoutDisqus)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
-        XCTAssertNil(context.website.disqusName)
+        XCTAssertNil(context.site.disqusName)
     }
     
     func testTwitterHandleNotPassedToBlogPostPageIfNotPassedIn() async throws {
-        let websiteWithoutTwitterHandle = GlobalWebsiteInformation(disqusName: "disqus", twitterHandle: nil, googleAnalyticsIdentifier: "google", loggedInUser: author, url: url, currentPageURL: currentPageURL, currentPageEncodedURL: currentPageURL.absoluteString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)
-        _ = try await presenter.postView(post: post, author: author, tags: [], website: websiteWithoutTwitterHandle)
+        let siteWithoutTwitterHandle = GlobalWebsiteInformation(disqusName: "disqus", twitterHandle: nil, googleAnalyticsIdentifier: "google", loggedInUser: author, url: url, currentPageURL: currentPageURL, currentPageEncodedURL: currentPageURL.absoluteString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)
+        _ = try await presenter.postView(post: post, author: author, tags: [], site: siteWithoutTwitterHandle)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
-        XCTAssertNil(context.website.twitterHandle)
+        XCTAssertNil(context.site.twitterHandle)
     }
     
     func testGAIdentifierNotPassedToBlogPostPageIfNotPassedIn() async throws {
-        let websiteWithoutGAIdentifier = GlobalWebsiteInformation(disqusName: "disqus", twitterHandle: "twitter", googleAnalyticsIdentifier: nil, loggedInUser: author, url: url, currentPageURL: currentPageURL, currentPageEncodedURL: currentPageURL.absoluteString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)
-        _ = try await presenter.postView(post: post, author: author, tags: [], website: websiteWithoutGAIdentifier)
+        let siteWithoutGAIdentifier = GlobalWebsiteInformation(disqusName: "disqus", twitterHandle: "twitter", googleAnalyticsIdentifier: nil, loggedInUser: author, url: url, currentPageURL: currentPageURL, currentPageEncodedURL: currentPageURL.absoluteString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)
+        _ = try await presenter.postView(post: post, author: author, tags: [], site: siteWithoutGAIdentifier)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
-        XCTAssertNil(context.website.googleAnalyticsIdentifier)
+        XCTAssertNil(context.site.googleAnalyticsIdentifier)
     }
     
     func testGettingTagViewWithURLEncodedName() async throws {
@@ -110,7 +110,7 @@ class BlogViewTests: XCTestCase {
         let urlEncodedName = try XCTUnwrap(tagName.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed))
         let tag = BlogTag(id: UUID(), name: tagName)
         
-        _ = try await presenter.postView(post: post, author: author, tags: [tag], website: website)
+        _ = try await presenter.postView(post: post, author: author, tags: [tag], site: site)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
         XCTAssertEqual(context.post.tags.first?.urlEncodedName, urlEncodedName)
