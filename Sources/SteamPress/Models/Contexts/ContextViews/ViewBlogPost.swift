@@ -19,8 +19,8 @@ struct ViewBlogPost: Encodable {
     var lastEditedDateLong: String?
     var authorName: String
     var authorUsername: String
-    var postImage: String?
-    var postImageAlt: String?
+    var image: String?
+    var imageAlt: String?
     var description: String
     var tags: [ViewBlogTag]
 }
@@ -41,8 +41,8 @@ struct ViewBlogPostWithoutTags: Encodable {
     var lastEditedDateLong: String?
     var authorName: String
     var authorUsername: String
-    var postImage: String?
-    var postImageAlt: String?
+    var image: String?
+    var imageAlt: String?
     var description: String
 }
 
@@ -103,8 +103,8 @@ extension BlogPost {
             lastEditedDateLong: lastEditedDateLong,
             authorName: authorName,
             authorUsername: authorUsername,
-            postImage: postImage,
-            postImageAlt: postImageAlt,
+            image: postImage,
+            imageAlt: postImageAlt,
             description: self.description()
         )
     }
@@ -141,8 +141,8 @@ extension BlogPost {
             lastEditedDateLong: viewPost.lastEditedDateLong,
             authorName: viewPost.authorName,
             authorUsername: viewPost.authorUsername,
-            postImage: viewPost.postImage,
-            postImageAlt: viewPost.postImageAlt,
+            image: viewPost.image,
+            imageAlt: viewPost.imageAlt,
             description: viewPost.description,
             tags: viewTags
         )

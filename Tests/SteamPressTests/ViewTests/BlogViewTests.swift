@@ -59,8 +59,8 @@ class BlogViewTests: XCTestCase {
         XCTAssertEqual(context.site.twitterHandle, site.twitterHandle)
         XCTAssertEqual(context.site.googleAnalyticsIdentifier, site.googleAnalyticsIdentifier)
         XCTAssertEqual(context.site.loggedInUser?.username, site.loggedInUser?.username)
-        XCTAssertEqual(context.postImage, "https://user-images.githubusercontent.com/9938337/29742058-ed41dcc0-8a6f-11e7-9cfc-680501cdfb97.png")
-        XCTAssertEqual(context.postImageAlt, "SteamPress Logo")
+        XCTAssertEqual(context.image, "https://user-images.githubusercontent.com/9938337/29742058-ed41dcc0-8a6f-11e7-9cfc-680501cdfb97.png")
+        XCTAssertEqual(context.imageAlt, "SteamPress Logo")
         XCTAssertEqual(context.site.currentPageURL.absoluteString, "https://www.brokenhands.io/blog/posts/test-post")
         XCTAssertEqual(context.site.url.absoluteString, "https://www.brokenhands.io")
         XCTAssertEqual(context.post.tags.first?.name, tag.name)
@@ -69,8 +69,8 @@ class BlogViewTests: XCTestCase {
         
         let expectedDescription = "Welcome to SteamPress! SteamPress started out as an idea - after all, I was porting sites and backends over to Swift and would like to have a blog as well. Being early days for Server-Side Swift, and embracing Vapor, there wasn't anything available to put a blog on my site, so I did what any self-respecting engineer would do - I made one! Besides, what better way to learn a framework than build a blog!"
         XCTAssertEqual(context.post.description.trimmingCharacters(in: .whitespacesAndNewlines), expectedDescription)
-        XCTAssertEqual(context.post.postImage, "https://user-images.githubusercontent.com/9938337/29742058-ed41dcc0-8a6f-11e7-9cfc-680501cdfb97.png")
-        XCTAssertEqual(context.post.postImageAlt, "SteamPress Logo")
+        XCTAssertEqual(context.post.image, "https://user-images.githubusercontent.com/9938337/29742058-ed41dcc0-8a6f-11e7-9cfc-680501cdfb97.png")
+        XCTAssertEqual(context.post.imageAlt, "SteamPress Logo")
         let expectedSnippet = "Welcome to SteamPress!\nSteamPress started out as an idea - after all, I was porting sites and backends over to Swift and would like to have a blog as well. Being early days for Server-Side Swift, and embracing Vapor, there wasn\'t anything available to put a blog on my site, so I did what any self-respecting engineer would do - I made one! Besides, what better way to learn a framework than build a blog!\nI plan to put some more posts up going into how I actually wrote SteamPress, going into some Vapor basics like Authentication and other popular #help topics on [Slack](qutheory.slack.com) (I probably need to rewrite a lot of it properly first!) either on here or on https://geeks.brokenhands.io, which will be the engineering site for Broken Hands, which is what a lot of future projects I have planned will be under. \n![SteamPress Logo](https://user-images.githubusercontent.com/9938337/29742058-ed41dcc0-8a6f-11e7-9cfc-680501cdfb97.png)\n"
         XCTAssertEqual(context.post.longSnippet, expectedSnippet)
         XCTAssertEqual(context.post.createdDateLong, "Friday, Mar 20, 2020")

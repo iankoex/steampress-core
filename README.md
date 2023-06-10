@@ -266,8 +266,8 @@ This is the page for viewing a single entire blog post. The parameters set are:
 * `author` - the author of the post
 * `blogPostPage` - a boolean saying we are on the blog post page
 * `site` - general page information (see above)
-* `postImage` - The first image in the blog post if one is there. Useful for OpenGraph and Twitter Cards
-* `postImageAlt` - The alt text of the first image if it exists. Useful for Twitter Cards
+* `image` - The first image in the blog post if one is there. Useful for OpenGraph and Twitter Cards
+* `imageAlt` - The alt text of the first image if it exists. Useful for Twitter Cards
 * `shortSnippet`: The HTML of the short snippet of the post on a single line with all HTML tags stripped out for the `description` tags
 
 ### `tag.leaf`
