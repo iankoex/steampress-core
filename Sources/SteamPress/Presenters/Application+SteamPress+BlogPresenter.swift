@@ -34,7 +34,7 @@ extension Application.SteamPress {
         let application: Application
 
         var view: ViewBlogPresenter {
-            return .init(viewRenderer: self.application.view, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter())
+            return .init(viewRenderer: self.application.view)
         }
 
         var blogPresenter: BlogPresenter {

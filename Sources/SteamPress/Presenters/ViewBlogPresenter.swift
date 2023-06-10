@@ -4,20 +4,16 @@ import SwiftMarkdown
 
 public struct ViewBlogPresenter: BlogPresenter {
     let viewRenderer: ViewRenderer
-    let longDateFormatter: LongPostDateFormatter
-    let numericDateFormatter: NumericPostDateFormatter
 
-    public func indexView(posts: [BlogPost], tags: [BlogTag], authors: [BlogUser.Public], tagsForPosts: [UUID: [BlogTag]], site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
-        let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, longDateFormatter: longDateFormatter, numericDateFormatter: numericDateFormatter)
-        let viewTags = try tags.map { try $0.toViewBlogTag() }
-        let context = BlogIndexPageContext(posts: viewPosts, tags: viewTags, authors: authors, site: site, paginationTagInformation: paginationTagInfo)
+    public func indexView(posts: [BlogPost], site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
+        let viewPosts = try posts.toViewPosts()
+        let context = BlogIndexPageContext(posts: viewPosts, site: site, paginationTagInformation: paginationTagInfo)
         return try await viewRenderer.render("blog/index", context)
     }
 
-    public func postView(post: BlogPost, author: BlogUser.Public, tags: [BlogTag], site: GlobalWebsiteInformation) async throws -> View {
-        let viewPost = try post.toViewPost(authorName: author.name, authorUsername: author.username, longFormatter: longDateFormatter, numericFormatter: numericDateFormatter, tags: tags)
-        
-        let context = BlogPostPageContext(title: post.title, post: viewPost, author: author, site: site)
+    public func postView(post: BlogPost, site: GlobalWebsiteInformation) async throws -> View {
+        let viewPost = try post.toViewPost()
+        let context = BlogPostPageContext(title: post.title, post: viewPost, site: site)
         return try await viewRenderer.render("blog/post", context)
     }
 
@@ -33,15 +29,15 @@ public struct ViewBlogPresenter: BlogPresenter {
         let context = AllAuthorsPageContext(site: site, authors: viewAuthors)
         return try await viewRenderer.render("blog/authors", context)
     }
-
-    public func authorView(author: BlogUser.Public, posts: [BlogPost], postCount: Int, tagsForPosts: [UUID: [BlogTag]], site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
+    
+    public func authorView(author: BlogUser.Public, posts: [BlogPost], postCount: Int, site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
         let myProfile: Bool
         if let loggedInUser = site.loggedInUser {
             myProfile = loggedInUser.id == author.id
         } else {
             myProfile = false
         }
-        let viewPosts = try posts.convertToViewBlogPosts(authors: [author], tagsForPosts: tagsForPosts, longDateFormatter: longDateFormatter, numericDateFormatter: numericDateFormatter)
+        let viewPosts = try posts.toViewPosts()
         let context = AuthorPageContext(author: author, posts: viewPosts, site: site, myProfile: myProfile, postCount: postCount, paginationTagInformation: paginationTagInfo)
         return try await viewRenderer.render("blog/profile", context)
     }
@@ -69,13 +65,13 @@ public struct ViewBlogPresenter: BlogPresenter {
             dict[blogID] = [tag]
         }
         
-        let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, longDateFormatter: longDateFormatter, numericDateFormatter: numericDateFormatter)
+        let viewPosts = try posts.toViewPosts()
         let context = TagPageContext(tag: tag, site: site, posts: viewPosts, postCount: totalPosts, paginationTagInformation: paginationTagInfo)
         return try await viewRenderer.render("blog/tag", context)
     }
 
-    public func searchView(totalResults: Int, posts: [BlogPost], authors: [BlogUser.Public], searchTerm: String?, tagsForPosts: [UUID: [BlogTag]], site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
-        let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, longDateFormatter: longDateFormatter, numericDateFormatter: numericDateFormatter)
+    func searchView(totalResults: Int, posts: [BlogPost], authors: [BlogUser.Public], tags: [BlogTag], searchTerm: String?, site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
+        let viewPosts = try posts.toViewPosts()
         let context = SearchPageContext(searchTerm: searchTerm, posts: viewPosts, totalResults: totalResults, site: site, paginationTagInformation: paginationTagInfo)
         return try await viewRenderer.render("blog/search", context)
     }

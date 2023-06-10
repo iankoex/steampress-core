@@ -44,11 +44,8 @@ struct BlogController: RouteCollection {
         let paginationInformation = req.getPaginationInformation(postsPerPage: postsPerPage)
         
         let posts = try await req.repositories.blogPost.getAllPostsSortedByPublishDate(includeDrafts: false, count: postsPerPage, offset: paginationInformation.offset)
-        let tags = try await req.repositories.blogTag.getAllTags()
-        let users = try await req.repositories.blogUser.getAllUsers().convertToPublic()
         let totalPostCount = try await req.repositories.blogPost.getAllPostsCount(includeDrafts: false)
-        let tagsForPosts = try await req.repositories.blogTag.getTagsForAllPosts()
-        return try await req.blogPresenter.indexView(posts: posts, tags: tags, authors: users, tagsForPosts: tagsForPosts, site: try req.siteInformation(), paginationTagInfo: self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPostCount, currentQuery: req.url.query))
+        return try await req.blogPresenter.indexView(posts: posts, site: try req.siteInformation(), paginationTagInfo: self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPostCount, currentQuery: req.url.query))
     }
 
     func blogPostIndexRedirectHandler(_ req: Request) async throws -> Response {
@@ -62,12 +59,8 @@ struct BlogController: RouteCollection {
         guard let post = try await req.repositories.blogPost.getPost(slug: blogSlug) else {
             throw Abort(.notFound)
         }
-        let tags: [BlogTag] = try await req.repositories.blogTag.getTags(for: post)
-        guard let user = try await req.repositories.blogUser.getUser(id: post.$author.id) else {
-            throw Abort(.internalServerError)
-        }
         let site: GlobalWebsiteInformation = try req.siteInformation()
-        return try await req.blogPresenter.postView(post: post, author: user.convertToPublic(), tags: tags, site: site)
+        return try await req.blogPresenter.postView(post: post, site: site)
     }
 
     func tagViewHandler(_ req: Request) async throws -> View {
@@ -89,10 +82,9 @@ struct BlogController: RouteCollection {
             throw Abort(.notFound)
         }
         let posts = try await req.repositories.blogPost.getAllPostsSortedByPublishDate(for: author, includeDrafts: false, count: self.postsPerPage, offset: paginationInformation.offset)
-        let tagsForPosts = try await req.repositories.blogTag.getTagsForAllPosts()
         let postCount = try await req.repositories.blogPost.getPostCount(for: author)
         let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: postCount, currentQuery: req.url.query)
-        return try await req.blogPresenter.authorView(author: author.convertToPublic(), posts: posts, postCount: postCount, tagsForPosts: tagsForPosts, site: try req.siteInformation(), paginationTagInfo: paginationTagInfo)
+        return try await req.blogPresenter.authorView(author: author.convertToPublic(), posts: posts, postCount: postCount, site: try req.siteInformation(), paginationTagInfo: paginationTagInfo)
     }
 
     func allTagsViewHandler(_ req: Request) async throws -> View {
@@ -123,16 +115,16 @@ struct BlogController: RouteCollection {
         let paginationInformation = req.getPaginationInformation(postsPerPage: postsPerPage)
         guard let searchTerm = req.query[String.self, at: "term"], !searchTerm.isEmpty else {
             let paginationTagInfo = getPaginationInformation(currentPage: paginationInformation.page, totalPosts: 0, currentQuery: req.url.query)
-            return try await req.blogPresenter.searchView(totalResults: 0, posts: [], authors: [], searchTerm: nil, tagsForPosts: [:], site: try req.siteInformation(), paginationTagInfo: paginationTagInfo)
+            return try await req.blogPresenter.searchView(totalResults: 0, posts: [], authors: [], tags: [], searchTerm: nil, site: try req.siteInformation(), paginationTagInfo: paginationTagInfo)
         }
 
         let totalPosts = try await req.repositories.blogPost.getPublishedPostCount(for: searchTerm)
         let posts = try await req.repositories.blogPost.findPublishedPostsOrdered(for: searchTerm, count: self.postsPerPage, offset: paginationInformation.offset)
-        let tagsForPosts = try await req.repositories.blogTag.getTagsForAllPosts()
+        let tags = try await req.repositories.blogTag.getAllTags()
         let users = try await req.repositories.blogUser.getAllUsers().convertToPublic()
         
         let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPosts, currentQuery: req.url.query)
-        return try await req.blogPresenter.searchView(totalResults: totalPosts, posts: posts, authors: users, searchTerm: searchTerm, tagsForPosts: tagsForPosts, site: try req.siteInformation(), paginationTagInfo: paginationTagInfo)
+        return try await req.blogPresenter.searchView(totalResults: totalPosts, posts: posts, authors: users, tags: tags, searchTerm: searchTerm, site: try req.siteInformation(), paginationTagInfo: paginationTagInfo)
     }
     
     func getPaginationInformation(currentPage: Int, totalPosts: Int, currentQuery: String?) -> PaginationTagInformation {

@@ -7,6 +7,7 @@ struct ViewBlogTag: Encodable {
     let urlEncodedName: String
 }
 
+
 extension BlogTag {
     func toViewBlogTag() throws -> ViewBlogTag {
         guard let urlEncodedName = self.name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
@@ -19,8 +20,13 @@ extension BlogTag {
     }
 }
 
+extension Collection where Element: BlogTag {
+    func toViewBlogTag() throws -> [ViewBlogTag] {
+        return try self.map { try $0.toViewBlogTag() }
+    }
+}
+
 extension ViewBlogTag {
-    
     static func percentEncodedTagName(from name: String) throws -> String {
         guard let percentEncodedName = name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
             throw SteamPressError(identifier: "BlogTag", "Unable to create tag from name \(name)")

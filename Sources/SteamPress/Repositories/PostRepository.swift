@@ -15,15 +15,28 @@ struct FluentPostRepository: BlogPostRepository {
     func getAllPostsSortedByPublishDate(includeDrafts: Bool) async throws -> [BlogPost] {
         let query = BlogPost.query(on: req.db)
             .sort(\.$created, .descending)
+            .with(\.$author)
+            .with(\.$tags)
         if !includeDrafts {
             query.filter(\.$published == true)
         }
         return try await query.all()
     }
     
+    func getAllDraftsPostsSortedByPublishDate() async throws -> [BlogPost] {
+        let query = BlogPost.query(on: req.db)
+            .sort(\.$created, .descending)
+            .with(\.$author)
+            .with(\.$tags)
+            .filter(\.$published == false)
+        return try await query.all()
+    }
+    
     func getAllPostsSortedByPublishDate(includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost] {
         let query = BlogPost.query(on: req.db)
             .sort(\.$created, .descending)
+            .with(\.$author)
+            .with(\.$tags)
         if !includeDrafts {
             query.filter(\.$published == true)
         }
@@ -40,8 +53,10 @@ struct FluentPostRepository: BlogPostRepository {
     }
     
     func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost] {
-        let query = try user.$posts.query(on: req.db)
+        let query = user.$posts.query(on: req.db)
             .sort(\.$created, .descending)
+            .with(\.$author)
+            .with(\.$tags)
         if !includeDrafts {
             query.filter(\.$published == true)
         }
@@ -58,12 +73,16 @@ struct FluentPostRepository: BlogPostRepository {
     func getPost(slug: String) async throws -> BlogPost? {
         try await BlogPost.query(on: req.db)
             .filter(\.$slugUrl == slug)
+            .with(\.$author)
+            .with(\.$tags)
             .first()
     }
     
     func getPost(id: UUID) async throws -> BlogPost? {
         try await BlogPost.query(on: req.db)
             .filter(\.$id == id)
+            .with(\.$author)
+            .with(\.$tags)
             .first()
     }
     
@@ -71,6 +90,8 @@ struct FluentPostRepository: BlogPostRepository {
         let query = tag.$posts.query(on: req.db)
             .filter(\.$published == true)
             .sort(\.$created, .descending)
+            .with(\.$author)
+            .with(\.$tags)
         let upperLimit = count + offset
         return try await query.range(offset..<upperLimit).all()
     }
@@ -85,6 +106,8 @@ struct FluentPostRepository: BlogPostRepository {
         let query = BlogPost.query(on: req.db)
             .sort(\.$created, .descending)
             .filter(\.$published == true)
+            .with(\.$author)
+            .with(\.$tags)
         
         let upperLimit = count + offset
         let paginatedQuery = query.range(offset..<upperLimit)

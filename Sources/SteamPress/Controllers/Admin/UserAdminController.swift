@@ -100,17 +100,15 @@ struct UserAdminController: RouteCollection {
         let user = try await req.parameters.findUser(on: req)
         let userCount = try await req.repositories.blogUser.getUsersCount()
         guard userCount > 1 else {
-            let posts = try await req.repositories.blogPost.getAllPostsSortedByPublishDate(includeDrafts: true)
-            let users = try await req.repositories.blogUser.getAllUsers().convertToPublic()
-            let view = try await req.adminPresenter.createIndexView(posts: posts, users: users, errors: ["You cannot delete the last user"], site: req.siteInformation())
+            let usersCount = try await req.repositories.blogUser.getAllUsers().count
+            let view = try await req.adminPresenter.createIndexView(usersCount: usersCount, errors: ["You cannot delete the last user"], site: req.siteInformation())
             return try await view.encodeResponse(for: req)
         }
         
         let loggedInUser: BlogUser = try req.auth.require(BlogUser.self)
         guard loggedInUser.id != user.id else {
-            let posts = try await req.repositories.blogPost.getAllPostsSortedByPublishDate(includeDrafts: true)
-            let users = try await req.repositories.blogUser.getAllUsers().convertToPublic()
-            let view = try await req.adminPresenter.createIndexView(posts: posts, users: users, errors: ["You cannot delete yourself whilst logged in"], site: req.siteInformation())
+            let usersCount = try await req.repositories.blogUser.getAllUsers().count
+            let view = try await req.adminPresenter.createIndexView(usersCount: usersCount, errors: ["You cannot delete yourself whilst logged in"], site: req.siteInformation())
             return try await view.encodeResponse(for: req)
         }
         
