@@ -20,18 +20,15 @@ public class SteamPressLifecycleHandler: LifecycleHandler {
         application.migrations.add(BlogPost.Migration())
         application.migrations.add(BlogTag.Migration())
         application.migrations.add(PostTagPivot.Migration())
-        
         try application.autoMigrate().wait()
         
         // Repositories
         application.repositories.register(.blogTag) { req in
             FluentTagRepository(req)
         }
-        
         application.repositories.register(.blogPost) { req in
             FluentPostRepository(req)
         }
-        
         application.repositories.register(.blogUser) { req in
             FluentUserRepository(req)
         }
@@ -39,7 +36,6 @@ public class SteamPressLifecycleHandler: LifecycleHandler {
         // Routes
         let router = application.routes
         BlogPathCreator.blogPath = self.configuration.blogPath
-
         let feedController = FeedController(feedInformation: self.configuration.feedInformation)
         let apiController = APIController()
         let blogController = BlogController(enableAuthorPages: self.configuration.enableAuthorPages, enableTagPages: self.configuration.enableTagPages, postsPerPage: self.configuration.postsPerPage)
