@@ -4,7 +4,7 @@ struct BlogAdminController: RouteCollection {
 
     // MARK: - Route setup
     func boot(routes: RoutesBuilder) throws {
-        let adminRoutes = routes.grouped("admin")
+        let adminRoutes = routes.grouped("steampress")
 
         let redirectMiddleware = BlogLoginRedirectAuthMiddleware()
         let adminProtectedRoutes = adminRoutes.grouped(redirectMiddleware)
