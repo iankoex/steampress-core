@@ -1,4 +1,3 @@
-
 import Vapor
 
 struct ViewBlogTag: Encodable {

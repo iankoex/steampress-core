@@ -26,7 +26,7 @@ class BlogAdminPresenterTests: XCTestCase {
     override func setUp() {
         eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         viewRenderer = CapturingViewRenderer(eventLoop: eventLoopGroup.next())
-        presenter = ViewBlogAdminPresenter(pathCreator: BlogPathCreator(blogPath: "blog"), viewRenderer: viewRenderer, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter())
+        presenter = ViewBlogAdminPresenter(BlogPathCreator: BlogPathCreator(blogPath: "blog"), viewRenderer: viewRenderer, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter())
     }
     
     override func tearDownWithError() throws {

@@ -84,13 +84,13 @@ extension Request {
 
 extension BlogUser {
     public struct Public: Codable {
-        var id: UUID?
-        var name: String
-        var username: String
-        var profilePicture: String?
-        var twitterHandle: String?
-        var biography: String?
-        var tagline: String?
+        public var id: UUID?
+        public var name: String
+        public var username: String
+        public var profilePicture: String?
+        public var twitterHandle: String?
+        public var biography: String?
+        public var tagline: String?
     }
 }
 

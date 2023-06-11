@@ -8,14 +8,12 @@ struct BlogController: RouteCollection {
     fileprivate let authorsPath = PathComponent(stringLiteral: "authors")
     fileprivate let apiPath = PathComponent(stringLiteral: "api")
     fileprivate let searchPath = PathComponent(stringLiteral: "search")
-    fileprivate let pathCreator: BlogPathCreator
     fileprivate let enableAuthorPages: Bool
     fileprivate let enableTagsPages: Bool
     fileprivate let postsPerPage: Int
 
     // MARK: - Initialiser
-    init(pathCreator: BlogPathCreator, enableAuthorPages: Bool, enableTagPages: Bool, postsPerPage: Int) {
-        self.pathCreator = pathCreator
+    init(enableAuthorPages: Bool, enableTagPages: Bool, postsPerPage: Int) {
         self.enableAuthorPages = enableAuthorPages
         self.enableTagsPages = enableTagPages
         self.postsPerPage = postsPerPage
@@ -49,7 +47,7 @@ struct BlogController: RouteCollection {
     }
 
     func blogPostIndexRedirectHandler(_ req: Request) async throws -> Response {
-        return req.redirect(to: pathCreator.createPath(for: pathCreator.blogPath), redirectType: .permanent)
+        return req.redirect(to: BlogPathCreator.createPath(for: BlogPathCreator.blogPath), redirectType: .permanent)
     }
 
     func blogPostHandler(_ req: Request) async throws -> View {

@@ -2,14 +2,6 @@ import Vapor
 
 struct UserAdminController: RouteCollection {
 
-    // MARK: - Properties
-    private let pathCreator: BlogPathCreator
-
-    // MARK: - Initialiser
-    init(pathCreator: BlogPathCreator) {
-        self.pathCreator = pathCreator
-    }
-
     // MARK: - Route setup
     func boot(routes: RoutesBuilder) throws {
         routes.get("createUser", use: createUserHandler)
@@ -47,7 +39,7 @@ struct UserAdminController: RouteCollection {
             newUser.resetPasswordRequired = true
         }
         let _ = try await req.repositories.blogUser.save(newUser)
-        return req.redirect(to: self.pathCreator.createPath(for: "admin"))
+        return req.redirect(to: BlogPathCreator.createPath(for: "admin"))
     }
 
     func editUserHandler(_ req: Request) async throws -> View {
@@ -91,7 +83,7 @@ struct UserAdminController: RouteCollection {
             let hashedPassword = try await req.password.async.hash(password)
             user.password = hashedPassword
         }
-        let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
+        let redirect = req.redirect(to: BlogPathCreator.createPath(for: "admin"))
         let _ = try await req.repositories.blogUser.save(user)
         return redirect
     }
@@ -112,7 +104,7 @@ struct UserAdminController: RouteCollection {
             return try await view.encodeResponse(for: req)
         }
         
-        let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
+        let redirect = req.redirect(to: BlogPathCreator.createPath(for: "admin"))
         try await req.repositories.blogUser.delete(user)
         return redirect
     }

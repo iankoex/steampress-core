@@ -2,14 +2,6 @@ import Vapor
 
 struct PostAdminController: RouteCollection {
 
-    // MARK: - Properties
-    private let pathCreator: BlogPathCreator
-
-    // MARK: - Initialiser
-    init(pathCreator: BlogPathCreator) {
-        self.pathCreator = pathCreator
-    }
-
     // MARK: - Route setup
     func boot(routes: RoutesBuilder) throws {
         routes.get("createPost", use: createPostHandler)
@@ -69,13 +61,13 @@ struct PostAdminController: RouteCollection {
         for tag in existingTags {
             try await req.repositories.blogTag.add(tag, to: newPost)
         }
-        return req.redirect(to: self.pathCreator.createPath(for: "posts/\(newPost.slugUrl)"))
+        return req.redirect(to: BlogPathCreator.createPath(for: "posts/\(newPost.slugUrl)"))
     }
 
     func deletePostHandler(_ req: Request) async throws -> Response {
         let post = try await req.parameters.findPost(on: req)
         try await req.repositories.blogTag.deleteTags(for: post)
-        let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
+        let redirect = req.redirect(to: BlogPathCreator.createPath(for: "admin"))
         try await req.repositories.blogPost.delete(post)
         return redirect
     }
@@ -154,7 +146,7 @@ struct PostAdminController: RouteCollection {
         for tag in newTags {
             try await req.repositories.blogTag.add(tag, to: post)
         }
-        let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
+        let redirect = req.redirect(to: BlogPathCreator.createPath(for: "posts/\(post.slugUrl)"))
         let _ = try await req.repositories.blogPost.save(post)
         return redirect
     }

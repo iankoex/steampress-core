@@ -2,20 +2,12 @@ import Vapor
 
 struct LoginController: RouteCollection {
     
-    // MARK: - Properties
-    private let pathCreator: BlogPathCreator
-    
-    // MARK: - Initialiser
-    init(pathCreator: BlogPathCreator) {
-        self.pathCreator = pathCreator
-    }
-    
     // MARK: - Route setup
     func boot(routes: RoutesBuilder) throws {
         routes.get("login", use: loginHandler)
         routes.post("login", use: loginPostHandler)
         
-        let redirectMiddleware = BlogLoginRedirectAuthMiddleware(pathCreator: pathCreator)
+        let redirectMiddleware = BlogLoginRedirectAuthMiddleware()
         let protectedRoutes = routes.grouped(redirectMiddleware)
         protectedRoutes.get("logout", use: logoutHandler)
         protectedRoutes.get("resetPassword", use: resetPasswordHandler)
@@ -69,12 +61,12 @@ struct LoginController: RouteCollection {
             return try await req.presenters.blog.loginView(loginWarning: false, errors: loginError, username: loginData.username, usernameError: false, passwordError: false, rememberMe: loginData.rememberMe ?? false, site: req.siteInformation()).encodeResponse(for: req)
         }
         user.authenticateSession(on: req)
-        return req.redirect(to: self.pathCreator.createPath(for: "admin"))
+        return req.redirect(to: BlogPathCreator.createPath(for: "admin"))
     }
     
     func logoutHandler(_ request: Request) -> Response {
         request.unauthenticateBlogUserSession()
-        return request.redirect(to: pathCreator.createPath(for: pathCreator.blogPath))
+        return request.redirect(to: BlogPathCreator.createPath(for: BlogPathCreator.blogPath))
     }
     
     func resetPasswordHandler(_ req: Request) async throws -> View {
@@ -124,8 +116,8 @@ struct LoginController: RouteCollection {
         let hashedPassword = try await req.password.async.hash(password)
         user.password = hashedPassword
         user.resetPasswordRequired = false
-        let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
+        let redirect = req.redirect(to: BlogPathCreator.createPath(for: "admin"))
         let _ = try await req.repositories.blogUser.save(user)
-        return req.redirect(to: self.pathCreator.createPath(for: "admin"))
+        return req.redirect(to: BlogPathCreator.createPath(for: "admin"))
     }
 }

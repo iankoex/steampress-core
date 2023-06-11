@@ -16,7 +16,7 @@ public final class SteamPressPresenterRegistry {
     
     fileprivate func make(_ id: SteamPressPresenterID, _ req: Request) -> SteamPressPresenter {
         guard let builder = builders[id] else {
-            fatalError("SteamPressPresenter for id `\(id.string)` is not configured.")
+            fatalError("SteamPressPresenter for id `\(id.string)` is not configured. Configure using `app.steampress.application.presenters.register`")
         }
         return builder(req)
     }

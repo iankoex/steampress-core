@@ -4,7 +4,6 @@ import Foundation
 struct FeedController: RouteCollection {
 
     // MARK: - Properties
-    fileprivate let pathCreator: BlogPathCreator
     fileprivate let atomGenerator: AtomFeedGenerator
     fileprivate let rssGenerator: RSSFeedGenerator
     static var defaultTitle: String {
@@ -15,9 +14,7 @@ struct FeedController: RouteCollection {
     }
 
     // MARK: - Initialiser
-    init(pathCreator: BlogPathCreator, feedInformation: FeedInformation) {
-        self.pathCreator = pathCreator
-
+    init(feedInformation: FeedInformation) {
         let feedTitle = feedInformation.title ?? FeedController.defaultTitle
         let feedDescription = feedInformation.description ?? FeedController.defaultDescription
 

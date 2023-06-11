@@ -9,7 +9,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         self.eventLoop = eventLoop
     }
     
-    func `for`(_ request: Request, pathCreator: BlogPathCreator) -> BlogAdminPresenter {
+    func `for`(_ request: Request, BlogPathCreator: BlogPathCreator) -> BlogAdminPresenter {
         return self
     }
 
