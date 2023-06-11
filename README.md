@@ -69,7 +69,7 @@ Then add it as a dependecy to your application target:
 In `configure.swift`, import the provider:
 
 ```swift
-import SteampressFluentPostgres
+import SteamPressCoreFluentPostgres
 ```
 
 Next, register the provider with your services:
