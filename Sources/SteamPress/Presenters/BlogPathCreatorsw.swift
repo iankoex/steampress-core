@@ -1,4 +1,4 @@
-struct BlogPathCreator {
+public struct BlogPathCreator {
 
     let blogPath: String?
 

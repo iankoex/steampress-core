@@ -3,7 +3,16 @@ import SwiftSoup
 import SwiftMarkdown
 
 public struct ViewBlogPresenter: BlogPresenter {
+    
     let viewRenderer: ViewRenderer
+    
+    public init(_ req: Request) {
+        self.viewRenderer = req.view
+    }
+   
+    public func `for`(_ req: Request) -> BlogPresenter {
+        return self
+    }
 
     public func indexView(posts: [BlogPost], site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
         let viewPosts = try posts.toViewPosts()
@@ -70,7 +79,7 @@ public struct ViewBlogPresenter: BlogPresenter {
         return try await viewRenderer.render("blog/tag", context)
     }
 
-    func searchView(totalResults: Int, posts: [BlogPost], authors: [BlogUser.Public], tags: [BlogTag], searchTerm: String?, site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
+    public func searchView(totalResults: Int, posts: [BlogPost], authors: [BlogUser.Public], tags: [BlogTag], searchTerm: String?, site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
         let viewPosts = try posts.toViewPosts()
         let context = SearchPageContext(searchTerm: searchTerm, posts: viewPosts, totalResults: totalResults, site: site, paginationTagInformation: paginationTagInfo)
         return try await viewRenderer.render("blog/search", context)

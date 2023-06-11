@@ -37,9 +37,9 @@ public extension SteamPressRepositoryFactory {
     }
 }
 
-public extension SteamPressRepositoryId {
-    static let blogUser = SteamPressRepositoryId("blogUser")
-    static let blogPost = SteamPressRepositoryId("blogPost")
-    static let blogTag = SteamPressRepositoryId("blogTag")
-    static let chpter = SteamPressRepositoryId("chpter")
+public extension SteamPressRepositoryID {
+    static let blogUser = SteamPressRepositoryID("blogUser")
+    static let blogPost = SteamPressRepositoryID("blogPost")
+    static let blogTag = SteamPressRepositoryID("blogTag")
+    static let chpter = SteamPressRepositoryID("chpter")
 }

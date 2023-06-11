@@ -1,16 +1,16 @@
 import Vapor
 
-struct SteamPressError: AbortError, DebuggableError {
+public struct SteamPressError: AbortError, DebuggableError {
 
-    let identifier: String
-    let reason: String
+    public let identifier: String
+    public let reason: String
 
-    init(identifier: String, _ reason: String) {
+    public init(identifier: String, _ reason: String) {
         self.identifier = identifier
         self.reason = reason
     }
 
-    var status: HTTPResponseStatus {
+    public var status: HTTPResponseStatus {
         return .internalServerError
     }
 }

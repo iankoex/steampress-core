@@ -26,7 +26,7 @@ struct LoginController: RouteCollection {
     func loginHandler(_ req: Request) async throws -> View {
         try await req.repositories.blogUser.createInitialAdminUser()
         let loginRequied = (try? req.query.get(Bool.self, at: "loginRequired")) != nil
-        return try await req.blogPresenter.loginView(loginWarning: loginRequied, errors: nil, username: nil, usernameError: false, passwordError: false, rememberMe: false, site: req.siteInformation())
+        return try await req.presenters.blog.loginView(loginWarning: loginRequied, errors: nil, username: nil, usernameError: false, passwordError: false, rememberMe: false, site: req.siteInformation())
     }
     
     func loginPostHandler(_ req: Request) async throws -> Response {
@@ -46,7 +46,7 @@ struct LoginController: RouteCollection {
         }
         
         if !loginErrors.isEmpty {
-            return try await req.blogPresenter.loginView(loginWarning: false, errors: loginErrors, username: loginData.username, usernameError: usernameError, passwordError: passwordError, rememberMe: loginData.rememberMe ?? false, site: req.siteInformation()).encodeResponse(for: req)
+            return try await req.presenters.blog.loginView(loginWarning: false, errors: loginErrors, username: loginData.username, usernameError: usernameError, passwordError: passwordError, rememberMe: loginData.rememberMe ?? false, site: req.siteInformation()).encodeResponse(for: req)
         }
         
         guard let username = loginData.username, let password = loginData.password else {
@@ -61,12 +61,12 @@ struct LoginController: RouteCollection {
         let user = try await req.repositories.blogUser.getUser(username: username)
         guard let user = user else {
             let loginError = ["Your username or password is incorrect"]
-            return try await req.blogPresenter.loginView(loginWarning: false, errors: loginError, username: loginData.username, usernameError: false, passwordError: false, rememberMe: loginData.rememberMe ?? false, site: req.siteInformation()).encodeResponse(for: req)
+            return try await req.presenters.blog.loginView(loginWarning: false, errors: loginError, username: loginData.username, usernameError: false, passwordError: false, rememberMe: loginData.rememberMe ?? false, site: req.siteInformation()).encodeResponse(for: req)
         }
         let userAuthenticated = try await req.password.async.verify(password, created: user.password)
         guard userAuthenticated else {
             let loginError = ["Your username or password is incorrect"]
-            return try await req.blogPresenter.loginView(loginWarning: false, errors: loginError, username: loginData.username, usernameError: false, passwordError: false, rememberMe: loginData.rememberMe ?? false, site: req.siteInformation()).encodeResponse(for: req)
+            return try await req.presenters.blog.loginView(loginWarning: false, errors: loginError, username: loginData.username, usernameError: false, passwordError: false, rememberMe: loginData.rememberMe ?? false, site: req.siteInformation()).encodeResponse(for: req)
         }
         user.authenticateSession(on: req)
         return req.redirect(to: self.pathCreator.createPath(for: "admin"))
@@ -78,7 +78,7 @@ struct LoginController: RouteCollection {
     }
     
     func resetPasswordHandler(_ req: Request) async throws -> View {
-        try await req.adminPresenter.createResetPasswordView(errors: nil, passwordError: nil, confirmPasswordError: nil, site: req.siteInformation())
+        try await req.presenters.admin.createResetPasswordView(errors: nil, passwordError: nil, confirmPasswordError: nil, site: req.siteInformation())
     }
     
     func resetPasswordPostHandler(_ req: Request) async throws -> Response {
@@ -100,7 +100,7 @@ struct LoginController: RouteCollection {
                 confirmPasswordError = true
             }
             
-            let view = try await req.adminPresenter.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, site: req.siteInformation())
+            let view = try await req.presenters.admin.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, site: req.siteInformation())
             return try await view.encodeResponse(for: req)
         }
         
@@ -116,7 +116,7 @@ struct LoginController: RouteCollection {
         }
         
         guard resetPasswordErrors.isEmpty else {
-            let view = try await req.adminPresenter.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, site: req.siteInformation())
+            let view = try await req.presenters.admin.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, site: req.siteInformation())
             return try await view.encodeResponse(for: req)
         }
         

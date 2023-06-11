@@ -21,7 +21,7 @@ struct UserAdminController: RouteCollection {
 
     // MARK: - Route handlers
     func createUserHandler(_ req: Request) async throws -> View {
-        return try await req.adminPresenter.createUserView(editing: false, errors: nil, name: nil, nameError: false, username: nil, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, site: req.siteInformation())
+        return try await req.presenters.admin.createUserView(editing: false, errors: nil, name: nil, nameError: false, username: nil, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, site: req.siteInformation())
     }
 
     func createUserPostHandler(_ req: Request) async throws -> Response {
@@ -29,7 +29,7 @@ struct UserAdminController: RouteCollection {
 
         let createUserErrors = try await validateUserCreation(data, on: req)
         if let errors = createUserErrors {
-            let view = try await req.adminPresenter.createUserView(editing: false, errors: errors.errors, name: data.name, nameError: errors.nameError, username: data.username, usernameErorr: errors.usernameError, passwordError: errors.passwordError, confirmPasswordError: errors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, site: req.siteInformation())
+            let view = try await req.presenters.admin.createUserView(editing: false, errors: errors.errors, name: data.name, nameError: errors.nameError, username: data.username, usernameErorr: errors.usernameError, passwordError: errors.passwordError, confirmPasswordError: errors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, site: req.siteInformation())
             return try await view.encodeResponse(for: req)
         }
         
@@ -52,7 +52,7 @@ struct UserAdminController: RouteCollection {
 
     func editUserHandler(_ req: Request) async throws -> View {
         let user = try await req.parameters.findUser(on: req)
-        return try await req.adminPresenter.createUserView(editing: true, errors: nil, name: user.name, nameError: false, username: user.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: user.resetPasswordRequired, userID: user.id, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, site: req.siteInformation())
+        return try await req.presenters.admin.createUserView(editing: true, errors: nil, name: user.name, nameError: false, username: user.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: user.resetPasswordRequired, userID: user.id, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, site: req.siteInformation())
     }
 
     func editUserPostHandler(_ req: Request) async throws -> Response {
@@ -66,7 +66,7 @@ struct UserAdminController: RouteCollection {
         
         let errors = try await self.validateUserCreation(data, editing: true, existingUsername: user.username, on: req)
         if let editUserErrors = errors {
-            let view = try await req.adminPresenter.createUserView(editing: true, errors: editUserErrors.errors, name: data.name, nameError: errors?.nameError ?? false, username: data.username, usernameErorr: errors?.usernameError ?? false, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: user.id, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, site: req.siteInformation())
+            let view = try await req.presenters.admin.createUserView(editing: true, errors: editUserErrors.errors, name: data.name, nameError: errors?.nameError ?? false, username: data.username, usernameErorr: errors?.usernameError ?? false, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: user.id, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, site: req.siteInformation())
             return try await view.encodeResponse(for: req)
         }
         
@@ -101,14 +101,14 @@ struct UserAdminController: RouteCollection {
         let userCount = try await req.repositories.blogUser.getUsersCount()
         guard userCount > 1 else {
             let usersCount = try await req.repositories.blogUser.getAllUsers().count
-            let view = try await req.adminPresenter.createIndexView(usersCount: usersCount, errors: ["You cannot delete the last user"], site: req.siteInformation())
+            let view = try await req.presenters.admin.createIndexView(usersCount: usersCount, errors: ["You cannot delete the last user"], site: req.siteInformation())
             return try await view.encodeResponse(for: req)
         }
         
         let loggedInUser: BlogUser = try req.auth.require(BlogUser.self)
         guard loggedInUser.id != user.id else {
             let usersCount = try await req.repositories.blogUser.getAllUsers().count
-            let view = try await req.adminPresenter.createIndexView(usersCount: usersCount, errors: ["You cannot delete yourself whilst logged in"], site: req.siteInformation())
+            let view = try await req.presenters.admin.createIndexView(usersCount: usersCount, errors: ["You cannot delete yourself whilst logged in"], site: req.siteInformation())
             return try await view.encodeResponse(for: req)
         }
         

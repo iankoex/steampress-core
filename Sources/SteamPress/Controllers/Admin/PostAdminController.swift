@@ -21,7 +21,7 @@ struct PostAdminController: RouteCollection {
 
     // MARK: - Route handlers
     func createPostHandler(_ req: Request) async throws -> View {
-        return try await req.adminPresenter.createPostView(errors: nil, title: nil, contents: nil, slugURL: nil, tags: [], isEditing: false, post: nil, isDraft: nil, titleError: false, contentsError: false, site: req.siteInformation())
+        return try await req.presenters.admin.createPostView(errors: nil, title: nil, contents: nil, slugURL: nil, tags: [], isEditing: false, post: nil, isDraft: nil, titleError: false, contentsError: false, site: req.siteInformation())
     }
 
     func createPostPostHandler(_ req: Request) async throws -> Response {
@@ -33,7 +33,7 @@ struct PostAdminController: RouteCollection {
         }
 
         if let createPostErrors = validatePostCreation(data) {
-            let view = try await req.adminPresenter.createPostView(errors: createPostErrors.errors, title: data.title, contents: data.contents, slugURL: nil, tags: data.tags, isEditing: false, post: nil, isDraft: nil, titleError: createPostErrors.titleError, contentsError: createPostErrors.contentsError, site: req.siteInformation())
+            let view = try await req.presenters.admin.createPostView(errors: createPostErrors.errors, title: data.title, contents: data.contents, slugURL: nil, tags: data.tags, isEditing: false, post: nil, isDraft: nil, titleError: createPostErrors.titleError, contentsError: createPostErrors.contentsError, site: req.siteInformation())
             return try await view.encodeResponse(for: req)
         }
 
@@ -83,14 +83,14 @@ struct PostAdminController: RouteCollection {
     func editPostHandler(_ req: Request) async throws -> View {
         let post = try await req.parameters.findPost(on: req)
         let tags = try await req.repositories.blogTag.getTags(for: post)
-        return try await req.adminPresenter.createPostView(errors: nil, title: post.title, contents: post.contents, slugURL: post.slugUrl, tags: tags.map { $0.name }, isEditing: true, post: post, isDraft: !post.published, titleError: false, contentsError: false, site: req.siteInformation())
+        return try await req.presenters.admin.createPostView(errors: nil, title: post.title, contents: post.contents, slugURL: post.slugUrl, tags: tags.map { $0.name }, isEditing: true, post: post, isDraft: !post.published, titleError: false, contentsError: false, site: req.siteInformation())
     }
 
     func editPostPostHandler(_ req: Request) async throws -> Response {
         let data = try req.content.decode(CreatePostData.self)
         let post = try await req.parameters.findPost(on: req)
         if let errors = self.validatePostCreation(data) {
-            return try await req.adminPresenter.createPostView(errors: errors.errors, title: data.title, contents: data.contents, slugURL: post.slugUrl, tags: data.tags, isEditing: true, post: post, isDraft: !post.published, titleError: errors.titleError, contentsError: errors.contentsError, site: req.siteInformation()).encodeResponse(for: req)
+            return try await req.presenters.admin.createPostView(errors: errors.errors, title: data.title, contents: data.contents, slugURL: post.slugUrl, tags: data.tags, isEditing: true, post: post, isDraft: !post.published, titleError: errors.titleError, contentsError: errors.contentsError, site: req.siteInformation()).encodeResponse(for: req)
         }
         
         guard let title = data.title, let contents = data.contents else {

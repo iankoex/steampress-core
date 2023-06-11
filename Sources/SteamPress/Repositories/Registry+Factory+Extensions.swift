@@ -4,7 +4,7 @@ import Fluent
 public final class SteamPressRepositoryRegistry {
     
     private let app: Application
-    private var builders: [SteamPressRepositoryId: ((Request) -> SteamPressRepository)]
+    private var builders: [SteamPressRepositoryID: ((Request) -> SteamPressRepository)]
     
     fileprivate init(_ app: Application) {
         self.app = app
@@ -15,14 +15,14 @@ public final class SteamPressRepositoryRegistry {
         .init(req, self)
     }
     
-    fileprivate func make(_ id: SteamPressRepositoryId, _ req: Request) -> SteamPressRepository {
+    fileprivate func make(_ id: SteamPressRepositoryID, _ req: Request) -> SteamPressRepository {
         guard let builder = builders[id] else {
             fatalError("SteamPressRepository for id `\(id.string)` is not configured.")
         }
         return builder(req)
     }
     
-    public func register(_ id: SteamPressRepositoryId, _ builder: @escaping (Request) -> SteamPressRepository) {
+    public func register(_ id: SteamPressRepositoryID, _ builder: @escaping (Request) -> SteamPressRepository) {
         builders[id] = builder
     }
 }
@@ -36,12 +36,12 @@ public struct SteamPressRepositoryFactory {
         self.registry = registry
     }
     
-    public func make(_ id: SteamPressRepositoryId) -> SteamPressRepository {
+    public func make(_ id: SteamPressRepositoryID) -> SteamPressRepository {
         registry.make(id, req)
     }
 }
 
-public struct SteamPressRepositoryId: Hashable, Codable {
+public struct SteamPressRepositoryID: Hashable, Codable {
     
     public let string: String
     

@@ -3,7 +3,7 @@ import Vapor
 import SwiftSoup
 import SwiftMarkdown
 
-struct ViewBlogPost: Encodable {
+public struct ViewBlogPost: Encodable {
     var id: UUID?
     var title: String
     var contents: String
@@ -23,7 +23,7 @@ struct ViewBlogPost: Encodable {
     var tags: [ViewBlogTag]?
 }
 
-extension BlogPost {
+public extension BlogPost {
     func toViewPost() throws -> ViewBlogPost {
         
         let postImage: String?
@@ -70,7 +70,7 @@ extension BlogPost {
     }
 }
 
-extension Array where Element: BlogPost {
+public extension Array where Element: BlogPost {
     func toViewPosts() throws -> [ViewBlogPost] {
         return try self.map { try $0.toViewPost() }
     }
