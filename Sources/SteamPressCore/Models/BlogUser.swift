@@ -35,7 +35,7 @@ public final class BlogUser: Model, Codable {
     public var tagline: String?
     
     @Children(for: \.$author)
-    var posts: [BlogPost]
+    public var posts: [BlogPost]
     
     public init () {}
 

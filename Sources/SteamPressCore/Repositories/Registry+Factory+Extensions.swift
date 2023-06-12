@@ -17,7 +17,7 @@ public final class SteamPressRepositoryRegistry {
     
     fileprivate func make(_ id: SteamPressRepositoryID, _ req: Request) -> SteamPressRepository {
         guard let builder = builders[id] else {
-            fatalError("SteamPressRepository for id `\(id.string)` is not configured.")
+            fatalError("SteamPressRepository for id `\(id.string)` is not configured. Configure using `app.steampress.application.repositories.register`")
         }
         return builder(req)
     }
