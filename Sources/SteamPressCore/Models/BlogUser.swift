@@ -40,6 +40,9 @@ public final class BlogUser: Model, Codable {
     @Field(key: "tagline")
     public var tagline: String?
     
+    @Timestamp(key: "created_date", on: .create)
+    public var createdDate: Date?
+    
     @Children(for: \.$author)
     public var posts: [BlogPost]
     
@@ -109,6 +112,7 @@ extension BlogUser {
         public var username: String
         public var email: String
         public var type: BlogUserType
+        public var createdDate: Date?
         public var profilePicture: String?
         public var twitterHandle: String?
         public var biography: String?
@@ -116,13 +120,13 @@ extension BlogUser {
     }
 }
 
-extension BlogUser {
+public extension BlogUser {
     func convertToPublic() -> BlogUser.Public {
-        return BlogUser.Public(id: id, name: name, username: username, email: email, type: type, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
+        return BlogUser.Public(id: id, name: name, username: username, email: email, type: type, createdDate: createdDate, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
     }
 }
 
-extension Collection where Element: BlogUser {
+public extension Collection where Element: BlogUser {
     func convertToPublic() -> [BlogUser.Public] {
         return self.map { $0.convertToPublic() }
     }

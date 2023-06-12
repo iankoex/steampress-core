@@ -20,6 +20,7 @@ struct BlogAdminController: RouteCollection {
         adminProtectedRoutes.get("tags", BlogTag.parameter, use: tagHandler)
         adminProtectedRoutes.post("tags", BlogTag.parameter, use: updateTagHandler)
         adminProtectedRoutes.get("tags", BlogTag.parameter, "delete", use: deleteTagHandler)
+        adminProtectedRoutes.get("members", use: membersHandler)
 
         let loginController = LoginController()
         try adminRoutes.register(collection: loginController)
@@ -140,5 +141,11 @@ struct BlogAdminController: RouteCollection {
         let tag = try await req.parameters.findTag(on: req)
         try await req.repositories.blogTag.delete(tag)
         return req.redirect(to: BlogPathCreator.createPath(for: "steampress/tags"))
+    }
+    
+    
+    func membersHandler(_ req: Request) async throws -> View {
+        let users = try await req.repositories.blogUser.getAllUsers()
+        return try await req.presenters.admin.createMembersView(users: users.convertToPublic(), usersCount: users.count, site: req.siteInformation())
     }
 }

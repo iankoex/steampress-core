@@ -27,6 +27,7 @@ extension BlogUser {
                 .field("twitter_handle", .string)
                 .field("biography", .string)
                 .field("tagline", .string)
+                .field("created_date", .datetime)
                 .unique(on: "email")
                 .create()
         }

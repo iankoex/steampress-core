@@ -98,8 +98,8 @@ struct LoginController: RouteCollection {
         let hashedPassword = try await req.password.async.hash(password)
         user.password = hashedPassword
         user.resetPasswordRequired = false
-        let redirect = req.redirect(to: BlogPathCreator.createPath(for: "admin"))
+        let redirect = req.redirect(to: BlogPathCreator.createPath(for: "steampress"))
         let _ = try await req.repositories.blogUser.save(user)
-        return req.redirect(to: BlogPathCreator.createPath(for: "admin"))
+        return req.redirect(to: BlogPathCreator.createPath(for: "steampress"))
     }
 }
