@@ -21,6 +21,9 @@ public protocol BlogAdminPresenter: SteamPressPresenter {
     func createIndexView(usersCount: Int, errors: [String]?, site: GlobalWebsiteInformation) async throws -> View
     func createExploreView(usersCount: Int, errors: [String]?, site: GlobalWebsiteInformation) async throws -> View
     func createPagesView(usersCount: Int, errors: [String]?, site: GlobalWebsiteInformation) async throws -> View
+    func createTagsView(tags: [BlogTag], usersCount: Int, site: GlobalWebsiteInformation) async throws -> View
+    func createCreateTagView(usersCount: Int, site: GlobalWebsiteInformation) async throws -> View
+    func createEditTagView(tag: BlogTag, usersCount: Int, site: GlobalWebsiteInformation) async throws -> View
     func createPostsView(posts: [BlogPost], usersCount: Int, site: GlobalWebsiteInformation) async throws -> View
     func createPostView(errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String], isEditing: Bool, post: BlogPost?, isDraft: Bool?, titleError: Bool, contentsError: Bool, site: GlobalWebsiteInformation) async throws -> View
     func createUserView(editing: Bool, errors: [String]?, name: String?, nameError: Bool, username: String?, usernameErorr: Bool, passwordError: Bool, confirmPasswordError: Bool, resetPasswordOnLogin: Bool, userID: UUID?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, site: GlobalWebsiteInformation) async throws -> View

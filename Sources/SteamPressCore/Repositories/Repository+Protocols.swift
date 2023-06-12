@@ -11,8 +11,10 @@ public protocol BlogTagRepository: SteamPressRepository {
     func getTags(for post: BlogPost) async throws -> [BlogTag]
     func getTag(_ name: String) async throws -> BlogTag?
     func save(_ tag: BlogTag) async throws -> Void
+    func update(_ tag: BlogTag) async throws -> Void
     // Delete all the pivots between a post and collection of tags -> you should probably delete the
     // tags that have no posts associated with a tag
+    func delete(_ tag: BlogTag) async throws -> Void
     func deleteTags(for post: BlogPost) async throws -> Void
     func remove(_ tag: BlogTag, from post: BlogPost) async throws -> Void
     func add(_ tag: BlogTag, to post: BlogPost) async throws -> Void
