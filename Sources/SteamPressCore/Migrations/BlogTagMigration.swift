@@ -15,7 +15,7 @@ extension BlogTag {
             try await database.schema(BlogTag.schema)
                 .id()
                 .field("name", .string, .required)
-                .field("visibility", visibility, .required)
+                .field("visibility", .string, .required)
                 .create()
         }
         

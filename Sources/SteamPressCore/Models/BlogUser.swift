@@ -16,11 +16,17 @@ public final class BlogUser: Model, Codable {
     @Field(key: "username")
     public var username: String
     
+    @Field(key: "email")
+    public var email: String
+    
     @Field(key: "password")
     public var password: String
     
     @Field(key: "reset_password_required")
     public var resetPasswordRequired: Bool
+    
+    @Field(key: "user_type")
+    public var type: BlogUserType
     
     @Field(key: "profile_picture")
     public var profilePicture: String?
@@ -43,8 +49,10 @@ public final class BlogUser: Model, Codable {
         id: UUID? = nil,
         name: String,
         username: String,
+        email: String,
         password: String,
         resetPasswordRequired: Bool = false,
+        type: BlogUserType,
         profilePicture: String?,
         twitterHandle: String?,
         biography: String?,
@@ -53,14 +61,26 @@ public final class BlogUser: Model, Codable {
         self.id = id
         self.name = name
         self.username = username.lowercased()
+        self.email = email
         self.password = password
         self.resetPasswordRequired = resetPasswordRequired
+        self.type = type
         self.profilePicture = profilePicture
         self.twitterHandle = twitterHandle
         self.biography = biography
         self.tagline = tagline
     }
 
+}
+
+public extension BlogUser {
+    enum BlogUserType: String, Codable {
+        case member
+        case owner
+        case administrator
+        case editor
+        case author
+    }
 }
 
 // MARK: - Authentication
@@ -87,6 +107,8 @@ extension BlogUser {
         public var id: UUID?
         public var name: String
         public var username: String
+        public var email: String
+        public var type: BlogUserType
         public var profilePicture: String?
         public var twitterHandle: String?
         public var biography: String?
@@ -96,7 +118,7 @@ extension BlogUser {
 
 extension BlogUser {
     func convertToPublic() -> BlogUser.Public {
-        return BlogUser.Public(id: id, name: name, username: username, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
+        return BlogUser.Public(id: id, name: name, username: username, email: email, type: type, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
     }
 }
 

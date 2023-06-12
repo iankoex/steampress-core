@@ -16,52 +16,34 @@ struct LoginController: RouteCollection {
     
     // MARK: - Route handlers
     func loginHandler(_ req: Request) async throws -> View {
-        try await req.repositories.blogUser.createInitialAdminUser()
+//        try await req.repositories.blogUser.createInitialAdminUser()
         let loginRequied = (try? req.query.get(Bool.self, at: "loginRequired")) != nil
-        return try await req.presenters.blog.loginView(loginWarning: loginRequied, errors: nil, username: nil, usernameError: false, passwordError: false, rememberMe: false, site: req.siteInformation())
+        let requireName = (try await req.repositories.blogUser.getUsersCount() == 0)
+        return try await req.presenters.admin.loginView(loginWarning: loginRequied, errors: nil, email: nil, usernameError: false, passwordError: false, rememberMe: false, requireName: requireName, site: req.siteInformation())
     }
     
     func loginPostHandler(_ req: Request) async throws -> Response {
         let loginData = try req.content.decode(LoginData.self)
-        var loginErrors = [String]()
-        var usernameError = false
-        var passwordError = false
-        
-        if loginData.username == nil {
-            loginErrors.append("You must supply your username")
-            usernameError = true
-        }
-        
-        if loginData.password == nil {
-            loginErrors.append("You must supply your password")
-            passwordError = true
-        }
-        
-        if !loginErrors.isEmpty {
-            return try await req.presenters.blog.loginView(loginWarning: false, errors: loginErrors, username: loginData.username, usernameError: usernameError, passwordError: passwordError, rememberMe: loginData.rememberMe ?? false, site: req.siteInformation()).encodeResponse(for: req)
-        }
-        
-        guard let username = loginData.username, let password = loginData.password else {
-            throw Abort(.internalServerError)
-        }
         
         if let rememberMe = loginData.rememberMe, rememberMe {
             req.session.data["SteamPressRememberMe"] = "YES"
         } else {
             req.session.data["SteamPressRememberMe"] = nil
         }
-        let user = try await req.repositories.blogUser.getUser(username: username)
+        let user = try await req.repositories.blogUser.getUser(email: loginData.email)
         guard let user = user else {
-            let loginError = ["Your username or password is incorrect"]
-            return try await req.presenters.blog.loginView(loginWarning: false, errors: loginError, username: loginData.username, usernameError: false, passwordError: false, rememberMe: loginData.rememberMe ?? false, site: req.siteInformation()).encodeResponse(for: req)
+            let loginError = ["Your email or password is incorrect"]
+            let requireName = (try await req.repositories.blogUser.getUsersCount() == 0)
+            return try await req.presenters.admin.loginView(loginWarning: false, errors: loginError, email: loginData.email, usernameError: false, passwordError: false, rememberMe: loginData.rememberMe ?? false, requireName: requireName, site: req.siteInformation()).encodeResponse(for: req)
         }
-        let userAuthenticated = try await req.password.async.verify(password, created: user.password)
+        let userAuthenticated = try await req.password.async.verify(loginData.password, created: user.password)
         guard userAuthenticated else {
-            let loginError = ["Your username or password is incorrect"]
-            return try await req.presenters.blog.loginView(loginWarning: false, errors: loginError, username: loginData.username, usernameError: false, passwordError: false, rememberMe: loginData.rememberMe ?? false, site: req.siteInformation()).encodeResponse(for: req)
+            let loginError = ["Your email or password is incorrect"]
+            let requireName = (try await req.repositories.blogUser.getUsersCount() == 0)
+            return try await req.presenters.admin.loginView(loginWarning: false, errors: loginError, email: loginData.email, usernameError: false, passwordError: false, rememberMe: loginData.rememberMe ?? false, requireName: requireName, site: req.siteInformation()).encodeResponse(for: req)
         }
         user.authenticateSession(on: req)
-        return req.redirect(to: BlogPathCreator.createPath(for: "admin"))
+        return req.redirect(to: BlogPathCreator.createPath(for: "steampress"))
     }
     
     func logoutHandler(_ request: Request) -> Response {

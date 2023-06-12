@@ -25,7 +25,7 @@ struct UserAdminController: RouteCollection {
             return try await view.encodeResponse(for: req)
         }
         
-        guard let name = data.name, let username = data.username, let password = data.password else {
+        guard let name = data.name, let username = data.username, let password = data.password, let email = data.email else {
             throw Abort(.internalServerError)
         }
         
@@ -34,12 +34,22 @@ struct UserAdminController: RouteCollection {
         let twitterHandle = data.twitterHandle.isEmptyOrWhitespace() ? nil : data.twitterHandle
         let biography = data.biography.isEmptyOrWhitespace() ? nil : data.biography
         let tagline = data.tagline.isEmptyOrWhitespace() ? nil : data.tagline
-        let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
+        let newUser = BlogUser(
+            name: name,
+            username: username.lowercased(),
+            email: email,
+            password: hashedPassword,
+            type: .administrator, // for now
+            profilePicture: profilePicture,
+            twitterHandle: twitterHandle,
+            biography: biography,
+            tagline: tagline
+        )
         if let resetPasswordRequired = data.resetPasswordOnLogin, resetPasswordRequired {
             newUser.resetPasswordRequired = true
         }
         let _ = try await req.repositories.blogUser.save(newUser)
-        return req.redirect(to: BlogPathCreator.createPath(for: "admin"))
+        return req.redirect(to: BlogPathCreator.createPath(for: "steampress"))
     }
 
     func editUserHandler(_ req: Request) async throws -> View {

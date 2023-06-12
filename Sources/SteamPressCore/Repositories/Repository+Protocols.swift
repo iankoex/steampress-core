@@ -44,6 +44,7 @@ public protocol BlogUserRepository: SteamPressRepository {
     func getAllUsersWithPostCount() async throws -> [(BlogUser, Int)]
     func getUser(id: UUID) async throws -> BlogUser?
     func getUser(username: String) async throws -> BlogUser?
+    func getUser(email: String) async throws -> BlogUser?
     func save(_ user: BlogUser) async throws -> Void
     func delete(_ user: BlogUser) async throws -> Void
     func getUsersCount() async throws -> Int
