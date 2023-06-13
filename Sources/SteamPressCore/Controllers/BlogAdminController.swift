@@ -5,8 +5,6 @@ struct BlogAdminController: RouteCollection {
     // MARK: - Route setup
     func boot(routes: RoutesBuilder) throws {
         let adminRoutes = routes.grouped("steampress")
-        
-        adminRoutes.post("createOwner", use: createOwnerPostHandler)
 
         let redirectMiddleware = BlogLoginRedirectAuthMiddleware()
         let adminProtectedRoutes = adminRoutes.grouped(redirectMiddleware)
@@ -23,30 +21,6 @@ struct BlogAdminController: RouteCollection {
         try adminProtectedRoutes.register(collection: usersController)
         let tagsController = TagsAdminController()
         try adminProtectedRoutes.register(collection: tagsController)
-    }
-    
-    func createOwnerPostHandler(_ req: Request) async throws -> Response {
-        let data = try req.content.decode(CreateOwnerData.self)
-        guard !data.name.isEmpty, !data.password.isEmpty, !data.email.isEmpty else {
-            throw Abort(.custom(code: 500, reasonPhrase: "name password or email cannot be empty"))
-        }
-        let hashedPassword = try await req.password.async.hash(data.password)
-        let username = data.name.replacingOccurrences(of: " ", with: "").trimmingCharacters(in: .whitespaces)
-        print(username)
-        let owner = BlogUser(
-            name: data.name,
-            username: username,
-            email: data.email,
-            password: hashedPassword,
-            type: .owner,
-            profilePicture: nil,
-            twitterHandle: nil,
-            biography: nil,
-            tagline: nil
-        )
-        try await req.repositories.blogUser.save(owner)
-        owner.authenticateSession(on: req)
-        return req.redirect(to: BlogPathCreator.createPath(for: "steampress"))
     }
 
     // MARK: Admin Handler

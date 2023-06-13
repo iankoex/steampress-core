@@ -12,8 +12,6 @@ public protocol BlogTagRepository: SteamPressRepository {
     func getTag(_ name: String) async throws -> BlogTag?
     func save(_ tag: BlogTag) async throws -> Void
     func update(_ tag: BlogTag) async throws -> Void
-    // Delete all the pivots between a post and collection of tags -> you should probably delete the
-    // tags that have no posts associated with a tag
     func delete(_ tag: BlogTag) async throws -> Void
     func deleteTags(for post: BlogPost) async throws -> Void
     func remove(_ tag: BlogTag, from post: BlogPost) async throws -> Void
@@ -48,5 +46,4 @@ public protocol BlogUserRepository: SteamPressRepository {
     func save(_ user: BlogUser) async throws -> Void
     func delete(_ user: BlogUser) async throws -> Void
     func getUsersCount() async throws -> Int
-    func createInitialAdminUser() async throws -> Void
 }

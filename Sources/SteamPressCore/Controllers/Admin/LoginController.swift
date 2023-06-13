@@ -6,6 +6,7 @@ struct LoginController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         routes.get("login", use: loginHandler)
         routes.post("login", use: loginPostHandler)
+        routes.post("createOwner", use: createOwnerPostHandler)
         
         let redirectMiddleware = BlogLoginRedirectAuthMiddleware()
         let protectedRoutes = routes.grouped(redirectMiddleware)
@@ -15,8 +16,8 @@ struct LoginController: RouteCollection {
     }
     
     // MARK: - Route handlers
+    
     func loginHandler(_ req: Request) async throws -> View {
-//        try await req.repositories.blogUser.createInitialAdminUser()
         let loginRequied = (try? req.query.get(Bool.self, at: "loginRequired")) != nil
         let requireName = (try await req.repositories.blogUser.getUsersCount() == 0)
         return try await req.presenters.admin.loginView(loginWarning: loginRequied, errors: nil, email: nil, rememberMe: false, requireName: requireName, site: req.siteInformation())
@@ -43,6 +44,36 @@ struct LoginController: RouteCollection {
             return try await req.presenters.admin.loginView(loginWarning: false, errors: loginError, email: loginData.email, rememberMe: loginData.rememberMe ?? false, requireName: requireName, site: req.siteInformation()).encodeResponse(for: req)
         }
         user.authenticateSession(on: req)
+        return req.redirect(to: BlogPathCreator.createPath(for: "steampress"))
+    }
+    
+    func createOwnerPostHandler(_ req: Request) async throws -> Response {
+        let requireName = (try await req.repositories.blogUser.getUsersCount() == 0)
+        guard requireName else {
+            let errors = ["Owner already exists what you are attempting is illegal"]
+            return try await req.presenters.admin.loginView(loginWarning: true, errors: errors, email: nil, rememberMe: false, requireName: requireName, site: req.siteInformation()).encodeResponse(for: req)
+        }
+        
+        let data = try req.content.decode(CreateOwnerData.self)
+        guard !data.name.isEmptyOrWhitespace(), !data.password.isEmptyOrWhitespace(), !data.email.isEmptyOrWhitespace() else {
+            return try await req.presenters.admin.loginView(loginWarning: true, errors: nil, email: data.email, rememberMe: false, requireName: requireName, site: req.siteInformation()).encodeResponse(for: req)
+        }
+        let hashedPassword = try await req.password.async.hash(data.password)
+        let username = data.name.replacingOccurrences(of: " ", with: "").trimmingCharacters(in: .whitespaces)
+        
+        let owner = BlogUser(
+            name: data.name,
+            username: username,
+            email: data.email,
+            password: hashedPassword,
+            type: .owner,
+            profilePicture: nil,
+            twitterHandle: nil,
+            biography: nil,
+            tagline: nil
+        )
+        try await req.repositories.blogUser.save(owner)
+        owner.authenticateSession(on: req)
         return req.redirect(to: BlogPathCreator.createPath(for: "steampress"))
     }
     
