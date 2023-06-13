@@ -1,6 +1,6 @@
 import Vapor
 
-struct UserAdminController: RouteCollection {
+struct UsersAdminController: RouteCollection {
 
     // MARK: - Route setup
     func boot(routes: RoutesBuilder) throws {
