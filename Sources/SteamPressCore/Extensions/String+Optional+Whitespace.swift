@@ -7,3 +7,9 @@ extension Optional where Wrapped == String {
         return string.trimmingCharacters(in: .whitespaces).isEmpty
     }
 }
+
+extension String {
+    func isEmptyOrWhitespace() -> Bool {
+        return self.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+}

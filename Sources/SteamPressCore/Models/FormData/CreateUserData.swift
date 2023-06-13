@@ -1,16 +1,16 @@
 import Vapor
 
-struct CreateUserData: Content {
-    let name: String?
-    let username: String?
-    let password: String?
-    let confirmPassword: String?
-    let email: String?
-    let profilePicture: String?
-    let tagline: String?
-    let biography: String?
-    let twitterHandle: String?
-    let resetPasswordOnLogin: Bool?
+public struct CreateUserData: Content, Codable {
+    public let name: String
+    public let username: String
+    public let password: String?
+    public let confirmPassword: String?
+    public let email: String
+    public let profilePicture: String?
+    public let tagline: String?
+    public let biography: String?
+    public let twitterHandle: String?
+    public let resetPasswordOnLogin: Bool?
 }
 
 struct CreateOwnerData: Content {
@@ -30,10 +30,15 @@ extension CreateOwnerData: Validatable {
 }
 
 extension CreateUserData: Validatable {
-    
-    static func validations(_ validations: inout Validations) {
+     public static func validations(_ validations: inout Validations) {
         let usernameCharacterSet = CharacterSet(charactersIn: "-_")
         let usernameValidationCharacters = Validator<String>.characterSet(.alphanumerics + usernameCharacterSet)
         validations.add("username", as: String.self, is: usernameValidationCharacters)
+    }
+}
+
+extension BlogUser {
+    func convertToUserData() -> CreateUserData {
+        CreateUserData(name: name, username: username, password: nil, confirmPassword: nil, email: email, profilePicture: profilePicture, tagline: tagline, biography: biography, twitterHandle: twitterHandle, resetPasswordOnLogin: resetPasswordRequired)
     }
 }

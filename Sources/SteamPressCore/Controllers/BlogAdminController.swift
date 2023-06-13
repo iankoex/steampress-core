@@ -20,7 +20,6 @@ struct BlogAdminController: RouteCollection {
         adminProtectedRoutes.get("tags", BlogTag.parameter, use: tagHandler)
         adminProtectedRoutes.post("tags", BlogTag.parameter, use: updateTagHandler)
         adminProtectedRoutes.get("tags", BlogTag.parameter, "delete", use: deleteTagHandler)
-        adminProtectedRoutes.get("members", use: membersHandler)
 
         let loginController = LoginController()
         try adminRoutes.register(collection: loginController)
@@ -36,7 +35,7 @@ struct BlogAdminController: RouteCollection {
             throw Abort(.custom(code: 500, reasonPhrase: "name password or email cannot be empty"))
         }
         let hashedPassword = try await req.password.async.hash(data.password)
-        let username = data.name.replacingOccurrences(of: " ", with: "")
+        let username = data.name.replacingOccurrences(of: " ", with: "").trimmingCharacters(in: .whitespaces)
         print(username)
         let owner = BlogUser(
             name: data.name,
@@ -56,12 +55,12 @@ struct BlogAdminController: RouteCollection {
 
     // MARK: Admin Handler
     func adminHandler(_ req: Request) async throws -> View {
-        let usersCount = try await req.repositories.blogUser.getAllUsers().count
+        let usersCount = try await req.repositories.blogUser.getUsersCount()
         return try await req.presenters.admin.createIndexView(usersCount: usersCount, errors: nil, site: req.siteInformation())
     }
     
     func exploreHandler(_ req: Request) async throws -> View {
-        let usersCount = try await req.repositories.blogUser.getAllUsers().count
+        let usersCount = try await req.repositories.blogUser.getUsersCount()
         return try await req.presenters.admin.createExploreView(usersCount: usersCount, errors: nil, site: req.siteInformation())
     }
     
@@ -77,29 +76,29 @@ struct BlogAdminController: RouteCollection {
         } else {
             posts = try await req.repositories.blogPost.getAllPostsSortedByPublishDate(includeDrafts: true)
         }
-        let usersCount = try await req.repositories.blogUser.getAllUsers().count
+        let usersCount = try await req.repositories.blogUser.getUsersCount()
         return try await req.presenters.admin.createPostsView(posts: posts, usersCount: usersCount, site: req.siteInformation())
     }
     
     func pagesHandler(_ req: Request) async throws -> View {
-        let usersCount = try await req.repositories.blogUser.getAllUsers().count
+        let usersCount = try await req.repositories.blogUser.getUsersCount()
         return try await req.presenters.admin.createPagesView(usersCount: usersCount, errors: nil, site: req.siteInformation())
     }
     
     func tagsHandler(_ req: Request) async throws -> View {
-        let usersCount = try await req.repositories.blogUser.getAllUsers().count
+        let usersCount = try await req.repositories.blogUser.getUsersCount()
         let tags = try await req.repositories.blogTag.getAllTags()
         return try await req.presenters.admin.createTagsView(tags: tags, usersCount: usersCount, site: req.siteInformation())
     }
     
     func createTagHandler(_ req: Request) async throws -> View {
-        let usersCount = try await req.repositories.blogUser.getAllUsers().count
+        let usersCount = try await req.repositories.blogUser.getUsersCount()
         return try await req.presenters.admin.createCreateTagView(usersCount: usersCount, site: req.siteInformation())
     }
     
     func createNewTagHandler(_ req: Request) async throws -> View {
         let data = try req.content.decode(CreateTagData.self)
-        let usersCount = try await req.repositories.blogUser.getAllUsers().count
+        let usersCount = try await req.repositories.blogUser.getUsersCount()
         guard !data.name.isEmpty else {
             let tags = try await req.repositories.blogTag.getAllTags()
             return try await req.presenters.admin.createTagsView(tags: tags, usersCount: usersCount, site: req.siteInformation())
@@ -116,14 +115,14 @@ struct BlogAdminController: RouteCollection {
     
     func tagHandler(_ req: Request) async throws -> View {
         let tag = try await req.parameters.findTag(on: req)
-        let usersCount = try await req.repositories.blogUser.getAllUsers().count
+        let usersCount = try await req.repositories.blogUser.getUsersCount()
         return try await req.presenters.admin.createEditTagView(tag: tag, usersCount: usersCount, site: req.siteInformation())
     }
     
     func updateTagHandler(_ req: Request) async throws -> View {
         let tag = try await req.parameters.findTag(on: req)
         let data = try req.content.decode(CreateTagData.self)
-        let usersCount = try await req.repositories.blogUser.getAllUsers().count
+        let usersCount = try await req.repositories.blogUser.getUsersCount()
         guard !data.name.isEmpty else {
             let tags = try await req.repositories.blogTag.getAllTags()
             return try await req.presenters.admin.createTagsView(tags: tags, usersCount: usersCount, site: req.siteInformation())
@@ -141,11 +140,5 @@ struct BlogAdminController: RouteCollection {
         let tag = try await req.parameters.findTag(on: req)
         try await req.repositories.blogTag.delete(tag)
         return req.redirect(to: BlogPathCreator.createPath(for: "steampress/tags"))
-    }
-    
-    
-    func membersHandler(_ req: Request) async throws -> View {
-        let users = try await req.repositories.blogUser.getAllUsers()
-        return try await req.presenters.admin.createMembersView(users: users.convertToPublic(), usersCount: users.count, site: req.siteInformation())
     }
 }
