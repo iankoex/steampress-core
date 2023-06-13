@@ -41,18 +41,13 @@ public final class BlogPost: Model, Codable {
     public init(
         title: String,
         contents: String,
-        author: BlogUser,
+        authorID: BlogUser.IDValue,
         slugUrl: String,
         published: Bool,
-        featureImage: String,
-        featureImageCaption: String,
         creationDate: Date
-    ) throws {
+    ) {
         self.title = title
         self.contents = contents
-        guard let authorID = author.id else {
-            throw SteamPressError(identifier: "ID-required", "Author ID not set")
-        }
         self.$author.id = authorID
         self.slugUrl = slugUrl
         self.lastEdited = nil
