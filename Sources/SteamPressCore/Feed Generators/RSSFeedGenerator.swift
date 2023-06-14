@@ -75,8 +75,8 @@ struct RSSFeedGenerator {
     }
 
     private func getRootPath(for request: Request) throws -> String {
-        guard let hostname = Environment.get("WEBSITE_URL") else {
-            throw SteamPressError(identifier: "SteamPressError", "WEBSITE_URL not set")
+        guard let hostname = Environment.get("SP_WEBSITE_URL") else {
+            throw SteamPressError(identifier: "SteamPressError", "SP_WEBSITE_URL not set")
         }
         let path = request.url.path
         return "\(hostname)\(path.replacingOccurrences(of: "/rss.xml", with: ""))"

@@ -41,8 +41,8 @@ struct TestWorld {
         unsetenv("BLOG_GOOGLE_ANALYTICS_IDENTIFIER")
         unsetenv("BLOG_SITE_TWITTER_HANDLE")
         unsetenv("BLOG_DISQUS_NAME")
-        unsetenv("WEBSITE_URL")
-        setenv("WEBSITE_URL", url, 1)
+        unsetenv("SP_WEBSITE_URL")
+        setenv("SP_WEBSITE_URL", url, 1)
         try application.boot()
         return TestWorld(context: context)
     }

@@ -167,7 +167,7 @@ let feedInformation = FeedInformation(
 application.steampress.configuration = SteamPressConfiguration(blogPath: "blog", feedInformation: feedInformation, postsPerPage: 5)
 ```
 
-Additionally, you should set the `WEBSITE_URL` environment variable to the root address of your site, e.g. `https://www.steampress.io`. This is used to set various parameters throughout SteamPress.
+Additionally, you should set the `SP_WEBSITE_URL` environment variable to the root address of your site, e.g. `https://www.steampress.io`. This is used to set various parameters throughout SteamPress.
 
 ## Logging In
 

@@ -570,14 +570,14 @@ class AdminPostTests: XCTestCase {
     
     func testsiteGetsurlAndPageURLFromEnvVar() throws {
         let site = "https://www.steampress.io"
-        setenv("WEBSITE_URL", site, 1)
+        setenv("SP_WEBSITE_URL", site, 1)
         _ = try testWorld.getResponse(to: createPostPath, loggedInUser: user)
         XCTAssertEqual(presenter.createPostsite?.url.absoluteString, site)
     }
     
     func testFailingURLFromEnvVar() throws {
         let site = ""
-        setenv("WEBSITE_URL", site, 1)
+        setenv("SP_WEBSITE_URL", site, 1)
         let response = try testWorld.getResponse(to: createPostPath, loggedInUser: user)
         XCTAssertEqual(response.status, .internalServerError)
     }

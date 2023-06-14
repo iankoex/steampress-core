@@ -1,3 +1,5 @@
+import Vapor
+
 public struct BlogPathCreator {
     
     public static var blogPath: String? = nil
@@ -32,5 +34,10 @@ public struct BlogPathCreator {
             }
             return "/\(path)/"
         }
+    }
+    
+    static func setBlogPathFromEnv() {
+        let path = Environment.get("SP_BLOG_PATH")
+        self.blogPath = path
     }
 }

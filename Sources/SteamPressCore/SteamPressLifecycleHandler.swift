@@ -24,14 +24,14 @@ public class SteamPressLifecycleHandler: LifecycleHandler {
         
         // Routes
         let router = application.routes
-        BlogPathCreator.blogPath = self.configuration.blogPath
+        BlogPathCreator.setBlogPathFromEnv()
         let feedController = FeedController(feedInformation: self.configuration.feedInformation)
         let apiController = APIController()
         let blogController = BlogController(enableAuthorPages: self.configuration.enableAuthorPages, enableTagPages: self.configuration.enableTagPages, postsPerPage: self.configuration.postsPerPage)
         let blogAdminController = BlogAdminController()
 
         let blogRoutes: RoutesBuilder
-        if let blogPath = self.configuration.blogPath {
+        if let blogPath = BlogPathCreator.blogPath {
             blogRoutes = router.grouped(PathComponent(stringLiteral: blogPath))
         } else {
             blogRoutes = router.grouped("")
