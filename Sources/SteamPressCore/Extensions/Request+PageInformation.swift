@@ -6,6 +6,7 @@ extension Request {
         guard let currentEncodedURL = currentURL.absoluteString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
             throw SteamPressError(identifier: "STEAMPRESS", "Failed to convert page url to URL encoded")
         }
+        
         return try GlobalWebsiteInformation(
             title: "SteamPress",
             url: self.rootUrl().absoluteString,

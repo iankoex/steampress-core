@@ -45,13 +45,13 @@ struct PostsAdminController: RouteCollection {
             try await req.repositories.blogTag.add(tag, to: newPost)
         }
         
-        return req.redirect(to: BlogPathCreator.createPath(for: "streampress/posts"))
+        return req.redirect(to: BlogPathCreator.createPath(for: "steampress/posts"))
     }
 
     func deletePostHandler(_ req: Request) async throws -> Response {
         let post = try await req.parameters.findPost(on: req)
         try await req.repositories.blogTag.deleteTags(for: post)
-        let redirect = req.redirect(to: BlogPathCreator.createPath(for: "streampress/posts"))
+        let redirect = req.redirect(to: BlogPathCreator.createPath(for: "steampress/posts"))
         try await req.repositories.blogPost.delete(post)
         return redirect
     }

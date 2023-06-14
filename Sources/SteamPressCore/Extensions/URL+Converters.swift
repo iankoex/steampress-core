@@ -3,16 +3,14 @@ import Vapor
 
 extension Request {
     func url() throws -> URL {
-        let path = self.url.path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
-        let rootURL = try self.rootUrl()
-        if rootURL.absoluteString == "/" {
-            guard let pathURL = URL(string: path) else {
-                throw SteamPressError(identifier: "SteamPressError", "Failed to convert path to URL")
-            }
-            return pathURL
-        } else {
-            return rootURL.appendingPathComponent(path)
+        guard let hostname = Environment.get("WEBSITE_URL") else {
+            throw SteamPressError(identifier: "SteamPressError", "WEBSITE_URL not set")
         }
+        
+        guard let siteURL = URL(string: hostname) else {
+            throw SteamPressError(identifier: "SteamPressError", "Failed to convert url hostname to URL")
+        }
+        return siteURL.appendingPathComponent(self.url.string)
     }
     
     func rootUrl() throws -> URL {
@@ -23,6 +21,6 @@ extension Request {
         guard let url = URL(string: hostname) else {
             throw SteamPressError(identifier: "SteamPressError", "Failed to convert url hostname to URL")
         }
-        return url
+        return url.appendingPathComponent(BlogPathCreator.blogPath ?? "")
     }
 }
