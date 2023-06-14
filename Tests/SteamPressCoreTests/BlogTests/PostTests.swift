@@ -18,7 +18,7 @@ class PostTests: XCTestCase {
 
     override func setUpWithError() throws {
         testWorld = try TestWorld.create(url: "/")
-        firstData = try testWorld.createPost(title: "Test Path", slugUrl: "test-path")
+        firstData = try testWorld.createPost(title: "Test Path", slugURL: "test-path")
     }
     
     override func tearDownWithError() throws {
@@ -79,7 +79,7 @@ class PostTests: XCTestCase {
     }
     
 //    func testExtraInitialiserWorks() throws {
-//        let post = BlogPost(title: "title", contents: "contents", author: 1, creationDate: Date(), slugUrl: "slug-url", published: true)
+//        let post = BlogPost(title: "title", contents: "contents", author: 1, creationDate: Date(), slugURL: "slug-url", published: true)
 //        XCTAssertEqual(post.blogID, 1)
 //    }
 }

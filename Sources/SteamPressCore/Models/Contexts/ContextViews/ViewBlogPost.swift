@@ -10,7 +10,7 @@ public struct ViewBlogPost: Encodable {
     var author: UUID
     var created: Date
     var lastEdited: Date?
-    var slugUrl: String
+    var slugURL: String
     var published: Bool
     var longSnippet: String
     var createdDate: Date
@@ -19,52 +19,31 @@ public struct ViewBlogPost: Encodable {
     var authorUsername: String
     var image: String?
     var imageAlt: String?
-    var description: String
+    var snippet: String
     var tags: [ViewBlogTag]?
 }
 
 public extension BlogPost {
     func toViewPost() throws -> ViewBlogPost {
-        
-        let postImage: String?
-        let postImageAlt: String?
-        
-        let image = try SwiftSoup.parse(markdownToHTML(self.contents)).select("img").first()
-
-        if let imageFound = image {
-            postImage = try imageFound.attr("src")
-            do {
-                let imageAlt = try imageFound.attr("alt")
-                if imageAlt != "" {
-                    postImageAlt = imageAlt
-                }  else {
-                    postImageAlt = nil
-                }
-            } catch {
-                postImageAlt = nil
-            }
-        } else {
-            postImage = nil
-            postImageAlt = nil
-        }
         let viewTags = try self.tags.toViewBlogTag()
-        return try ViewBlogPost(
+        
+        return ViewBlogPost(
             id: self.id,
             title: self.title,
             contents: self.contents,
             author: self.$author.id,
             created: created,
             lastEdited: self.lastEdited,
-            slugUrl: self.slugUrl,
+            slugURL: self.slugURL,
             published: self.published,
             longSnippet: self.longSnippet(),
             createdDate: self.created,
             lastEditedDate: self.lastEdited,
             authorName: self.author.name,
             authorUsername: self.author.username,
-            image: postImage,
-            imageAlt: postImageAlt,
-            description: self.description(),
+            image: self.imageURL,
+            imageAlt: self.imageAlt,
+            snippet: self.snippet,
             tags: viewTags.isEmpty ? nil : viewTags
         )
     }

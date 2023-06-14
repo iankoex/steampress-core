@@ -14,7 +14,7 @@ struct PostsAdminController: RouteCollection {
     // MARK: - Route handlers
     func createPostHandler(_ req: Request) async throws -> View {
         let tags = try await req.repositories.blogTag.getAllTags()
-        return try await req.presenters.admin.createPostView(errors: nil, tags: tags, post: nil, site: req.siteInformation())
+        return try await req.presenters.admin.createPostView(errors: nil, tags: tags, post: nil, titleSupplied: nil, contentSupplied: nil, excerptSupplied: nil, site: req.siteInformation())
     }
 
     func createPostPostHandler(_ req: Request) async throws -> Response {
@@ -23,25 +23,15 @@ struct PostsAdminController: RouteCollection {
 
         if let createPostErrors = validatePostCreation(data) {
             let tags = try await req.repositories.blogTag.getAllTags()
-            // will result in the loss of data
-            let view = try await req.presenters.admin.createPostView(errors: createPostErrors, tags: tags, post: nil, site: req.siteInformation())
+            let view = try await req.presenters.admin.createPostView(errors: createPostErrors, tags: tags, post: nil, titleSupplied: data.title, contentSupplied: data.contents, excerptSupplied: data.excerpt, site: req.siteInformation())
             return try await view.encodeResponse(for: req)
         }
-
-        let uniqueSlug = try await BlogPost.generateUniqueSlugURL(from: data.title, on: req)
-        let newPost = BlogPost(
-            title: data.title,
-            contents: data.contents,
-            authorID: author.id ?? UUID(),
-            slugUrl: uniqueSlug,
-            published: !data.isDraft,
-            creationDate: Date()
-        )
+        
+        let newPost = try await data.createBlogPost(with: author.id, on: req)
         guard let tag = try await req.repositories.blogTag.getTag(data.tag) else {
             let tags = try await req.repositories.blogTag.getAllTags()
             var errors = ["Tag not found"]
-            // will result in the loss of data
-            let view = try await req.presenters.admin.createPostView(errors: errors, tags: tags, post: nil, site: req.siteInformation())
+            let view = try await req.presenters.admin.createPostView(errors: errors, tags: tags, post: nil, titleSupplied: data.title, contentSupplied: data.contents, excerptSupplied: data.excerpt, site: req.siteInformation())
             return try await view.encodeResponse(for: req)
         }
         
@@ -62,14 +52,14 @@ struct PostsAdminController: RouteCollection {
     func editPostHandler(_ req: Request) async throws -> View {
         let post = try await req.parameters.findPost(on: req)
         let tags = try await req.repositories.blogTag.getAllTags()
-        return try await req.presenters.admin.createPostView(errors: nil, tags: tags, post: post, site: req.siteInformation())
+        return try await req.presenters.admin.createPostView(errors: nil, tags: tags, post: post, titleSupplied: post.title, contentSupplied: post.contents, excerptSupplied: post.snippet, site: req.siteInformation())
     }
 
 //    func editPostPostHandler(_ req: Request) async throws -> Response {
 //        let data = try req.content.decode(CreatePostData.self)
 //        let post = try await req.parameters.findPost(on: req)
 //        if let errors = self.validatePostCreation(data) {
-//            return try await req.presenters.admin.createPostView(errors: errors.errors, title: data.title, contents: data.contents, slugURL: post.slugUrl, tags: data.tags, isEditing: true, post: post, isDraft: !post.published, titleError: errors.titleError, contentsError: errors.contentsError, site: req.siteInformation()).encodeResponse(for: req)
+//            return try await req.presenters.admin.createPostView(errors: errors.errors, title: data.title, contents: data.contents, slugURL: post.slugURL, tags: data.tags, isEditing: true, post: post, isDraft: !post.published, titleError: errors.titleError, contentsError: errors.contentsError, site: req.siteInformation()).encodeResponse(for: req)
 //        }
 //
 //        guard let title = data.title, let contents = data.contents else {
@@ -83,10 +73,10 @@ struct PostsAdminController: RouteCollection {
 //        if let updateSlugURL = data.updateSlugURL, updateSlugURL {
 //            slugURL = try await BlogPost.generateUniqueSlugURL(from: title, on: req)
 //        } else {
-//            slugURL = post.slugUrl
+//            slugURL = post.slugURL
 //        }
 //
-//        post.slugUrl = slugURL
+//        post.slugURL = slugURL
 //        if post.published {
 //            post.lastEdited = Date()
 //        } else {
@@ -133,7 +123,7 @@ struct PostsAdminController: RouteCollection {
 //        for tag in newTags {
 //            try await req.repositories.blogTag.add(tag, to: post)
 //        }
-//        let redirect = req.redirect(to: BlogPathCreator.createPath(for: "posts/\(post.slugUrl)"))
+//        let redirect = req.redirect(to: BlogPathCreator.createPath(for: "posts/\(post.slugURL)"))
 //        let _ = try await req.repositories.blogPost.save(post)
 //        return redirect
 //    }

@@ -18,7 +18,7 @@ class IndexTests: XCTestCase {
 
     override func setUpWithError() throws {
         testWorld = try TestWorld.create(postsPerPage: postsPerPage, url: "/")
-        firstData = try testWorld.createPost(title: "Test Path", slugUrl: "test-path")
+        firstData = try testWorld.createPost(title: "Test Path", slugURL: "test-path")
     }
     
     override func tearDownWithError() throws {

@@ -16,6 +16,7 @@ extension BlogTag {
                 .id()
                 .field("name", .string, .required)
                 .field("visibility", .string, .required)
+                .field("created_date", .datetime)
                 .create()
         }
         

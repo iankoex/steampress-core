@@ -90,7 +90,7 @@ fileprivate extension BlogPost {
         guard let postID = self.id else {
             throw SteamPressError(identifier: "ID-required", "Blog Post has no ID")
         }
-        var postEntry = "<entry>\n<id>\(blogPath)/posts-id/\(postID)/</id>\n<title>\(self.title)</title>\n<updated>\(dateFormatter.string(from: updatedTime))</updated>\n<published>\(dateFormatter.string(from: self.created))</published>\n<author>\n<name>\(user.name)</name>\n<uri>\(blogPath)/authors/\(user.username)/</uri>\n</author>\n<summary>\(try self.description())</summary>\n<link rel=\"alternate\" href=\"\(blogPath)/posts/\(self.slugUrl)/\" />\n"
+        var postEntry = "<entry>\n<id>\(blogPath)/posts-id/\(postID)/</id>\n<title>\(self.title)</title>\n<updated>\(dateFormatter.string(from: updatedTime))</updated>\n<published>\(dateFormatter.string(from: self.created))</published>\n<author>\n<name>\(user.name)</name>\n<uri>\(blogPath)/authors/\(user.username)/</uri>\n</author>\n<summary>\(self.snippet)</summary>\n<link rel=\"alternate\" href=\"\(blogPath)/posts/\(self.slugURL)/\" />\n"
         
         let tags = try await request.repositories.blogTag.getTags(for: self)
         for tag in tags {

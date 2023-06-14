@@ -22,10 +22,19 @@ public final class BlogPost: Model, Codable {
     public var author: BlogUser
     
     @Field(key: "slug_url")
-    public var slugUrl: String
+    public var slugURL: String
     
     @Field(key: "published")
     public var published: Bool
+    
+    @Field(key: "image_url")
+    public var imageURL: String?
+    
+    @Field(key: "image_alt")
+    public var imageAlt: String?
+    
+    @Field(key: "snippet")
+    public var snippet: String
     
     @Field(key: "created")
     public var created: Date
@@ -42,34 +51,32 @@ public final class BlogPost: Model, Codable {
         title: String,
         contents: String,
         authorID: BlogUser.IDValue,
-        slugUrl: String,
+        slugURL: String,
         published: Bool,
+        imageURL: String?,
+        imageAlt: String?,
+        snippet: String,
         creationDate: Date
     ) {
         self.title = title
         self.contents = contents
         self.$author.id = authorID
-        self.slugUrl = slugUrl
-        self.lastEdited = nil
+        self.slugURL = slugURL
         self.published = published
+        self.imageURL = imageURL
+        self.imageAlt = imageAlt
+        self.snippet = snippet
         self.created = creationDate
+        self.lastEdited = nil
     }
 }
 
 // MARK: - BlogPost Utilities
 
 extension BlogPost {
-
-    public func shortSnippet() -> String {
-        return getLines(characterLimit: 150)
-    }
-
+    
     public func longSnippet() -> String {
         return getLines(characterLimit: 900)
-    }
-
-    func description() throws -> String {
-        return try SwiftSoup.parse(markdownToHTML(shortSnippet())).text()
     }
 
     private func getLines(characterLimit: Int) -> String {

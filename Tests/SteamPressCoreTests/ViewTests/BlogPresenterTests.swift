@@ -388,7 +388,7 @@ class BlogPresenterTests: XCTestCase {
         let author = TestDataBuilder.anyUser(id: uuidZero)
         let post1 = try TestDataBuilder.anyPost(author: author)
         post1.id = uuidOne
-        let post2 = try TestDataBuilder.anyPost(author: author, title: "Another Post", slugUrl: "another-post")
+        let post2 = try TestDataBuilder.anyPost(author: author, title: "Another Post", slugURL: "another-post")
         post2.id = uuidTwo
         let page = 2
         let totalPages = 10

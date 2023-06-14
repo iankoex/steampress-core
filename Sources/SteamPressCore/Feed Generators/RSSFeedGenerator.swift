@@ -33,7 +33,7 @@ struct RSSFeedGenerator {
         var xmlFeed = try self.getXMLStart(for: request)
         
         if !posts.isEmpty {
-            let postDate = posts[0].lastEdited ?? posts[0].created ?? Date()
+            let postDate = posts[0].lastEdited ?? posts[0].created
             xmlFeed += "<pubDate>\(self.rfc822DateFormatter.string(from: postDate))</pubDate>\n"
         }
         
@@ -85,8 +85,8 @@ struct RSSFeedGenerator {
 
 fileprivate extension BlogPost {
     func getPostRSSFeed(rootPath: String, dateFormatter: DateFormatter, for request: Request) async throws -> String {
-        let link = rootPath + "/posts/\(slugUrl)/"
-        var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(try description())\n</description>\n<link>\n\(link)\n</link>\n"
+        let link = rootPath + "/posts/\(slugURL)/"
+        var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(snippet)\n</description>\n<link>\n\(link)\n</link>\n"
 
         let tags = try await request.repositories.blogTag.getTags(for: self)
         for tag in tags {
@@ -94,7 +94,7 @@ fileprivate extension BlogPost {
                 postEntry += "<category>\(percentDecodedTag)</category>\n"
             }
         }
-        postEntry += "<pubDate>\(dateFormatter.string(from: self.lastEdited ?? self.created ?? Date()))</pubDate>\n</item>\n"
+        postEntry += "<pubDate>\(dateFormatter.string(from: self.lastEdited ?? self.created))</pubDate>\n</item>\n"
         return postEntry
     }
 }

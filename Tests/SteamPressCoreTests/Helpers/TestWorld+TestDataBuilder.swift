@@ -2,13 +2,13 @@ import SteamPressCore
 import Foundation
 
 extension TestWorld {
-    func createPost(tags: [String]? = nil, createdDate: Date? = nil, title: String = "An Exciting Post!", contents: String = "This is a blog post", slugUrl: String = "an-exciting-post", author: BlogUser? = nil, published: Bool = true) throws -> TestData {
-        return try TestDataBuilder.createPost(on: self.context.repository, tags: tags, createdDate: createdDate, title: title, contents: contents, slugUrl: slugUrl, author: author, published: published)
+    func createPost(tags: [String]? = nil, createdDate: Date? = nil, title: String = "An Exciting Post!", contents: String = "This is a blog post", slugURL: String = "an-exciting-post", author: BlogUser? = nil, published: Bool = true) throws -> TestData {
+        return try TestDataBuilder.createPost(on: self.context.repository, tags: tags, createdDate: createdDate, title: title, contents: contents, slugURL: slugURL, author: author, published: published)
     }
 
     func createPosts(count: Int, author: BlogUser, tag: BlogTag? = nil) throws {
         for index in 1...count {
-            let data = try createPost(title: "Post \(index)", slugUrl: "post-\(index)", author: author)
+            let data = try createPost(title: "Post \(index)", slugURL: "post-\(index)", author: author)
             if let tag = tag {
                 try context.repository.internalAdd(tag, to: data.post)
             }

@@ -40,7 +40,7 @@ class AdminPostTests: XCTestCase {
         let post = try XCTUnwrap(testWorld.context.repository.posts.first)
         XCTAssertEqual(testWorld.context.repository.posts.count, 1)
         XCTAssertEqual(post.title, createData.title)
-        XCTAssertEqual(post.slugUrl, "post-title")
+        XCTAssertEqual(post.slugURL, "post-title")
         XCTAssertTrue(post.published)
         XCTAssertEqual(post.created.timeIntervalSince1970, Date().timeIntervalSince1970, accuracy: 0.1)
         XCTAssertTrue(post.created < Date())
@@ -61,7 +61,7 @@ class AdminPostTests: XCTestCase {
         let randomNumber = 345
         try testWorld.shutdown()
         testWorld = try TestWorld.create(randomNumberGenerator: StubbedRandomNumberGenerator(numberToReturn: randomNumber))
-        let initialPostData = try testWorld.createPost(title: "Post Title", slugUrl: "post-title")
+        let initialPostData = try testWorld.createPost(title: "Post Title", slugURL: "post-title")
 
         struct CreatePostData: Content {
             static let defaultContentType = HTTPMediaType.urlEncodedForm
@@ -75,7 +75,7 @@ class AdminPostTests: XCTestCase {
 
         XCTAssertEqual(testWorld.context.repository.posts.count, 2)
         let post = try XCTUnwrap(testWorld.context.repository.posts.last)
-        XCTAssertEqual(post.slugUrl, "post-title-\(randomNumber)")
+        XCTAssertEqual(post.slugURL, "post-title-\(randomNumber)")
         XCTAssertEqual(response.headers[.location].first, "/posts/post-title-\(randomNumber)/")
     }
 
@@ -225,7 +225,7 @@ class AdminPostTests: XCTestCase {
             let tags = ["First Tag", "Second Tag"]
         }
 
-        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
+        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugURL: "initial-title")
         let updateData = UpdatePostData()
 
         let updatePostPath = "/admin/posts/\(testData.post.id!)/edit"
@@ -235,7 +235,7 @@ class AdminPostTests: XCTestCase {
         let post = try XCTUnwrap(testWorld.context.repository.posts.first)
         XCTAssertEqual(post.title, updateData.title)
         XCTAssertEqual(post.contents, updateData.contents)
-        XCTAssertEqual(post.slugUrl, testData.post.slugUrl)
+        XCTAssertEqual(post.slugURL, testData.post.slugURL)
         XCTAssertEqual(post.id, testData.post.id)
         XCTAssertTrue(post.published)
     }
@@ -249,14 +249,14 @@ class AdminPostTests: XCTestCase {
             let updateSlugURL = true
         }
 
-        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
+        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugURL: "initial-title")
         let updateData = UpdatePostData()
 
         let updatePostPath = "/admin/posts/\(testData.post.id!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
 
         let post = try XCTUnwrap(testWorld.context.repository.posts.first)
-        XCTAssertEqual(post.slugUrl, "post-title")
+        XCTAssertEqual(post.slugURL, "post-title")
     }
 
     func testEditPageGetsPostInfo() throws {
@@ -269,7 +269,7 @@ class AdminPostTests: XCTestCase {
 
         XCTAssertEqual(presenter.createPostTitle, post.title)
         XCTAssertEqual(presenter.createPostContents, post.contents)
-        XCTAssertEqual(presenter.createPostSlugURL, post.slugUrl)
+        XCTAssertEqual(presenter.createPostSlugURL, post.slugURL)
         let isEditing = try XCTUnwrap(presenter.createPostIsEditing)
         XCTAssertTrue(isEditing)
         XCTAssertEqual(presenter.createPostPost?.id, post.id)
@@ -300,7 +300,7 @@ class AdminPostTests: XCTestCase {
         let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.id!)/edit", body: updateData, loggedInUser: user)
 
         XCTAssertEqual(response.status, .seeOther)
-        XCTAssertEqual(response.headers[.location].first, "/posts/\(testData.post.slugUrl)/")
+        XCTAssertEqual(response.headers[.location].first, "/posts/\(testData.post.slugURL)/")
     }
 
     func testThatEditingPostGetsRedirectToPostPageWithNewSlugURL() throws {
@@ -321,7 +321,7 @@ class AdminPostTests: XCTestCase {
     }
 
     func testEditingPostWithNewTagsRemovesOldLinksAndAddsNewLinks() throws {
-        let post = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title").post
+        let post = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugURL: "initial-title").post
         let firstTagName = "Some Tag"
         let secondTagName = "Engineering"
         let firstTag = try testWorld.createTag(firstTagName, on: post)
@@ -359,7 +359,7 @@ class AdminPostTests: XCTestCase {
             let tags = ["First Tag", "Second Tag"]
         }
 
-        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
+        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugURL: "initial-title")
 
         let updateData = UpdatePostData()
 
@@ -381,7 +381,7 @@ class AdminPostTests: XCTestCase {
             let publish = true
         }
 
-        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title", published: false)
+        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugURL: "initial-title", published: false)
 
         let updateData = UpdatePostData()
 
@@ -403,7 +403,7 @@ class AdminPostTests: XCTestCase {
             let draft = true
         }
 
-        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title", published: false)
+        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugURL: "initial-title", published: false)
 
         let updateData = UpdatePostData()
 
@@ -424,7 +424,7 @@ class AdminPostTests: XCTestCase {
             let tags = ["First Tag", "Second Tag"]
         }
 
-        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
+        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugURL: "initial-title")
         let updateData = UpdatePostData()
 
         let updatePostPath = "/admin/posts/\(testData.post.id!)/edit"
@@ -433,7 +433,7 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(presenter.createPostTitle, "")
         XCTAssertEqual(presenter.createPostPost?.id, testData.post.id)
         XCTAssertEqual(presenter.createPostContents, updateData.contents)
-        XCTAssertEqual(presenter.createPostSlugURL, testData.post.slugUrl)
+        XCTAssertEqual(presenter.createPostSlugURL, testData.post.slugURL)
         XCTAssertEqual(presenter.createPostTags, updateData.tags)
         XCTAssertEqual(presenter.createPostIsEditing, true)
         XCTAssertEqual(presenter.createPostDraft, false)
@@ -456,7 +456,7 @@ class AdminPostTests: XCTestCase {
             let tags = ["First Tag", "Second Tag"]
         }
 
-        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
+        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugURL: "initial-title")
         let updateData = UpdatePostData()
 
         let updatePostPath = "/admin/posts/\(testData.post.id!)/edit"
@@ -499,42 +499,42 @@ class AdminPostTests: XCTestCase {
         let title = "This is a title"
         let expectedSlugUrl = "this-is-a-title"
         let post = try createPostViaRequest(title: title)
-        XCTAssertEqual(post.slugUrl, expectedSlugUrl)
+        XCTAssertEqual(post.slugURL, expectedSlugUrl)
     }
 
     func testThatSlugUrlCalculatedCorrectlyForTitleWithPunctuation() throws {
         let title = "This is an awesome post!"
         let expectedSlugUrl = "this-is-an-awesome-post"
         let post = try createPostViaRequest(title: title)
-        XCTAssertEqual(expectedSlugUrl, post.slugUrl)
+        XCTAssertEqual(expectedSlugUrl, post.slugURL)
     }
 
     func testThatSlugUrlStripsWhitespace() throws {
         let title = "    Title  "
         let expectedSlugUrl = "title"
         let post = try createPostViaRequest(title: title)
-        XCTAssertEqual(expectedSlugUrl, post.slugUrl)
+        XCTAssertEqual(expectedSlugUrl, post.slugURL)
     }
 
     func testNumbersRemainInUrl() throws {
         let title = "The 2nd url"
         let expectedSlugUrl = "the-2nd-url"
         let post = try createPostViaRequest(title: title)
-        XCTAssertEqual(expectedSlugUrl, post.slugUrl)
+        XCTAssertEqual(expectedSlugUrl, post.slugURL)
     }
 
     func testSlugUrlLowerCases() throws {
         let title = "AN AMAZING POST"
         let expectedSlugUrl = "an-amazing-post"
         let post = try createPostViaRequest(title: title)
-        XCTAssertEqual(expectedSlugUrl, post.slugUrl)
+        XCTAssertEqual(expectedSlugUrl, post.slugURL)
     }
 
     func testEverythingWithLotsOfCharacters() throws {
         let title = " This should remove! \nalmost _all_ of the @ punctuation, but it doesn't?"
         let expectedSlugUrl = "this-should-remove-almost-all-of-the-punctuation-but-it-doesnt"
         let post = try createPostViaRequest(title: title)
-        XCTAssertEqual(expectedSlugUrl, post.slugUrl)
+        XCTAssertEqual(expectedSlugUrl, post.slugURL)
     }
     
     func testRandomStringHelperDoesntProduceTheSameStringKinda() throws {
@@ -545,7 +545,7 @@ class AdminPostTests: XCTestCase {
     
     func testAddingPostToExistingTagDoesntDuplicateTheTag() throws {
         let existingTagName = "Engineering"
-        let post = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title").post
+        let post = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugURL: "initial-title").post
         let existingTag = try testWorld.createTag(existingTagName)
 
         struct UpdatePostData: Content {

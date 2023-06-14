@@ -73,7 +73,6 @@ public final class BlogUser: Model, Codable {
         self.biography = biography
         self.tagline = tagline
     }
-
 }
 
 public extension BlogUser {

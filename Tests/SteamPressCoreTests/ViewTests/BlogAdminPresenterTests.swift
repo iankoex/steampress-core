@@ -259,7 +259,7 @@ class BlogAdminPresenterTests: XCTestCase {
         let tag = "Engineering"
         let site = buildsite(currentPageURL: editPostPageURL)
 
-        _ = try await presenter.createPostView(errors: nil, title: postToEdit.title, contents: postToEdit.contents, slugURL: postToEdit.slugUrl, tags: [tag], isEditing: true, post: postToEdit, isDraft: false, titleError: false, contentsError: false, site: site)
+        _ = try await presenter.createPostView(errors: nil, title: postToEdit.title, contents: postToEdit.contents, slugURL: postToEdit.slugURL, tags: [tag], isEditing: true, post: postToEdit, isDraft: false, titleError: false, contentsError: false, site: site)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? CreatePostPageContext)
 
@@ -267,7 +267,7 @@ class BlogAdminPresenterTests: XCTestCase {
         XCTAssertTrue(context.editing)
         XCTAssertEqual(context.titleSupplied, postToEdit.title)
         XCTAssertEqual(context.contentsSupplied, postToEdit.contents)
-        XCTAssertEqual(context.slugURLSupplied, postToEdit.slugUrl)
+        XCTAssertEqual(context.slugURLSupplied, postToEdit.slugURL)
         XCTAssertEqual(context.post?.title, postToEdit.title)
         XCTAssertEqual(context.post?.id, postToEdit.id)
         XCTAssertFalse(context.draft)
@@ -301,7 +301,7 @@ class BlogAdminPresenterTests: XCTestCase {
         let draftPost = try TestDataBuilder.anyPost(author: currentUser, published: false)
         let site = buildsite(currentPageURL: editPostPageURL)
 
-        _ = try await presenter.createPostView(errors: nil, title: draftPost.title, contents: draftPost.contents, slugURL: draftPost.slugUrl, tags: nil, isEditing: true, post: draftPost, isDraft: true, titleError: false, contentsError: false, site: site)
+        _ = try await presenter.createPostView(errors: nil, title: draftPost.title, contents: draftPost.contents, slugURL: draftPost.slugURL, tags: nil, isEditing: true, post: draftPost, isDraft: true, titleError: false, contentsError: false, site: site)
         let context = try XCTUnwrap(viewRenderer.capturedContext as? CreatePostPageContext)
 
         XCTAssertTrue(context.draft)

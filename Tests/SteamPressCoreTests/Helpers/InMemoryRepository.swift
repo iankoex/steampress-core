@@ -176,7 +176,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
 
     func getPost(slug: String) async throws -> BlogPost? {
-        return posts.first { $0.slugUrl == slug }
+        return posts.first { $0.slugURL == slug }
     }
 
     func getPost(id: UUID) async throws -> BlogPost? {

@@ -16,6 +16,9 @@ public final class BlogTag: Model, Codable {
     @Field(key: "visibility")
     public var visibility: TagVisibility
     
+    @Timestamp(key: "created_date", on: .create)
+    public var createdDate: Date?
+    
     @Siblings(through: PostTagPivot.self, from: \.$tag, to: \.$post)
     public var posts: [BlogPost]
     
