@@ -17,7 +17,7 @@ extension Request {
             currentPageURL: currentURL.absoluteString,
             currentPageEncodedURL: currentEncodedURL,
             generator: "SteamPress 2.0.4",
-            disqusName: Environment.get("BLOG_DISQUS_NAME"),
+            disqusName: Environment.get("BLOG_DISQUS_NAME"), //use admin for thedse
             twitterHandle: Environment.get("BLOG_SITE_TWITTER_HANDLE"),
             googleAnalyticsIdentifier: Environment.get("BLOG_GOOGLE_ANALYTICS_IDENTIFIER")
         )
