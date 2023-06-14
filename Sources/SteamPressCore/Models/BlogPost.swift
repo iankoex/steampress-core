@@ -18,7 +18,7 @@ public final class BlogPost: Model, Codable {
     @Field(key: "contents")
     public var contents: String
     
-    @Parent(key: "author")
+    @Parent(key: "author_id")
     public var author: BlogUser
     
     @Field(key: "slug_url")

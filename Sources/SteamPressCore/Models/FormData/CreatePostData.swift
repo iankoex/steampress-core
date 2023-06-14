@@ -7,7 +7,7 @@ struct CreatePostData: Content {
     let contents: String
     let excerpt: String?
     let isDraft: Bool
-    let tag: String
+    let tags: [String]
     let updateSlugURL: Bool?
 }
 

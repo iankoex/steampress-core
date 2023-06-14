@@ -12,7 +12,7 @@ extension BlogPost {
                 .id()
                 .field("title", .string, .required)
                 .field("contents", .string, .required)
-                .field("author", .uuid, .required, .references(BlogUser.schema, .id))
+                .field("author_id", .uuid, .required, .references(BlogUser.schema, .id))
                 .field("slug_url", .string, .required)
                 .field("published", .bool, .required)
                 .field("image_url", .string)
