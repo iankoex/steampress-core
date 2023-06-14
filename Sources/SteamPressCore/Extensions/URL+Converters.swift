@@ -6,21 +6,21 @@ extension Request {
         guard let hostname = Environment.get("SP_WEBSITE_URL") else {
             throw SteamPressError(identifier: "SteamPressError", "SP_WEBSITE_URL not set")
         }
-        
-        guard let siteURL = URL(string: hostname) else {
+        let newHostName = hostname.appending(self.url.string)
+        guard let siteURL = URL(string: newHostName) else {
             throw SteamPressError(identifier: "SteamPressError", "Failed to convert url hostname to URL")
         }
-        return siteURL.appendingPathComponent(self.url.string)
+        return siteURL
     }
     
     func rootUrl() throws -> URL {
         guard let hostname = Environment.get("SP_WEBSITE_URL") else {
             throw SteamPressError(identifier: "SteamPressError", "SP_WEBSITE_URL not set")
         }
-        
-        guard let url = URL(string: hostname) else {
+        let newHostName = hostname.appending(BlogPathCreator.blogPath ?? "")
+        guard let url = URL(string: newHostName) else {
             throw SteamPressError(identifier: "SteamPressError", "Failed to convert url hostname to URL")
         }
-        return url.appendingPathComponent(BlogPathCreator.blogPath ?? "")
+        return url
     }
 }
