@@ -12,6 +12,7 @@ struct BlogAdminController: RouteCollection {
         adminProtectedRoutes.get("explore", use: exploreHandler)
         adminProtectedRoutes.get("posts", use: postsHandler)
         adminProtectedRoutes.get("pages", use: pagesHandler)
+        adminProtectedRoutes.post("uploadImage", use: imageUploadHandler)
         
         let loginController = LoginController()
         try adminRoutes.register(collection: loginController)
@@ -53,5 +54,24 @@ struct BlogAdminController: RouteCollection {
     func pagesHandler(_ req: Request) async throws -> View {
         let usersCount = try await req.repositories.blogUser.getUsersCount()
         return try await req.presenters.admin.createPagesView(usersCount: usersCount, errors: nil, site: req.siteInformation())
+    }
+    
+    func imageUploadHandler(_ req: Request) async throws -> ImageUploadResponse {
+        let imageFile = try req.content.decode(ImageFile.self)
+        
+        let (filePath, fileURL) = req.filePath(for: imageFile.image.filename)
+        let nioFileHandle = try await req.application.fileio.openFile(
+            path: filePath,
+            mode: .write,
+            flags: .allowFileCreation(posixMode: .max),
+            eventLoop: req.eventLoop
+        ).get()
+        try await req.application.fileio.write(
+            fileHandle: nioFileHandle,
+            buffer: imageFile.image.data,
+            eventLoop: req.eventLoop
+        ).get()
+        try nioFileHandle.close()
+        return ImageUploadResponse(success: 1, file: .init(url: fileURL))
     }
 }

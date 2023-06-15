@@ -33,7 +33,6 @@ struct BlogController: RouteCollection {
             routes.get(tagsPath, BlogTag.parameter, use: tagViewHandler)
             routes.get(tagsPath, use: allTagsViewHandler)
         }
-        routes.post("uploadImages", use: uploadImagesHandler)
     }
 
     // MARK: - Route Handlers
@@ -128,107 +127,5 @@ struct BlogController: RouteCollection {
     func getPaginationInformation(currentPage: Int, totalPosts: Int, currentQuery: String?) -> PaginationTagInformation {
         let totalPages = Int(ceil(Double(totalPosts) / Double(postsPerPage)))
         return PaginationTagInformation(currentPage: currentPage, totalPages: totalPages, currentQuery: currentQuery)
-    }
-
-    func uploadImagesHandler(_ req: Request) async throws -> String {
-        print("began")
-        
-        let fileName = "upload-\(UUID().uuidString).\(req.content.contentType?.subType ?? "kkjj")"
-        let upload = StreamModel(fileName: fileName)
-        let filePath = upload.filePath(for: req.application)
-        
-        // Remove any file with the same name
-        try? FileManager.default.removeItem(atPath: filePath)
-        print("uploading \(upload.fileName) to \(filePath)")
-        let handle = try await req.application.fileio.openFile(
-            path: filePath,
-            mode: .write,
-            flags: .allowFileCreation(posixMode: 0x744),
-            eventLoop: req.eventLoop
-        ).get()
-        defer {
-            do {
-                try handle.close()
-            } catch {
-                print("\(error.localizedDescription)")
-            }
-        }
-        do {
-            var offset: Int64 = 0
-            for try await byteBuffer in req.body {
-                do {
-                    try await req.application.fileio.write(
-                        fileHandle: handle,
-                        toOffset: offset,
-                        buffer: byteBuffer,
-                        eventLoop: req.eventLoop
-                    ).get()
-                    offset += Int64(byteBuffer.readableBytes)
-                } catch {
-                    print("\(error.localizedDescription)")
-                }
-            }
-            print(offset)
-        } catch {
-            try FileManager.default.removeItem(atPath: filePath)
-            print("File save failed for \(filePath)")
-            throw Abort(.internalServerError)
-        }
-        print("saved \(upload)")
-        return "Saved \(upload)"
-        
-//        struct Input: Content {
-//            var file: File
-//        }
-//        let input = try req.content.decode(Input.self)
-//
-//        guard input.file.data.readableBytes > 0 else {
-//            throw Abort(.badRequest)
-//        }
-//
-//        let formatter = DateFormatter()
-//        formatter.dateFormat = "y-m-d-HH-MM-SS-"
-//        let prefix = formatter.string(from: .init())
-//        let fileName = prefix + input.file.filename
-//        let path = req.application.directory.publicDirectory + fileName
-//
-//        let handle = try await req.application.fileio.openFile(
-//            path: path,
-//            mode: .write,
-//            flags: .allowFileCreation(posixMode: 0x744),
-//            eventLoop: req.eventLoop
-//        ).get()
-//        try await req.application.fileio.write(
-//            fileHandle: handle,
-//            buffer: input.file.data,
-//            eventLoop: req.eventLoop
-//        ).get()
-//        try handle.close()
-//        print(fileName)
-//        return fileName
-    }
-}
-
-struct SomeP: Codable {
-    var name: String
-    var filename: String
-}
-
-struct StreamModel: Content, CustomStringConvertible {
-    var id: UUID?
-    
-    var fileName: String
-    
-    public func filePath(for app: Application) -> String {
-        app.directory.publicDirectory + "Content/" + fileName
-    }
-    
-    var description: String {
-        return fileName
-    }
-    
-    init(id: UUID? = nil, fileName: String) {
-        self.id = id
-        self.fileName = fileName
     }
 }
