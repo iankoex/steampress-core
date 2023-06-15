@@ -3,10 +3,16 @@ import Vapor
 
 extension Request {
     func url() throws -> URL {
-        guard let hostname = Environment.get("SP_WEBSITE_URL") else {
+        guard var hostname = Environment.get("SP_WEBSITE_URL") else {
             throw SteamPressError(identifier: "SteamPressError", "SP_WEBSITE_URL not set")
         }
-        let newHostName = hostname.appending(self.url.string)
+        if !hostname.hasSuffix("/") {
+            hostname = hostname + "/"
+        }
+        var newHostName = hostname.appending(self.url.string)
+        if !newHostName.hasSuffix("/") {
+            newHostName = newHostName + "/"
+        }
         guard let siteURL = URL(string: newHostName) else {
             throw SteamPressError(identifier: "SteamPressError", "Failed to convert url hostname to URL")
         }
@@ -14,10 +20,16 @@ extension Request {
     }
     
     func rootUrl() throws -> URL {
-        guard let hostname = Environment.get("SP_WEBSITE_URL") else {
+        guard var hostname = Environment.get("SP_WEBSITE_URL") else {
             throw SteamPressError(identifier: "SteamPressError", "SP_WEBSITE_URL not set")
         }
-        let newHostName = hostname.appending(BlogPathCreator.blogPath ?? "")
+        if !hostname.hasSuffix("/") {
+            hostname = hostname + "/"
+        }
+        var newHostName = hostname.appending(BlogPathCreator.blogPath ?? "")
+        if !newHostName.hasSuffix("/") {
+            newHostName = newHostName + "/"
+        }
         guard let url = URL(string: newHostName) else {
             throw SteamPressError(identifier: "SteamPressError", "Failed to convert url hostname to URL")
         }

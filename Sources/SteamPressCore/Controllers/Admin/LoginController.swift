@@ -92,7 +92,6 @@ struct LoginController: RouteCollection {
         var resetPasswordErrors: [String] = []
         
         guard let password = data.password, let confirmPassword = data.confirmPassword else {
-            
             if data.password == nil {
                 resetPasswordErrors.append("You must specify a password")
             }
@@ -123,7 +122,7 @@ struct LoginController: RouteCollection {
         user.password = hashedPassword
         user.resetPasswordRequired = false
         let redirect = req.redirect(to: BlogPathCreator.createPath(for: "steampress"))
-        let _ = try await req.repositories.blogUser.save(user)
+        try await req.repositories.blogUser.save(user)
         return req.redirect(to: BlogPathCreator.createPath(for: "steampress"))
     }
 }

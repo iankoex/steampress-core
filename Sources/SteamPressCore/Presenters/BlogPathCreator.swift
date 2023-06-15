@@ -2,7 +2,7 @@ import Vapor
 
 public struct BlogPathCreator {
     
-    public static var blogPath: String? = nil
+    private(set) static var blogPath: String? = nil
     
     public static func createPath(for path: String?, query: String? = nil) -> String {
         var createdPath = constructPath(from: path)
@@ -10,19 +10,18 @@ public struct BlogPathCreator {
         if let query = query {
             createdPath = "\(createdPath)?\(query)"
         }
-        
         return createdPath
     }
     
     fileprivate static func constructPath(from path: String?) -> String {
         if path == blogPath {
-            if let index = blogPath {
+            if let index = blogPath, !index.isEmpty  {
                 return "/\(index)/"
             } else {
                 return "/"
             }
         }
-        if let index = blogPath {
+        if let index = blogPath, !index.isEmpty {
             if let pathSuffix = path {
                 return "/\(index)/\(pathSuffix)/"
             } else {
@@ -37,7 +36,8 @@ public struct BlogPathCreator {
     }
     
     static func setBlogPathFromEnv() {
-        let path = Environment.get("SP_BLOG_PATH")
-        self.blogPath = path
+        if let path = Environment.get("SP_BLOG_PATH") {
+            self.blogPath = path.trimmingCharacters(in: .whitespaces)
+        }
     }
 }
