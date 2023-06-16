@@ -1,10 +1,14 @@
 import Vapor
 
-struct ImageFile: Content {
+struct ImageContainer: Content {
     var image: File
 }
 
-struct ImageUploadResponse: Content {
+struct FileContainer: Content {
+    var file: File
+}
+
+struct FileUploadResponse: Content {
     var success: Int
     var file: FileURL
     
