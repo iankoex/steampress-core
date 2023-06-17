@@ -8,7 +8,7 @@ struct PostsAdminController: RouteCollection {
         routes.post("createPost", use: createPostPostHandler)
         routes.get("posts", BlogPost.parameter, use: editPostHandler)
         routes.post("posts", BlogPost.parameter, use: editPostPostHandler)
-        routes.post("posts", BlogPost.parameter, "delete", use: deletePostHandler)
+        routes.get("posts", BlogPost.parameter, "delete", use: deletePostHandler)
     }
 
     // MARK: - Route handlers
@@ -18,7 +18,6 @@ struct PostsAdminController: RouteCollection {
     }
 
     func createPostPostHandler(_ req: Request) async throws -> Response {
-        print(req.content)
         let data = try req.content.decode(CreatePostData.self)
         let author = try req.auth.require(BlogUser.self)
 
@@ -52,9 +51,8 @@ struct PostsAdminController: RouteCollection {
     func deletePostHandler(_ req: Request) async throws -> Response {
         let post = try await req.parameters.findPost(on: req)
         try await req.repositories.blogTag.deleteTags(for: post)
-        let redirect = req.redirect(to: BlogPathCreator.createPath(for: "steampress/posts"))
         try await req.repositories.blogPost.delete(post)
-        return redirect
+        return req.redirect(to: BlogPathCreator.createPath(for: "steampress/posts"))
     }
 
     func editPostHandler(_ req: Request) async throws -> View {
@@ -83,11 +81,11 @@ struct PostsAdminController: RouteCollection {
         }
         post.slugURL = slugURL
         
+        post.published = !data.isDraft
         if post.published {
             post.lastEdited = Date()
         } else {
             post.created = Date()
-            post.published = !data.isDraft
         }
 
         var newTags: [BlogTag]  = []
