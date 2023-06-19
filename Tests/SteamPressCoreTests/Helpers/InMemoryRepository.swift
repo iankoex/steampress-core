@@ -2,7 +2,7 @@ import Vapor
 import SteamPressCore
 
 class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserRepository {
-
+    
     private(set) var tags: [BlogTag]
     private(set) var posts: [BlogPost]
     private(set) var users: [BlogUser]
@@ -72,7 +72,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
 
     func addTag(name: String) throws -> BlogTag {
-        let newTag = BlogTag(id: UUID(), name: name)
+        let newTag = BlogTag(id: UUID(), name: name, visibility: .public)
         tags.append(newTag)
         return newTag
     }
@@ -127,6 +127,16 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     func remove(_ tag: BlogTag, from post: BlogPost) -> Void {
         self.postTagLinks.removeAll { $0.tagID == tag.id! && $0.postID == post.id! }
     }
+    
+    func update(_ tag: BlogTag) async throws {
+        if let i = tags.firstIndex(where: { $0.id == tag.id }) {
+            tags[i] = tag
+        }
+    }
+    
+    func delete(_ tag: BlogTag) async throws {
+        tags.removeAll(where: { $0.id == tag.id })
+    }
 
     // MARK: - BlogPostRepository
     
@@ -139,6 +149,12 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         if !includeDrafts {
             sortedPosts = sortedPosts.filter { $0.published }
         }
+        return sortedPosts
+    }
+    
+    func getAllDraftsPostsSortedByPublishDate() async throws -> [SteamPressCore.BlogPost] {
+        var sortedPosts = posts.sorted { $0.created > $1.created }
+        sortedPosts = sortedPosts.filter { !$0.published }
         return sortedPosts
     }
 
@@ -280,6 +296,10 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
 
     func getUser(username: String) async throws -> BlogUser? {
         return users.first { $0.username == username }
+    }
+    
+    func getUser(email: String) async throws -> BlogUser? {
+        return users.first { $0.email == email }
     }
 
     private(set) var userUpdated = false

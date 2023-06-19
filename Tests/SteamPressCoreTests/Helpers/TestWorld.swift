@@ -14,27 +14,20 @@ struct TestWorld {
         url: String = "https://www.steampress.io"
     ) throws -> TestWorld {
         let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        let blogPresenter = CapturingBlogPresenter(eventLoop: eventLoopGroup.next())
-        let blogAdminPresenter = CapturingAdminPresenter(eventLoop: eventLoopGroup.next())
-        let repository: InMemoryRepository = InMemoryRepository(Request(application: .init(), on: eventLoopGroup.next()))
         let application = TestWorld.getSteamPressApp(
             eventLoopGroup: eventLoopGroup,
-            repository: repository,
             path: path,
             postsPerPage: postsPerPage,
             feedInformation: feedInformation,
-            blogPresenter: blogPresenter,
-            adminPresenter: blogAdminPresenter,
             enableAuthorPages: enableAuthorPages,
             enableTagPages: enableTagPages,
             passwordHasherToUse: passwordHasherToUse,
             randomNumberGenerator: randomNumberGenerator
         )
+        let req = Request(application: application, on: eventLoopGroup.next())
         let context = Context(
             app: application,
-            repository: repository,
-            blogPresenter: blogPresenter,
-            blogAdminPresenter: blogAdminPresenter,
+            req: req,
             path: path,
             eventLoopGroup: eventLoopGroup
         )
@@ -43,6 +36,7 @@ struct TestWorld {
         unsetenv("BLOG_DISQUS_NAME")
         unsetenv("SP_WEBSITE_URL")
         setenv("SP_WEBSITE_URL", url, 1)
+        setenv("SP_BLOG_PATH", "blog", 1)
         try application.boot()
         return TestWorld(context: context)
     }
@@ -55,9 +49,7 @@ struct TestWorld {
 
     struct Context {
         let app: Application
-        let repository: InMemoryRepository
-        let blogPresenter: CapturingBlogPresenter
-        let blogAdminPresenter: CapturingAdminPresenter
+        let req: Request
         let path: String?
         let eventLoopGroup: EventLoopGroup
     }

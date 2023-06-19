@@ -1,7 +1,5 @@
 import Foundation
 import Vapor
-import SwiftSoup
-import SwiftMarkdown
 
 public struct ViewBlogPost: Encodable {
     var id: UUID?
@@ -12,7 +10,6 @@ public struct ViewBlogPost: Encodable {
     var lastEdited: Date?
     var slugURL: String
     var published: Bool
-    var longSnippet: String
     var createdDate: Date
     var lastEditedDate: Date?
     var authorName: String
@@ -36,7 +33,6 @@ public extension BlogPost {
             lastEdited: self.lastEdited,
             slugURL: self.slugURL,
             published: self.published,
-            longSnippet: self.longSnippet(),
             createdDate: self.created,
             lastEditedDate: self.lastEdited,
             authorName: self.author.name,

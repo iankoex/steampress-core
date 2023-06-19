@@ -1,7 +1,5 @@
 import Vapor
 import Fluent
-import SwiftSoup
-import SwiftMarkdown
 
 // MARK: - Model
 
@@ -74,23 +72,6 @@ public final class BlogPost: Model, Codable {
 // MARK: - BlogPost Utilities
 
 extension BlogPost {
-    
-    public func longSnippet() -> String {
-        return getLines(characterLimit: 900)
-    }
-
-    private func getLines(characterLimit: Int) -> String {
-        contents = contents.replacingOccurrences(of: "\r\n", with: "\n", options: .regularExpression)
-        let lines = contents.components(separatedBy: "\n")
-        var snippet = ""
-        for line in lines where line != "" {
-            snippet += "\(line)\n"
-            if snippet.count > characterLimit {
-                return snippet
-            }
-        }
-        return snippet
-    }
 
     static func generateUniqueSlugURL(from title: String, on req: Request) async throws -> String {
         let alphanumericsWithHyphenAndSpace = CharacterSet(charactersIn: " -0123456789abcdefghijklmnopqrstuvwxyz")

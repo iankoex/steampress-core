@@ -7,13 +7,12 @@ class AccessControlTests: XCTestCase {
     // MARK: - Properties
     private var app: Application!
     private var testWorld: TestWorld!
-    private var user: BlogUser!
+    private var user: BlogUser?
 
     // MARK: - Overrides
 
     override func setUpWithError() throws {
         testWorld = try TestWorld.create(path: "blog")
-        user = testWorld.createUser()
     }
     
     override func tearDownWithError() throws {
@@ -24,100 +23,226 @@ class AccessControlTests: XCTestCase {
 
     // MARK: - Access restriction tests
 
-    func testCannotAccessAdminPageWithoutBeingLoggedIn() throws {
-        try assertLoginRequired(method: .GET, path: "")
+    func testCannotAccessAdminPageWithoutBeingLoggedIn() async throws {
+        try await assertLoginRequired(method: .GET, path: "")
     }
 
-    func testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn() throws {
-        try assertLoginRequired(method: .GET, path: "createPost")
+    func testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn() async throws {
+        try await assertLoginRequired(method: .GET, path: "createPost")
     }
 
-    func testCannotSendCreateBlogPostPageWithoutBeingLoggedIn() throws {
-        try assertLoginRequired(method: .POST, path: "createPost")
+    func testCannotSendCreateBlogPostPageWithoutBeingLoggedIn() async throws {
+        try await assertLoginRequired(method: .POST, path: "createPost")
     }
 
-    func testCannotAccessEditPostPageWithoutLogin() throws {
-        let post = try testWorld.createPost()
-        try assertLoginRequired(method: .GET, path: "posts/\(post.post.id!)/edit")
+    func testCannotAccessPostsPageWithoutLogin() async throws {
+        try await assertLoginRequired(method: .GET, path: "posts")
     }
 
-    func testCannotSendEditPostPageWithoutLogin() throws {
-        let post = try testWorld.createPost()
-        try assertLoginRequired(method: .POST, path: "posts/\(post.post.id!)/edit")
+    func testCannotAccessEditPostPageWithoutLogin() async throws {
+        let testData = try await testWorld.createPost()
+        try await assertLoginRequired(method: .GET, path: "posts/\(testData.post.id!)")
     }
 
-    func testCannotAccessCreateUserPageWithoutLogin() throws {
-        try assertLoginRequired(method: .GET, path: "createUser")
+    func testCannotSendEditPostPageWithoutLogin() async throws {
+        let testData = try await testWorld.createPost()
+        try await assertLoginRequired(method: .POST, path: "posts/\(testData.post.id!)")
     }
 
-    func testCannotSendCreateUserPageWithoutLogin() throws {
-        try assertLoginRequired(method: .POST, path: "createUser")
+    func testCannotAccessDeletePostPageWithoutLogin() async throws {
+        let testData = try await testWorld.createPost()
+        try await assertLoginRequired(method: .GET, path: "posts/\(testData.post.id!)/delete")
     }
 
-    func testCannotAccessEditUserPageWithoutLogin() throws {
-        try assertLoginRequired(method: .GET, path: "users/1/edit")
+    func testCannotAccessMembersPageWithoutLogin() async throws {
+        try await assertLoginRequired(method: .GET, path: "members")
     }
 
-    func testCannotSendEditUserPageWithoutLogin() throws {
-        try assertLoginRequired(method: .POST, path: "users/1/edit")
+    func testCannotAccessCreateMemberPageWithoutLogin() async throws {
+        try await assertLoginRequired(method: .GET, path: "members/new")
     }
 
-    func testCannotDeletePostWithoutLogin() throws {
-        try assertLoginRequired(method: .POST, path: "posts/1/delete")
+    func testCannotSendCreateMemberPageWithoutLogin() async throws {
+        try await assertLoginRequired(method: .POST, path: "members/new")
     }
 
-    func testCannotDeleteUserWithoutLogin() throws {
-        try assertLoginRequired(method: .POST, path: "users/1/delete")
+    func testCannotAccessEditMemberPageWithoutLogin() async throws {
+        try await assertLoginRequired(method: .GET, path: "members/\(UUID())")
     }
 
-    func testCannotAccessResetPasswordPageWithoutLogin() throws {
-        try assertLoginRequired(method: .GET, path: "resetPassword")
+    func testCannotSendEditMemberPageWithoutLogin() async throws {
+        try await assertLoginRequired(method: .POST, path: "members/\(UUID())")
     }
 
-    func testCannotSendResetPasswordPageWithoutLogin() throws {
-        try assertLoginRequired(method: .POST, path: "resetPassword")
+    func testCannotDeleteMemberWithoutLogin() async throws {
+        try await assertLoginRequired(method: .GET, path: "members/\(UUID())/delete")
+    }
+    
+    func testCannotAccessTagsPageWithoutLogin() async throws {
+        try await assertLoginRequired(method: .GET, path: "tags")
+    }
+    
+    func testCannotAccessCreateTagPageWithoutLogin() async throws {
+        try await assertLoginRequired(method: .GET, path: "tags/new")
+    }
+    
+    func testCannotSendCreateTagPageWithoutLogin() async throws {
+        try await assertLoginRequired(method: .POST, path: "tags/new")
+    }
+    
+    func testCannotAccessEditTagPageWithoutLogin() async throws {
+        try await assertLoginRequired(method: .GET, path: "tags/events")
+    }
+    
+    func testCannotSendEditTagPageWithoutLogin() async throws {
+        try await assertLoginRequired(method: .POST, path: "tags/events")
+    }
+    
+    func testCannotDeleteTagWithoutLogin() async throws {
+        try await assertLoginRequired(method: .GET, path: "tags/events/delete")
+    }
+
+    func testCannotAccessResetPasswordPageWithoutLogin() async throws {
+        try await assertLoginRequired(method: .GET, path: "resetPassword")
+    }
+
+    func testCannotSendResetPasswordPageWithoutLogin() async throws {
+        try await assertLoginRequired(method: .POST, path: "resetPassword")
     }
 
     // MARK: - Access Success Tests
 
-    func testCanAccessAdminPageWhenLoggedIn() throws {
-        let response = try testWorld.getResponse(to: "/blog/admin/", loggedInUser: user)
+    func testCanAccessAdminPageWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/", loggedInUser: user)
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessCreatePostPageWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/createPost", loggedInUser: user)
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessPostCreatePostPageWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/createPost", method: .POST, loggedInUser: user)
         XCTAssertEqual(response.status, .ok)
     }
 
-    func testCanAccessCreatePostPageWhenLoggedIn() throws {
-        let response = try testWorld.getResponse(to: "/blog/admin/createPost", loggedInUser: user)
+    func testCanAccessEditPostPageWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let testData = try await testWorld.createPost()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/posts/\(testData.post.id!)", loggedInUser: user)
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessPostEditPostPageWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let testData = try await testWorld.createPost()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/posts/\(testData.post.id!)", method: .POST, loggedInUser: user)
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessDeletePostPageWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let testData = try await testWorld.createPost()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/posts/\(testData.post.id!)/delete", loggedInUser: user)
+        XCTAssertEqual(response.status, .ok)
+    }
+   
+    func testCanAccessMembersPageWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/members", loggedInUser: user)
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessCreateMemberPageWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/members/new", loggedInUser: user)
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessPostCreateMemberPageWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/members/new", method: .POST, loggedInUser: user)
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessEditMemberPageWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/members/\(user.id!)", loggedInUser: user)
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessPostEditMemberPageWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/members/\(user.id!)", loggedInUser: user)
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessDeleteMemberWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/members/\(user.id!)/delete", loggedInUser: user)
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessTagsPageWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/tags", loggedInUser: user)
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessCreateTagPageWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/tags/new", loggedInUser: user)
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessPostCreateTagPageWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/tags/new", method: .POST, loggedInUser: user)
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessEditTagPageWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/tags/events", loggedInUser: user)
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessPostEditTagPageWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/tags/events", loggedInUser: user)
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessDeleteTagWhenLoggedIn() async throws {
+        let user = try await createUserIfNonExists()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/tags/events/delete", loggedInUser: user)
         XCTAssertEqual(response.status, .ok)
     }
 
-    func testCanAccessEditPostPageWhenLoggedIn() throws {
-        let post = try testWorld.createPost()
-        let response = try testWorld.getResponse(to: "/blog/admin/posts/\(post.post.id!)/edit", loggedInUser: user)
-        XCTAssertEqual(response.status, .ok)
-    }
-
-    func testCanAccessCreateUserPageWhenLoggedIn() throws {
-        let response = try testWorld.getResponse(to: "/blog/admin/createUser", loggedInUser: user)
-        XCTAssertEqual(response.status, .ok)
-    }
-
-    func testCanAccessEditUserPageWhenLoggedIn() throws {
-        let response = try testWorld.getResponse(to: "/blog/admin/users/1/edit", loggedInUser: user)
-        XCTAssertEqual(response.status, .ok)
-    }
-
-    func testCanAccessResetPasswordPage() throws {
-        let response = try testWorld.getResponse(to: "/blog/admin/resetPassword", loggedInUser: user)
+    func testCanAccessResetPasswordPage() async throws {
+        let user = try await createUserIfNonExists()
+        let response = try await testWorld.getResponse(to: "/blog/steampress/resetPassword", loggedInUser: user)
         XCTAssertEqual(response.status, .ok)
     }
 
     // MARK: - Helpers
 
-    private func assertLoginRequired(method: HTTPMethod, path: String) throws {
-        let response = try testWorld.getResponse(to: "/blog/admin/\(path)", method: method)
+    private func assertLoginRequired(method: HTTPMethod, path: String) async throws {
+        let response = try await testWorld.getResponse(to: "/blog/steampress/\(path)", method: method)
 
         XCTAssertEqual(response.status, .seeOther)
-        XCTAssertEqual(response.headers[.location].first, "/blog/admin/login/?loginRequired")
+        XCTAssertEqual(response.headers[.location].first, "/blog/steampress/login/?loginRequired")
     }
 
+    private func createUserIfNonExists() async throws -> BlogUser {
+        guard let user = user else {
+            user = try await testWorld.createUser()
+            return user!
+        }
+        return user
+    }
 }

@@ -4,10 +4,8 @@ import Vapor
 import Foundation
 
 class CapturingBlogPresenter: BlogPresenter {
-    
-    let eventLoop: EventLoop
-    init(eventLoop: EventLoop) {
-        self.eventLoop = eventLoop
+    required init(_ req: Request) {
+        
     }
     
     func `for`(_ request: Request) -> BlogPresenter {
@@ -16,67 +14,53 @@ class CapturingBlogPresenter: BlogPresenter {
 
     // MARK: - BlogPresenter
     private(set) var indexPosts: [BlogPost]?
-    private(set) var indexTags: [BlogTag]?
-    private(set) var indexAuthors: [BlogUser]?
     private(set) var indexsite: GlobalWebsiteInformation?
-    private(set) var indexPaginationTagInfo: PaginationTagInformation?
-    private(set) var indexTagsForPosts: [UUID: [BlogTag]]?
-    func indexView(posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], tagsForPosts: [UUID : [BlogTag]], site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) -> View {
+    func indexView(posts: [BlogPost], site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
         self.indexPosts = posts
-        self.indexTags = tags
-        self.indexAuthors = authors
         self.indexsite = site
-        self.indexPaginationTagInfo = paginationTagInfo
-        self.indexTagsForPosts = tagsForPosts
-        return TestDataBuilder.createFutureView()
+        return TestDataBuilder.createView()
     }
 
     private(set) var post: BlogPost?
-    private(set) var postAuthor: BlogUser?
     private(set) var postsite: GlobalWebsiteInformation?
-    private(set) var postPageTags: [BlogTag]?
-    func postView(post: BlogPost, author: BlogUser, tags: [BlogTag], site: GlobalWebsiteInformation) -> View {
+    func postView(post: BlogPost, site: GlobalWebsiteInformation) async throws -> View {
         self.post = post
-        self.postAuthor = author
         self.postsite = site
-        self.postPageTags = tags
-        return TestDataBuilder.createFutureView()
+        return TestDataBuilder.createView()
     }
 
-    private(set) var allAuthors: [BlogUser]?
+    private(set) var allAuthors: [BlogUser.Public]?
     private(set) var allAuthorsPostCount: [UUID: Int]?
     private(set) var allAuthorssite: GlobalWebsiteInformation?
-    func allAuthorsView(authors: [BlogUser], authorPostCounts: [UUID: Int], site: GlobalWebsiteInformation) -> View {
+    func allAuthorsView(authors: [BlogUser.Public], authorPostCounts: [UUID : Int], site: GlobalWebsiteInformation) async throws -> View {
         self.allAuthors = authors
         self.allAuthorsPostCount = authorPostCounts
         self.allAuthorssite = site
-        return TestDataBuilder.createFutureView()
+        return TestDataBuilder.createView()
     }
 
-    private(set) var author: BlogUser?
+    private(set) var author: BlogUser.Public?
     private(set) var authorPosts: [BlogPost]?
     private(set) var authorPostCount: Int?
     private(set) var authorsite: GlobalWebsiteInformation?
     private(set) var authorPaginationTagInfo: PaginationTagInformation?
-    private(set) var authorPageTagsForPost: [UUID: [BlogTag]]?
-    func authorView(author: BlogUser, posts: [BlogPost], postCount: Int, tagsForPosts: [UUID : [BlogTag]], site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) -> View {
+    func authorView(author: BlogUser.Public, posts: [BlogPost], postCount: Int, site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
         self.author = author
         self.authorPosts = posts
         self.authorPostCount = postCount
         self.authorsite = site
         self.authorPaginationTagInfo = paginationTagInfo
-        self.authorPageTagsForPost = tagsForPosts
-        return TestDataBuilder.createFutureView()
+        return TestDataBuilder.createView()
     }
-
+    
     private(set) var allTagsPageTags: [BlogTag]?
     private(set) var allTagsPagePostCount: [UUID: Int]?
     private(set) var allTagssite: GlobalWebsiteInformation?
-    func allTagsView(tags: [BlogTag], tagPostCounts: [UUID: Int], site: GlobalWebsiteInformation) -> View {
+    func allTagsView(tags: [BlogTag], tagPostCounts: [UUID : Int], site: GlobalWebsiteInformation) async throws -> View {
         self.allTagsPageTags = tags
         self.allTagsPagePostCount = tagPostCounts
         self.allTagssite = site
-        return TestDataBuilder.createFutureView()
+        return TestDataBuilder.createView()
     }
 
     private(set) var tag: BlogTag?
@@ -84,50 +68,32 @@ class CapturingBlogPresenter: BlogPresenter {
     private(set) var tagsite: GlobalWebsiteInformation?
     private(set) var tagPaginationTagInfo: PaginationTagInformation?
     private(set) var tagPageTotalPosts: Int?
-    private(set) var tagPageAuthors: [BlogUser]?
-    func tagView(tag: BlogTag, posts: [BlogPost], authors: [BlogUser], totalPosts: Int, site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) -> View {
+    private(set) var tagPageAuthors: [BlogUser.Public]?
+    func tagView(tag: BlogTag, posts: [BlogPost], authors: [BlogUser.Public], totalPosts: Int, site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
         self.tag = tag
         self.tagPosts = posts
         self.tagsite = site
         self.tagPaginationTagInfo = paginationTagInfo
         self.tagPageTotalPosts = totalPosts
         self.tagPageAuthors = authors
-        return TestDataBuilder.createFutureView()
+        return TestDataBuilder.createView()
     }
 
     private(set) var searchPosts: [BlogPost]?
-    private(set) var searchAuthors: [BlogUser]?
+    private(set) var searchAuthors: [BlogUser.Public]?
     private(set) var searchTerm: String?
     private(set) var searchTotalResults: Int?
     private(set) var searchsite: GlobalWebsiteInformation?
     private(set) var searchPaginationTagInfo: PaginationTagInformation?
-    private(set) var searchPageTagsForPost: [UUID: [BlogTag]]?
-    func searchView(totalResults: Int, posts: [BlogPost], authors: [BlogUser], searchTerm: String?, tagsForPosts: [UUID : [BlogTag]], site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) -> View {
+    private(set) var searchPageTags: [BlogTag]?
+    func searchView(totalResults: Int, posts: [BlogPost], authors: [BlogUser.Public], tags: [BlogTag], searchTerm: String?, site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
         self.searchPosts = posts
         self.searchTerm = searchTerm
         self.searchsite = site
         self.searchTotalResults = totalResults
         self.searchAuthors = authors
         self.searchPaginationTagInfo = paginationTagInfo
-        self.searchPageTagsForPost = tagsForPosts
-        return TestDataBuilder.createFutureView()
-    }
-
-    private(set) var loginWarning: Bool?
-    private(set) var loginErrors: [String]?
-    private(set) var loginUsername: String?
-    private(set) var loginUsernameError: Bool?
-    private(set) var loginPasswordError: Bool?
-    private(set) var loginsite: GlobalWebsiteInformation?
-    private(set) var loginPageRememberMe: Bool?
-    func loginView(loginWarning: Bool, errors: [String]?, username: String?, usernameError: Bool, passwordError: Bool, rememberMe: Bool, site: GlobalWebsiteInformation) -> View {
-        self.loginWarning = loginWarning
-        self.loginErrors = errors
-        self.loginUsername = username
-        self.loginUsernameError = usernameError
-        self.loginPasswordError = passwordError
-        self.loginsite = site
-        self.loginPageRememberMe = rememberMe
-        return TestDataBuilder.createFutureView()
+        self.searchPageTags = tags
+        return TestDataBuilder.createView()
     }
 }

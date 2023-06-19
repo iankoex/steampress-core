@@ -1,15 +1,14 @@
 @testable import SteamPressCore
 import Vapor
+import Fluent
+import FluentPostgresDriver
 
 extension TestWorld {
     static func getSteamPressApp(
         eventLoopGroup: EventLoopGroup,
-        repository: InMemoryRepository,
         path: String?,
         postsPerPage: Int,
         feedInformation: FeedInformation,
-        blogPresenter: CapturingBlogPresenter,
-        adminPresenter: CapturingAdminPresenter,
         enableAuthorPages: Bool,
         enableTagPages: Bool,
         passwordHasherToUse: PasswordHasherChoice,
@@ -18,30 +17,41 @@ extension TestWorld {
         
         let application = Application(.testing, .shared(eventLoopGroup))
         
-        application.steampress.configuration = SteamPressConfiguration(blogPath: path, feedInformation: feedInformation, postsPerPage: postsPerPage, enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages)
+//        application.databases.use(DummyDatabaseConfiguration(middleware: [], eventLoopGroup: eventLoopGroup), as: .init(string: "test_db"))
+        application.databases.use(.postgres(
+            hostname: Environment.get("DATABASE_HOST") ?? "localhost",
+            port: 5432,
+            username: Environment.get("DATABASE_USERNAME") ?? "vapor_username",
+            password: Environment.get("DATABASE_PASSWORD") ?? "vapor_password",
+            database: Environment.get("DATABASE_NAME") ?? "vapor_database"
+        ), as: .psql)
         
-        application.repositories.register(.blogPost) { req in
-            repository
+        let steamPressConfig = SteamPressConfiguration(feedInformation: feedInformation, postsPerPage: postsPerPage, enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages)
+        let steamPressLifecycle = SteamPressLifecycleHandler(configuration: steamPressConfig)
+        application.lifecycle.use(steamPressLifecycle)
+        
+        application.steampress.application.repositories.register(.blogPost) { req in
+            InMemoryRepository(req)
         }
         
-        application.repositories.register(.blogTag) { req in
-            repository
+        application.steampress.application.repositories.register(.blogTag) { req in
+            InMemoryRepository(req)
         }
         
-        application.repositories.register(.blogUser) { req in
-            repository
+        application.steampress.application.repositories.register(.blogUser) { req in
+            InMemoryRepository(req)
         }
 
-        application.steampress.randomNumberGenerators.use { _ in randomNumberGenerator }
+//        application.steampress.randomNumberGenerators.use { _ in randomNumberGenerator }
+//
+//        application.middleware.use(BlogRememberMeMiddleware())
+//        application.middleware.use(SessionsMiddleware(session: application.sessions.driver))
 
-        application.middleware.use(BlogRememberMeMiddleware())
-        application.middleware.use(SessionsMiddleware(session: application.sessions.driver))
-
-        application.steampress.blogPresenters.use { _ in
-            return blogPresenter
+        application.steampress.application.presenters.register(.blog) { req in
+            CapturingBlogPresenter(req)
         }
-        application.steampress.adminPresenters.use { _ in
-            return adminPresenter
+        application.steampress.application.presenters.register(.admin) { req in
+            CapturingAdminPresenter(req)
         }
 
         switch passwordHasherToUse {
