@@ -137,27 +137,30 @@ class IndexTests: XCTestCase {
         XCTAssertEqual(CapturingBlogPresenter.indexsite?.url, "\(websiteURL)/\(blogIndexPath)/")
     }
 
-//    func testIndexsiteGetsLoggedInUser() async throws {
-//        let owner = CreateOwnerData(name: "Steam Press", password: "SP@Password", email: "admin@steampress.io")
-//
-//        try app
-//            .describe("App should create and log in user")
-//            .post("\(blogIndexPath)/steampress/createOwner/")
-//            .body(owner)
-//            .expect(.seeOther)
-//            .test()
-//
-//        try app
-//            .describe("Index Should Return .ok, HTML and 1 post")
-//            .get(blogIndexPath)
-//            .expect(.ok)
-//            .expect(.html)
-//            .test()
-//
-//        XCTAssertEqual(CapturingBlogPresenter.indexsite?.loggedInUser?.email, owner.email)
-//        XCTAssertEqual(CapturingBlogPresenter.indexsite?.loggedInUser?.name, owner.name)
-//
-//    }
+    func testIndexsiteGetsLoggedInUser() async throws {
+        var cookie: HTTPCookies = HTTPCookies()
+        let owner = CreateOwnerData(name: "Steam Press Owner", password: "SP@Password", email: "admin@steampress.io")
+        try app
+            .describe("App should create and log in user")
+            .post("\(blogIndexPath)/steampress/createOwner/")
+            .body(owner)
+            .expect(.seeOther)
+            .expect { response in
+                cookie = response.headers.setCookie!
+            }
+            .test()
+
+        try app
+            .describe("Index Should Return .ok, HTML and 1 post")
+            .get(blogIndexPath)
+            .cookie(cookie)
+            .expect(.ok)
+            .expect(.html)
+            .test()
+
+        XCTAssertEqual(CapturingBlogPresenter.indexsite?.loggedInUser?.email, owner.email)
+        XCTAssertEqual(CapturingBlogPresenter.indexsite?.loggedInUser?.name, owner.name)
+    }
 
     func testSettingEnvVarsWithsite() async throws {
         let googleAnalytics = "ABDJIODJWOIJIWO"
