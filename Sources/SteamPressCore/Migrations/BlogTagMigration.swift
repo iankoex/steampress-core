@@ -7,7 +7,7 @@ extension BlogTag {
         public init() {}
         
         public func prepare(on database: Database) async throws {
-            let visibility = try await database.enum("blog_tags_visibility")
+            _ = try await database.enum("blog_tags_visibility")
                 .case(TagVisibility.public.rawValue)
                 .case(TagVisibility.private.rawValue)
                 .create()

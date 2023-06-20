@@ -7,7 +7,7 @@ extension BlogUser {
         public init() {}
         
         public func prepare(on database: Database) async throws {
-            let userType = try await database.enum("blog_users_type")
+            _ = try await database.enum("blog_users_type")
                 .case(BlogUserType.member.rawValue)
                 .case(BlogUserType.owner.rawValue)
                 .case(BlogUserType.administrator.rawValue)
