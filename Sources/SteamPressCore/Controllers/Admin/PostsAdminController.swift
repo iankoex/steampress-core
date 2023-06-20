@@ -32,7 +32,7 @@ struct PostsAdminController: RouteCollection {
         for tagStr in data.tags {
             guard let tag = try await req.repositories.blogTag.getTag(tagStr) else {
                 let tags = try await req.repositories.blogTag.getAllTags()
-                var errors = ["Tag not found"]
+                let errors = ["Tag not found"]
                 let view = try await req.presenters.admin.createPostView(errors: errors, tags: tags, post: nil, titleSupplied: data.title, contentSupplied: data.contents, snippetSupplied: data.snippet, site: req.siteInformation())
                 return try await view.encodeResponse(for: req)
             }
@@ -92,7 +92,7 @@ struct PostsAdminController: RouteCollection {
         for tagStr in data.tags {
             guard let tag = try await req.repositories.blogTag.getTag(tagStr) else {
                 let tags = try await req.repositories.blogTag.getAllTags()
-                var errors = ["Tag not found"]
+                let errors = ["Tag not found"]
                 let view = try await req.presenters.admin.createPostView(errors: errors, tags: tags, post: nil, titleSupplied: data.title, contentSupplied: data.contents, snippetSupplied: data.snippet, site: req.siteInformation())
                 return try await view.encodeResponse(for: req)
             }

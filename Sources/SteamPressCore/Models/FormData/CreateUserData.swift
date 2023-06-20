@@ -11,6 +11,30 @@ public struct CreateUserData: Content, Codable {
     public let biography: String?
     public let twitterHandle: String?
     public let resetPasswordOnLogin: Bool?
+    
+    public init(
+        name: String,
+        username: String,
+        password: String?,
+        confirmPassword: String?,
+        email: String,
+        profilePicture: String? = nil,
+        tagline: String? = nil,
+        biography: String? = nil,
+        twitterHandle: String? = nil,
+        resetPasswordOnLogin: Bool? = nil
+    ) {
+        self.name = name
+        self.username = username
+        self.password = password
+        self.confirmPassword = confirmPassword
+        self.email = email
+        self.profilePicture = profilePicture
+        self.tagline = tagline
+        self.biography = biography
+        self.twitterHandle = twitterHandle
+        self.resetPasswordOnLogin = resetPasswordOnLogin
+    }
 }
 
 public struct CreateOwnerData: Content {

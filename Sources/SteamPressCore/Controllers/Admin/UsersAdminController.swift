@@ -74,7 +74,7 @@ struct UsersAdminController: RouteCollection {
         let errors = try await self.validateUserCreation(data, editing: true, existingUsername: user.username, on: req)
         if let editUserErrors = errors {
             let usersCount = try await req.repositories.blogUser.getUsersCount()
-            let view = try await req.presenters.admin.createCreateMemberView(userData: data, errors: errors, usersCount: usersCount, site: req.siteInformation())
+            let view = try await req.presenters.admin.createCreateMemberView(userData: data, errors: editUserErrors, usersCount: usersCount, site: req.siteInformation())
             return try await view.encodeResponse(for: req)
         }
         

@@ -25,21 +25,21 @@ struct TagsAdminController: RouteCollection {
         return try await req.presenters.admin.createCreateTagView(usersCount: usersCount, site: req.siteInformation())
     }
     
-    func createNewTagHandler(_ req: Request) async throws -> View {
+    func createNewTagHandler(_ req: Request) async throws -> Response {
         let data = try req.content.decode(CreateTagData.self)
         let usersCount = try await req.repositories.blogUser.getUsersCount()
         guard !data.name.isEmpty else {
             let tags = try await req.repositories.blogTag.getAllTags()
-            return try await req.presenters.admin.createTagsView(tags: tags, usersCount: usersCount, site: req.siteInformation())
+            return try await req.presenters.admin.createTagsView(tags: tags, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
         }
-        var tag = BlogTag(name: data.name, visibility: .public)
-        if data.name.contains(where: { $0 == "#" }) {
+        let tag = BlogTag(name: data.name, visibility: .public)
+        if data.name.hasPrefix("#zw") {
             tag.visibility = .private
         }
         tag.name = data.name.replacingOccurrences(of: "#", with: "")
         try await req.repositories.blogTag.save(tag)
         let tags = try await req.repositories.blogTag.getAllTags()
-        return try await req.presenters.admin.createTagsView(tags: tags, usersCount: usersCount, site: req.siteInformation())
+        return req.redirect(to: BlogPathCreator.createPath(for: "steampress/tags"))
     }
     
     func tagHandler(_ req: Request) async throws -> View {
@@ -48,13 +48,13 @@ struct TagsAdminController: RouteCollection {
         return try await req.presenters.admin.createEditTagView(tag: tag, usersCount: usersCount, site: req.siteInformation())
     }
     
-    func updateTagHandler(_ req: Request) async throws -> View {
+    func updateTagHandler(_ req: Request) async throws -> Response {
         let tag = try await req.parameters.findTag(on: req)
         let data = try req.content.decode(CreateTagData.self)
         let usersCount = try await req.repositories.blogUser.getUsersCount()
         guard !data.name.isEmpty else {
             let tags = try await req.repositories.blogTag.getAllTags()
-            return try await req.presenters.admin.createTagsView(tags: tags, usersCount: usersCount, site: req.siteInformation())
+            return try await req.presenters.admin.createTagsView(tags: tags, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
         }
         if data.name.contains(where: { $0 == "#" }) {
             tag.visibility = .private
@@ -62,7 +62,7 @@ struct TagsAdminController: RouteCollection {
         tag.name = data.name.replacingOccurrences(of: "#", with: "")
         try await req.repositories.blogTag.update(tag)
         let tags = try await req.repositories.blogTag.getAllTags()
-        return try await req.presenters.admin.createTagsView(tags: tags, usersCount: usersCount, site: req.siteInformation())
+        return req.redirect(to: BlogPathCreator.createPath(for: "steampress/tags"))
     }
     
     func deleteTagHandler(_ req: Request) async throws -> Response {

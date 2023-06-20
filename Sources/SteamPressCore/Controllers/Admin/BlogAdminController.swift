@@ -28,7 +28,6 @@ struct BlogAdminController: RouteCollection {
     // MARK: Admin Handler
     func adminHandler(_ req: Request) async throws -> View {
         let usersCount = try await req.repositories.blogUser.getUsersCount()
-        print("oioi", 2)
         return try await req.presenters.admin.createIndexView(usersCount: usersCount, errors: nil, site: req.siteInformation())
     }
     

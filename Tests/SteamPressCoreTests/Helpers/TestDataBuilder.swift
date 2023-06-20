@@ -27,8 +27,12 @@ struct TestDataBuilder {
         }
         return blogPost
     }
+    
+    static func anyTag(name: String = "Engineering", visibility: BlogTag.TagVisibility = .public) -> BlogTag {
+        BlogTag(name: name, visibility: visibility)
+    }
 
-    static func createPost(on req: Request, tags: [String]? = nil, createdDate: Date? = nil, title: String = "An Exciting Post!", contents: String = "This is a blog post", slugURL: String = "an-exciting-post", author: BlogUser? = nil, published: Bool = true) async throws -> TestData {
+    static func createPost(on req: Request, tags: [BlogTag]? = nil, createdDate: Date? = nil, title: String = "An Exciting Post!", contents: String = "This is a blog post", slugURL: String = "an-exciting-post", author: BlogUser? = nil, published: Bool = true) async throws -> TestData {
         let postAuthor: BlogUser
         if let author = author {
             postAuthor = author
@@ -46,14 +50,20 @@ struct TestDataBuilder {
 
         try await req.repositories.blogPost.save(post)
 
+        let blogTag: BlogTag
         if let tags = tags {
+            blogTag = tags.first!
             for tag in tags {
-                let blogTag = BlogTag(name: tag, visibility: .public)
-                try await req.repositories.blogTag.add(blogTag, to: post)
+                try await req.repositories.blogTag.add(tag, to: post)
             }
+        } else {
+            let tag = TestDataBuilder.anyTag()
+            try await req.repositories.blogTag.save(tag)
+            try await req.repositories.blogTag.add(tag, to: post)
+            blogTag = tag
         }
 
-        return TestData(post: post, author: postAuthor)
+        return TestData(post: post, author: postAuthor, tag: blogTag)
     }
 
     static func createUser(on repository: InMemoryRepository) async throws -> BlogUser {
@@ -74,6 +84,7 @@ struct TestDataBuilder {
 struct TestData {
     let post: BlogPost
     let author: BlogUser
+    let tag: BlogTag
 }
 
 struct EmptyContent: Content {}

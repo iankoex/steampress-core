@@ -1,14 +1,34 @@
 import Vapor
 
-struct CreatePostData: Content {
-    let title: String
-    let contents: String
-    let snippet: String
-    let isDraft: Bool
-    let tags: [String]
-    let updateSlugURL: Bool?
-    let imageURL: String?
-    let imageAlt: String?
+public struct CreatePostData: Content {
+    public let title: String
+    public let contents: String
+    public let snippet: String
+    public let isDraft: Bool
+    public let tags: [String]
+    public let updateSlugURL: Bool?
+    public let imageURL: String?
+    public let imageAlt: String?
+    
+    public init(
+        title: String,
+        contents: String,
+        snippet: String,
+        isDraft: Bool,
+        tags: [String],
+        updateSlugURL: Bool? = nil,
+        imageURL: String? = nil,
+        imageAlt: String? = nil
+    ) {
+        self.title = title
+        self.contents = contents
+        self.snippet = snippet
+        self.isDraft = isDraft
+        self.tags = tags
+        self.updateSlugURL = updateSlugURL
+        self.imageURL = imageURL
+        self.imageAlt = imageAlt
+    }
 }
 
 extension CreatePostData {

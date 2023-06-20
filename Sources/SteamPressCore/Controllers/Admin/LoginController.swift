@@ -74,7 +74,6 @@ struct LoginController: RouteCollection {
         )
         try await req.repositories.blogUser.save(owner)
         owner.authenticateSession(on: req)
-        print("oioi", 1)
         return req.redirect(to: BlogPathCreator.createPath(for: "steampress"))
     }
     

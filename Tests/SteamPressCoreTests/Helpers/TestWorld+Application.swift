@@ -16,6 +16,7 @@ extension TestWorld {
     ) -> Application {
         
         let application = Application(.testing, .shared(eventLoopGroup))
+        application.middleware.use(application.sessions.middleware)
         
         application.databases.use(.sqlite(.memory), as: .sqlite, isDefault: true)
         

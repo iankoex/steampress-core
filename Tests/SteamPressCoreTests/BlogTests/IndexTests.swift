@@ -47,9 +47,9 @@ class IndexTests: XCTestCase {
             .describe("Accessing /posts Should Redirrect to Index with Custom Path")
             .get("\(blogIndexPath)/posts")
             .expect(.movedPermanently)
-            .expect(closure: { response in
+            .expect { response in
                 XCTAssertEqual(response.headers[.location].first, "/\(self.blogIndexPath)/")
-            })
+            }
             .test()
     }
 

@@ -2,7 +2,7 @@ import SteamPressCore
 import Foundation
 
 extension TestWorld {
-    func createPost(tags: [String]? = nil, createdDate: Date? = nil, title: String = "An Exciting Post!", contents: String = "This is a blog post", slugURL: String = "an-exciting-post", author: BlogUser? = nil, published: Bool = true) async throws -> TestData {
+    func createPost(tags: [BlogTag]? = nil, createdDate: Date? = nil, title: String = "An Exciting Post!", contents: String = "This is a blog post", slugURL: String = "an-exciting-post", author: BlogUser? = nil, published: Bool = true) async throws -> TestData {
         return try await TestDataBuilder.createPost(on: self.context.req, tags: tags, createdDate: createdDate, title: title, contents: contents, slugURL: slugURL, author: author, published: published)
     }
 
