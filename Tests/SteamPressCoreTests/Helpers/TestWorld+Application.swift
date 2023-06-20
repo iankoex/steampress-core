@@ -1,7 +1,7 @@
 @testable import SteamPressCore
 import Vapor
 import Fluent
-import FluentPostgresDriver
+import FluentSQLiteDriver
 
 extension TestWorld {
     static func getSteamPressApp(
@@ -17,14 +17,7 @@ extension TestWorld {
         
         let application = Application(.testing, .shared(eventLoopGroup))
         
-//        application.databases.use(DummyDatabaseConfiguration(middleware: [], eventLoopGroup: eventLoopGroup), as: .init(string: "test_db"))
-        application.databases.use(.postgres(
-            hostname: Environment.get("DATABASE_HOST") ?? "localhost",
-            port: 5432,
-            username: Environment.get("DATABASE_USERNAME") ?? "vapor_username",
-            password: Environment.get("DATABASE_PASSWORD") ?? "vapor_password",
-            database: Environment.get("DATABASE_NAME") ?? "vapor_database"
-        ), as: .psql)
+        application.databases.use(.sqlite(.memory), as: .sqlite, isDefault: true)
         
         let steamPressConfig = SteamPressConfiguration(feedInformation: feedInformation, postsPerPage: postsPerPage, enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages)
         let steamPressLifecycle = SteamPressLifecycleHandler(configuration: steamPressConfig)
@@ -55,12 +48,12 @@ extension TestWorld {
         }
 
         switch passwordHasherToUse {
-        case .real:
-            application.passwords.use(.bcrypt)
-        case .plaintext:
-            application.passwords.use(.plaintext)
-        case .reversed:
-            application.passwords.use(.reversed)
+            case .real:
+                application.passwords.use(.bcrypt)
+            case .plaintext:
+                application.passwords.use(.plaintext)
+            case .reversed:
+                application.passwords.use(.reversed)
         }
 
         return application

@@ -9,7 +9,11 @@ extension Request {
         if !hostname.hasSuffix("/") {
             hostname = hostname + "/"
         }
-        var newHostName = hostname.appending(self.url.string)
+        var currentPath = self.url.string
+        if currentPath.hasPrefix("/") {
+            currentPath.removeFirst()
+        }
+        var newHostName = hostname.appending(currentPath)
         if !newHostName.hasSuffix("/") {
             newHostName = newHostName + "/"
         }

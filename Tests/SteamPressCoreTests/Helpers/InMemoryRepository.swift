@@ -1,324 +1,283 @@
 import Vapor
+import Fluent
 import SteamPressCore
 
 class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserRepository {
-    
-    private(set) var tags: [BlogTag]
-    private(set) var posts: [BlogPost]
-    private(set) var users: [BlogUser]
-    private(set) var postTagLinks: [BlogPostTagLink]
+    var req: Request
 
     required init(_ req: Vapor.Request) {
-        tags = []
-        posts = []
-        users = []
-        postTagLinks = []
+        self.req = req
     }
 
     // MARK: - BlogTagRepository
     
-    func `for`(_ request: Request) -> BlogTagRepository {
+    func `for`(_ request: Vapor.Request) -> BlogTagRepository {
         return self
     }
-
+    
     func getAllTags() async throws -> [BlogTag] {
+        let tags = try await BlogTag.query(on: req.db)
+            .with(\.$posts)
+            .sort(\.$createdDate, .descending)
+            .all()
         return tags
     }
-
+    
     func getAllTagsWithPostCount() async throws -> [(BlogTag, Int)] {
-        let tagsWithCount = tags.map { tag -> (BlogTag, Int) in
-            let postCount = postTagLinks.filter { $0.tagID == tag.id }.count
-            return (tag, postCount)
+        let tags = try await BlogTag.query(on: req.db)
+            .with(\.$posts)
+            .all()
+        var result: [(BlogTag, Int)] = []
+        for tag in tags {
+            let postCount = try await tag.$posts.get(on: req.db).count
+            result.append((tag, postCount))
         }
-        return tagsWithCount
+        return result
     }
     
     func getTagsForAllPosts() async throws -> [UUID : [BlogTag]] {
-        var dict = [UUID: [BlogTag]]()
-        for tag in tags {
-            postTagLinks.filter { $0.tagID == tag.id }.forEach { link in
-                if var array = dict[link.postID] {
-                    array.append(tag)
-                    dict[link.postID] = array
-                } else {
-                    dict[link.postID] = [tag]
-                }
-            }
+        let tags = try await BlogTag.query(on: req.db)
+            .with(\.$posts)
+            .all()
+        let pivots = try await PostTagPivot.query(on: req.db).all()
+        let pivotsSortedByPost = Dictionary(grouping: pivots) { (pivot) -> UUID in
+            return pivot.$post.id
         }
-        return dict
+        
+        let postsWithTags = pivotsSortedByPost.mapValues { value in
+            return value.map { pivot in
+                tags.first { $0.id == pivot.$tag.id }
+            }
+        }.mapValues { $0.compactMap { $0 } }
+        
+        return postsWithTags
     }
-
+    
     func getTags(for post: BlogPost) async throws -> [BlogTag] {
-        var results = [BlogTag]()
-        guard let postID = post.id else {
-            fatalError("Post doesn't exist when it should")
-        }
-        for link in postTagLinks where link.postID == postID {
-            let foundTag = tags.first { $0.id == link.tagID }
-            guard let tag =  foundTag else {
-                fatalError("Tag doesn't exist when it should")
-            }
-            results.append(tag)
-        }
-        return results
+        try await post.$tags.query(on: req.db)
+            .with(\.$posts)
+            .all()
     }
-
-    func save(_ tag: BlogTag) async throws {
-        if tag.id == nil {
-//            tag.id = tags.count + 1
-            tag.id = UUID()
-        }
-        tags.append(tag)
-    }
-
-    func addTag(name: String) throws -> BlogTag {
-        let newTag = BlogTag(id: UUID(), name: name, visibility: .public)
-        tags.append(newTag)
-        return newTag
-    }
-
-    func add(_ tag: BlogTag, to post: BlogPost) async throws -> Void {
-        do {
-            try internalAdd(tag, to: post)
-        } catch {
-            throw SteamPressTestError(name: "Failed to add tag to post")
-        }
-    }
-
-    func internalAdd(_ tag: BlogTag, to post: BlogPost) throws {
-        guard let postID = post.id else {
-            fatalError("Blog doesn't exist when it should")
-        }
-        guard let tagID = tag.id else {
-            fatalError("Tag ID hasn't been set")
-        }
-        let newLink = BlogPostTagLink(postID: postID, tagID: tagID)
-        postTagLinks.append(newLink)
-    }
-
-    func addTag(name: String, for post: BlogPost) throws -> BlogTag {
-        let newTag = try addTag(name: name)
-        try internalAdd(newTag, to: post)
-        return newTag
-    }
-
+    
     func getTag(_ name: String) async throws -> BlogTag? {
-        return tags.first { $0.name == name }
+        try await BlogTag.query(on: req.db)
+            .filter(\.$name == name)
+            .with(\.$posts)
+            .first()
     }
-
-    func addTag(_ tag: BlogTag, to post: BlogPost) {
-        guard let postID = post.id else {
-            fatalError("Blog doesn't exist when it should")
-        }
-        guard let tagID = tag.id else {
-            fatalError("Tag ID hasn't been set")
-        }
-        let newLink = BlogPostTagLink(postID: postID, tagID: tagID)
-        postTagLinks.append(newLink)
-    }
-
-    func deleteTags(for post: BlogPost) async throws -> Void {
-        let tags = try await getTags(for: post)
-        for tag in tags {
-            self.postTagLinks.removeAll { $0.tagID == tag.id! && $0.postID == post.id! }
-        }
-    }
-
-    func remove(_ tag: BlogTag, from post: BlogPost) -> Void {
-        self.postTagLinks.removeAll { $0.tagID == tag.id! && $0.postID == post.id! }
+    
+    func save(_ tag: BlogTag) async throws {
+        try await tag.save(on: req.db)
     }
     
     func update(_ tag: BlogTag) async throws {
-        if let i = tags.firstIndex(where: { $0.id == tag.id }) {
-            tags[i] = tag
-        }
+        try await tag.update(on: req.db)
     }
     
     func delete(_ tag: BlogTag) async throws {
-        tags.removeAll(where: { $0.id == tag.id })
+        try await tag.delete(on: req.db)
+    }
+    
+    func deleteTags(for post: BlogPost) async throws {
+        let tags = try await post.$tags.query(on: req.db)
+            .with(\.$posts)
+            .all()
+        for tag in tags {
+            try await remove(tag, from: post)
+        }
+    }
+    
+    func remove(_ tag: BlogTag, from post: BlogPost) async throws {
+        try await post.$tags.detach(tag, on: req.db)
+    }
+    
+    func add(_ tag: BlogTag, to post: BlogPost) async throws {
+        try await post.$tags.attach(tag, on: req.db)
     }
 
     // MARK: - BlogPostRepository
     
-    func `for`(_ request: Request) -> BlogPostRepository {
+    func `for`(_ request: Vapor.Request) -> BlogPostRepository {
         return self
     }
-
+    
     func getAllPostsSortedByPublishDate(includeDrafts: Bool) async throws -> [BlogPost] {
-        var sortedPosts = posts.sorted { $0.created > $1.created }
+        let query = BlogPost.query(on: req.db)
+            .sort(\.$created, .descending)
+            .with(\.$author)
+            .with(\.$tags)
         if !includeDrafts {
-            sortedPosts = sortedPosts.filter { $0.published }
+            query.filter(\.$published == true)
         }
-        return sortedPosts
+        return try await query.all()
     }
     
-    func getAllDraftsPostsSortedByPublishDate() async throws -> [SteamPressCore.BlogPost] {
-        var sortedPosts = posts.sorted { $0.created > $1.created }
-        sortedPosts = sortedPosts.filter { !$0.published }
-        return sortedPosts
+    func getAllDraftsPostsSortedByPublishDate() async throws -> [BlogPost] {
+        let query = BlogPost.query(on: req.db)
+            .sort(\.$created, .descending)
+            .with(\.$author)
+            .with(\.$tags)
+            .filter(\.$published == false)
+        return try await query.all()
     }
-
+    
     func getAllPostsSortedByPublishDate(includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost] {
-        var sortedPosts = posts.sorted { $0.created > $1.created }
+        let query = BlogPost.query(on: req.db)
+            .sort(\.$created, .descending)
+            .with(\.$author)
+            .with(\.$tags)
         if !includeDrafts {
-            sortedPosts = sortedPosts.filter { $0.published }
+            query.filter(\.$published == true)
         }
-        let startIndex = min(offset, sortedPosts.count)
-        let endIndex = min(offset + count, sortedPosts.count)
-        return Array(sortedPosts[startIndex..<endIndex])
+        let upperLimit = count + offset
+        return try await query.range(offset..<upperLimit).all()
     }
     
-    func getAllPostsCount(includeDrafts: Bool) -> Int {
-        var sortedPosts = posts.sorted { $0.created > $1.created }
+    func getAllPostsCount(includeDrafts: Bool) async throws -> Int {
+        let query = BlogPost.query(on: req.db)
         if !includeDrafts {
-            sortedPosts = sortedPosts.filter { $0.published }
+            query.filter(\.$published == true)
         }
-        return sortedPosts.count
+        return try await query.count()
     }
-
+    
     func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost] {
-        let authorsPosts = posts.filter { $0.author.id == user.id }
-        var sortedPosts = authorsPosts.sorted { $0.created > $1.created }
+        let query = user.$posts.query(on: req.db)
+            .sort(\.$created, .descending)
+            .with(\.$author)
+            .with(\.$tags)
         if !includeDrafts {
-            sortedPosts = sortedPosts.filter { $0.published }
+            query.filter(\.$published == true)
         }
-        let startIndex = min(offset, sortedPosts.count)
-        let endIndex = min(offset + count, sortedPosts.count)
-        return Array(sortedPosts[startIndex..<endIndex])
+        let upperLimit = count + offset
+        return try await query.range(offset..<upperLimit).all()
     }
-
-    func getPostCount(for user: BlogUser) -> Int {
-        return posts.filter { $0.author.id == user.id }.count
+    
+    func getPostCount(for user: BlogUser) async throws -> Int {
+        try await user.$posts.query(on: req.db)
+            .filter(\.$published == true)
+            .count()
     }
-
+    
     func getPost(slug: String) async throws -> BlogPost? {
-        return posts.first { $0.slugURL == slug }
+        try await BlogPost.query(on: req.db)
+            .filter(\.$slugURL == slug)
+            .with(\.$author)
+            .with(\.$tags)
+            .first()
     }
-
+    
     func getPost(id: UUID) async throws -> BlogPost? {
-        return posts.first { $0.id == id }
+        try await BlogPost.query(on: req.db)
+            .filter(\.$id == id)
+            .with(\.$author)
+            .with(\.$tags)
+            .first()
     }
-
+    
     func getSortedPublishedPosts(for tag: BlogTag, count: Int, offset: Int) async throws -> [BlogPost] {
-        var results = [BlogPost]()
-        guard let tagID = tag.id else {
-            fatalError("Tag doesn't exist when it should")
-        }
-        for link in postTagLinks where link.tagID == tagID {
-            let foundPost = posts.first { $0.id == link.postID }
-            guard let post =  foundPost else {
-                fatalError("Post doesn't exist when it should")
-            }
-            results.append(post)
-        }
-        let sortedPosts = results.sorted { $0.created > $1.created }.filter { $0.published }
-        let startIndex = min(offset, sortedPosts.count)
-        let endIndex = min(offset + count, sortedPosts.count)
-        return Array(sortedPosts[startIndex..<endIndex])
+        let query = tag.$posts.query(on: req.db)
+            .filter(\.$published == true)
+            .sort(\.$created, .descending)
+            .with(\.$author)
+            .with(\.$tags)
+        let upperLimit = count + offset
+        return try await query.range(offset..<upperLimit).all()
     }
     
     func getPublishedPostCount(for tag: BlogTag) async throws -> Int {
-        var results = [BlogPost]()
-        guard let tagID = tag.id else {
-            fatalError("Tag doesn't exist when it should")
-        }
-        for link in postTagLinks where link.tagID == tagID {
-            let foundPost = posts.first { $0.id == link.postID }
-            guard let post =  foundPost else {
-                fatalError("Post doesn't exist when it should")
-            }
-            results.append(post)
-        }
-        let sortedPosts = results.sorted { $0.created > $1.created }.filter { $0.published }
-        return sortedPosts.count
-    }
-    
-    func getPublishedPostCount(for searchTerm: String) async throws -> Int {
-        let titleResults = posts.filter { $0.title.contains(searchTerm) }
-        let results = titleResults.sorted { $0.created > $1.created }.filter { $0.published }
-        return results.count
+        try await tag.$posts.query(on: req.db)
+            .filter(\.$published == true)
+            .count()
     }
     
     func findPublishedPostsOrdered(for searchTerm: String, count: Int, offset: Int) async throws -> [BlogPost] {
-        let titleResults = posts.filter { $0.title.contains(searchTerm) }
-        let results = titleResults.sorted { $0.created > $1.created }.filter { $0.published }
-        let startIndex = min(offset, results.count)
-        let endIndex = min(offset + count, results.count)
-        return Array(results[startIndex..<endIndex])
+        let query = BlogPost.query(on: req.db)
+            .sort(\.$created, .descending)
+            .filter(\.$published == true)
+            .with(\.$author)
+            .with(\.$tags)
+        
+        let upperLimit = count + offset
+        let paginatedQuery = query.range(offset..<upperLimit)
+        
+        return try await paginatedQuery.group(.or) { or in
+            or.filter(\.$title, .custom("ILIKE"), "%\(searchTerm)%")
+            or.filter(\.$contents, .custom("ILIKE"), "%\(searchTerm)%")
+        }.all()
     }
-
+    
+    func getPublishedPostCount(for searchTerm: String) async throws -> Int {
+        try await BlogPost.query(on: req.db)
+            .filter(\.$published == true).group(.or) { or in
+                or.filter(\.$title, .custom("ILIKE"), "%\(searchTerm)%")
+                or.filter(\.$contents, .custom("ILIKE"), "%\(searchTerm)%")
+            }
+            .count()
+    }
+    
     func save(_ post: BlogPost) async throws {
-        self.add(post)
+        try await post.save(on: req.db)
     }
-
-    func add(_ post: BlogPost) {
-        if (posts.first { $0.id == post.id } == nil) {
-            post.id = UUID()
-            posts.append(post)
-        }
-    }
-
-    func delete(_ post: BlogPost) async throws -> Void {
-        posts.removeAll { $0.id == post.id }
+    
+    func delete(_ post: BlogPost) async throws {
+        try await post.delete(on: req.db)
     }
 
     // MARK: - BlogUserRepository
     
-    func `for`(_ request: Request) -> BlogUserRepository {
+    func `for`(_ request: Vapor.Request) -> BlogUserRepository {
         return self
     }
-
-    func add(_ user: BlogUser) {
-        if (users.first { $0.id == user.id } == nil) {
-            if (users.first { $0.username == user.username} != nil) {
-                fatalError("Duplicate users added with username \(user.username)")
-            }
-            user.id = UUID()
-            users.append(user)
-        }
-    }
-
-    func getUser(id: UUID) -> BlogUser? {
-        return users.first { $0.id == id }
-    }
-
+    
     func getAllUsers() async throws -> [BlogUser] {
-        return users
+        try await BlogUser.query(on: req.db).all()
     }
-
+    
     func getAllUsersWithPostCount() async throws -> [(BlogUser, Int)] {
-        let usersWithCount = users.map { user -> (BlogUser, Int) in
-            let postCount = posts.filter { $0.author.id == user.id }.count
-            return (user, postCount)
+        let users = try await BlogUser.query(on: req.db)
+            .all()
+        var result: [(BlogUser, Int)] = []
+        for user in users {
+            let count = try await user.$posts.query(on: req.db).count()
+            result.append((user, count))
         }
-        return usersWithCount
+        return result
     }
-
+    
+    func getUser(id: UUID) async throws -> BlogUser? {
+        try await BlogUser.query(on: req.db)
+            .filter(\.$id == id)
+            .first()
+    }
+    
+    func getUser(name: String) async throws -> BlogUser? {
+        try await BlogUser.query(on: req.db)
+            .filter(\.$name == name)
+            .first()
+    }
+    
     func getUser(username: String) async throws -> BlogUser? {
-        return users.first { $0.username == username }
+        try await BlogUser.query(on: req.db)
+            .filter(\.$username == username)
+            .first()
     }
     
     func getUser(email: String) async throws -> BlogUser? {
-        return users.first { $0.email == email }
+        try await BlogUser.query(on: req.db)
+            .filter(\.$email == email)
+            .first()
     }
-
-    private(set) var userUpdated = false
+    
     func save(_ user: BlogUser) async throws {
-        self.add(user)
-        userUpdated = true
+        try await user.save(on: req.db)
     }
-
-    func delete(_ user: BlogUser) async throws -> Void {
-        users.removeAll { $0.id == user.id }
+    
+    func delete(_ user: BlogUser) async throws {
+        try await user.delete(on: req.db)
     }
-
+    
     func getUsersCount() async throws -> Int {
-        return users.count
+        try await BlogUser.query(on: req.db).count()
     }
-
-}
-
-struct BlogPostTagLink: Codable {
-    let postID: UUID
-    let tagID: UUID
 }

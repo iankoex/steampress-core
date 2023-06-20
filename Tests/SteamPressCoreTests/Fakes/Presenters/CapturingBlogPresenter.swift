@@ -13,11 +13,11 @@ class CapturingBlogPresenter: BlogPresenter {
     }
 
     // MARK: - BlogPresenter
-    private(set) var indexPosts: [BlogPost]?
-    private(set) var indexsite: GlobalWebsiteInformation?
+    static private(set) var indexPosts: [BlogPost]?
+    static private(set) var indexsite: GlobalWebsiteInformation?
     func indexView(posts: [BlogPost], site: GlobalWebsiteInformation, paginationTagInfo: PaginationTagInformation) async throws -> View {
-        self.indexPosts = posts
-        self.indexsite = site
+        CapturingBlogPresenter.indexPosts = posts
+        CapturingBlogPresenter.indexsite = site
         return TestDataBuilder.createView()
     }
 

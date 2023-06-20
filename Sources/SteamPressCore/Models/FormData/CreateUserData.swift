@@ -13,14 +13,20 @@ public struct CreateUserData: Content, Codable {
     public let resetPasswordOnLogin: Bool?
 }
 
-struct CreateOwnerData: Content {
-    let name: String
-    let password: String
-    let email: String
+public struct CreateOwnerData: Content {
+    public let name: String
+    public let password: String
+    public let email: String
+    
+    public init(name: String, password: String, email: String) {
+        self.name = name
+        self.password = password
+        self.email = email
+    }
 }
 
 extension CreateOwnerData: Validatable {
-    static func validations(_ validations: inout Validations) {
+    public static func validations(_ validations: inout Validations) {
         let usernameCharacterSet = CharacterSet(charactersIn: "-_")
         let usernameValidationCharacters = Validator<String>.characterSet(.alphanumerics + usernameCharacterSet)
         validations.add("name", as: String.self, is: usernameValidationCharacters)

@@ -36,7 +36,9 @@ struct TestWorld {
         unsetenv("BLOG_DISQUS_NAME")
         unsetenv("SP_WEBSITE_URL")
         setenv("SP_WEBSITE_URL", url, 1)
-        setenv("SP_BLOG_PATH", "blog", 1)
+        if let path = path {
+            setenv("SP_BLOG_PATH", path, 1)
+        }
         try application.boot()
         return TestWorld(context: context)
     }
