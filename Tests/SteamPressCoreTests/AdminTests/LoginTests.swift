@@ -169,7 +169,7 @@ class LoginTests: XCTestCase {
         let resetData = ResetPasswordData(password: "NewSP@Password", confirmPassword: "AnotherNewSP@Password")
         
         try resetPasswordTest(
-            descrption: "Cannot Reset Password With Mismatching Passwords",
+            description: "Cannot Reset Password With Mismatching Passwords",
             resetData: resetData,
             errorShouldContain: "Your passwords must match!"
         )
@@ -179,7 +179,7 @@ class LoginTests: XCTestCase {
         let resetData = ResetPasswordData(password: nil, confirmPassword: "AnotherNewSP@Password")
         
         try resetPasswordTest(
-            descrption: "Cannot Reset Password Without a Password",
+            description: "Cannot Reset Password Without a Password",
             resetData: resetData,
             errorShouldContain: "You must specify a password!"
         )
@@ -189,7 +189,7 @@ class LoginTests: XCTestCase {
         let resetData = ResetPasswordData(password: "NewSP@Password", confirmPassword: nil)
         
         try resetPasswordTest(
-            descrption: "Cannot Reset Password Without a Confirm Password",
+            description: "Cannot Reset Password Without a Confirm Password",
             resetData: resetData,
             errorShouldContain: "You must confirm your password!"
         )
@@ -199,7 +199,7 @@ class LoginTests: XCTestCase {
         let resetData = ResetPasswordData(password: "123", confirmPassword: "123")
         
         try resetPasswordTest(
-            descrption: "Cannot Reset Password With Mismatching Passwords",
+            description: "Cannot Reset Password With Mismatching Passwords",
             resetData: resetData,
             errorShouldContain: "Your password must be at least 8 characters long!"
         )
@@ -430,7 +430,7 @@ class LoginTests: XCTestCase {
     
     // MARK: - Helpers
     
-    func resetPasswordTest(descrption: String, resetData: ResetPasswordData, errorShouldContain errorText: String) throws {
+    func resetPasswordTest(description: String, resetData: ResetPasswordData, errorShouldContain errorText: String) throws {
         try app
             .describe(description)
             .post(adminPath(for: "resetPassword"))
