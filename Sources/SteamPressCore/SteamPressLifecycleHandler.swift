@@ -42,6 +42,7 @@ public class SteamPressLifecycleHandler: LifecycleHandler {
         let steampressSessions = SessionsMiddleware(session: application.sessions.driver, configuration: steampressSessionsConfig)
         let steampressAuthSessions = BlogAuthSessionsMiddleware()
         let sessionedRoutes = blogRoutes.grouped(steampressSessions, steampressAuthSessions)
+        application.middleware.use(BlogRememberMeMiddleware())
 
         try sessionedRoutes.register(collection: feedController)
         try sessionedRoutes.register(collection: apiController)

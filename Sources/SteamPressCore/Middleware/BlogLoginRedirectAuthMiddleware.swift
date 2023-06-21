@@ -15,7 +15,7 @@ struct BlogLoginRedirectAuthMiddleware: AsyncMiddleware {
                 return redirect
             }
         } catch {
-            return request.redirect(to: BlogPathCreator.createPath(for: "steampress/login", query: "loginRequired"))
+            return request.redirect(to: BlogPathCreator.createPath(for: "steampress/login", query: "loginRequired=true"))
         }
         return try await next.respond(to: request)
     }

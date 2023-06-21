@@ -79,7 +79,7 @@ struct LoginController: RouteCollection {
     
     func logoutHandler(_ request: Request) -> Response {
         request.unauthenticateBlogUserSession()
-        return request.redirect(to: BlogPathCreator.createPath(for: BlogPathCreator.blogPath))
+        return request.redirect(to: BlogPathCreator.createPath(for: "steampress/login?loginRequired=true"))
     }
     
     func resetPasswordHandler(_ req: Request) async throws -> View {
@@ -93,11 +93,11 @@ struct LoginController: RouteCollection {
         
         guard let password = data.password, let confirmPassword = data.confirmPassword else {
             if data.password == nil {
-                resetPasswordErrors.append("You must specify a password")
+                resetPasswordErrors.append("You must specify a password!")
             }
             
             if data.confirmPassword == nil {
-                resetPasswordErrors.append("You must confirm your password")
+                resetPasswordErrors.append("You must confirm your password!")
             }
             
             let view = try await req.presenters.admin.createResetPasswordView(errors: resetPasswordErrors, site: req.siteInformation())
@@ -109,7 +109,7 @@ struct LoginController: RouteCollection {
         }
         
         if password.count < 8 {
-            resetPasswordErrors.append("Your password must be at least 8 characters long")
+            resetPasswordErrors.append("Your password must be at least 8 characters long!")
         }
         
         guard resetPasswordErrors.isEmpty else {
@@ -121,7 +121,6 @@ struct LoginController: RouteCollection {
         let hashedPassword = try await req.password.async.hash(password)
         user.password = hashedPassword
         user.resetPasswordRequired = false
-        let redirect = req.redirect(to: BlogPathCreator.createPath(for: "steampress"))
         try await req.repositories.blogUser.save(user)
         return req.redirect(to: BlogPathCreator.createPath(for: "steampress"))
     }

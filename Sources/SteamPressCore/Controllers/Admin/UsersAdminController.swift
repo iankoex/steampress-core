@@ -48,6 +48,7 @@ struct UsersAdminController: RouteCollection {
             username: data.username,
             email: data.email,
             password: hashedPassword,
+            resetPasswordRequired: true,
             type: .member, // for now
             profilePicture: profilePicture,
             twitterHandle: twitterHandle,

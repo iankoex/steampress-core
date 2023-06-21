@@ -122,7 +122,7 @@ class AccessRestricted: XCTestCase {
             .on(method, adminPath(for: path))
             .expect(.seeOther)
             .expect { response in
-                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "login/?loginRequired"))
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "login?loginRequired=true"))
             }
             .test()
     }

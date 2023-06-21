@@ -8,6 +8,7 @@ public struct BlogPathCreator {
         var createdPath = constructPath(from: path)
         
         if let query = query {
+            createdPath.removeLast()
             createdPath = "\(createdPath)?\(query)"
         }
         return createdPath
