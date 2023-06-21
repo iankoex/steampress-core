@@ -90,11 +90,25 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         return TestDataBuilder.createView()
     }
     
+    static private(set) var createMembersViewUsers: [BlogUser.Public]?
+    static private(set) var createMembersViewSite: GlobalWebsiteInformation?
+    static private(set) var createMembersViewUsersCount: Int?
     func createMembersView(users: [BlogUser.Public], usersCount: Int, site: GlobalWebsiteInformation) async throws -> View {
+        CapturingAdminPresenter.createMembersViewUsers = users
+        CapturingAdminPresenter.createMembersViewSite = site
+        CapturingAdminPresenter.createMembersViewUsersCount = usersCount
         return TestDataBuilder.createView()
     }
     
+    static private(set) var createCreateMembersViewUserData: CreateUserData?
+    static private(set) var createCreateMembersViewUsersCount: Int?
+    static private(set) var createCreateMembersViewErrors: [String]?
+    static private(set) var createCreateMembersViewSite: GlobalWebsiteInformation?
     func createCreateMemberView(userData: CreateUserData?, errors: [String]?, usersCount: Int, site: GlobalWebsiteInformation) async throws -> View {
+        CapturingAdminPresenter.createCreateMembersViewUserData = userData
+        CapturingAdminPresenter.createCreateMembersViewUsersCount = usersCount
+        CapturingAdminPresenter.createCreateMembersViewErrors = errors
+        CapturingAdminPresenter.createCreateMembersViewSite = site
         return TestDataBuilder.createView()
     }
 }

@@ -181,7 +181,7 @@ struct UsersAdminController: RouteCollection {
         } else {
             let user = try await req.repositories.blogUser.getUser(username: data.username.lowercased())
             if user != nil {
-                usernameUniqueError =  "Sorry that username has already been taken"
+                usernameUniqueError = "Sorry that username has already been taken"
             } else {
                 usernameUniqueError = nil
             }

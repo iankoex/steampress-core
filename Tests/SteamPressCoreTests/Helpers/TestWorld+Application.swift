@@ -50,11 +50,11 @@ extension TestWorld {
 
         switch passwordHasherToUse {
             case .real:
-                application.passwords.use(.bcrypt)
+                application.steampress.application.passwords.use(.bcrypt)
             case .plaintext:
-                application.passwords.use(.plaintext)
+                application.steampress.application.passwords.use(.plaintext)
             case .reversed:
-                application.passwords.use(.reversed)
+                application.steampress.application.passwords.use(.reversed)
         }
 
         return application
