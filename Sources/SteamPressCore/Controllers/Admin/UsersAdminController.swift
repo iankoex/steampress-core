@@ -111,26 +111,25 @@ struct UsersAdminController: RouteCollection {
         
         let member = try await req.parameters.findUser(on: req)
         
-        guard member.type != .owner else {
-            let usersCount = try await req.repositories.blogUser.getUsersCount()
-            let errors = ["Owner cannot be deleted"]
-            let view = try await req.presenters.admin.createCreateMemberView(userData: member.convertToUserData(), errors: errors, usersCount: usersCount, site: req.siteInformation())
-            return try await view.encodeResponse(for: req)
+        var errors: [String] = []
+        if member.type == .owner {
+            errors.append("Owner cannot be deleted")
+        }
+        if loggedInUser.type != .owner {
+            if loggedInUser.type != .administrator {
+                errors.append("You do not have permissions to delete a member")
+            }
+        }
+        if loggedInUser.id == member.id {
+            errors.append("You cannot self delete")
         }
         
-        guard (loggedInUser.type == .owner || loggedInUser.type == .administrator) else {
+        if !errors.isEmpty {
             let usersCount = try await req.repositories.blogUser.getUsersCount()
-            let errors = ["You do not have permissions to delete a member"]
             let view = try await req.presenters.admin.createCreateMemberView(userData: member.convertToUserData(), errors: errors, usersCount: usersCount, site: req.siteInformation())
             return try await view.encodeResponse(for: req)
         }
-       
-        guard loggedInUser.id != member.id else {
-            let usersCount = try await req.repositories.blogUser.getUsersCount()
-            let errors = ["You cannot self delete"]
-            let view = try await req.presenters.admin.createCreateMemberView(userData: member.convertToUserData(), errors: errors, usersCount: usersCount, site: req.siteInformation())
-            return try await view.encodeResponse(for: req)
-        }
+
         try await req.repositories.blogUser.delete(member)
         return req.redirect(to: BlogPathCreator.createPath(for: "steampress/members"))
     }
