@@ -2,7 +2,7 @@ import XCTest
 import Vapor
 @testable import SteamPressCore
 
-class AdminMemberUpdateTests: XCTestCase {
+class MemberUpdateTests: XCTestCase {
     
     // MARK: - Properties
     
@@ -571,6 +571,29 @@ class AdminMemberUpdateTests: XCTestCase {
         XCTAssertTrue(errors.contains("Sorry that username has already been taken"))
     }
     
+    //    func testPasswordIsActuallyHashedWhenEditingAUser() throws {
+    //        try testWorld.shutdown()
+    //        testWorld = try TestWorld.create(passwordHasherToUse: .reversed)
+    //        let usersPassword = "password"
+    //        let hashedPassword = String(usersPassword.reversed())
+    //        user = testWorld.createUser(name: "Leia", username: "leia", password: hashedPassword)
+    //
+    //        struct EditUserData: Content {
+    //            static let defaultContentType = HTTPMediaType.urlEncodedForm
+    //            let name = "Darth Vader"
+    //            let username = "darth_vader"
+    //            let password = "somenewpassword"
+    //            let confirmPassword = "somenewpassword"
+    //        }
+    //
+    //        let editData = EditUserData()
+    //        _ = try testWorld.getResponse(to: "/admin/users/\(user.id!)/edit", body: editData, loggedInUser: user, passwordToLoginWith: usersPassword)
+    //
+    //        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
+    //        XCTAssertEqual(updatedUser.password, String(editData.password.reversed()))
+    //    }
+
+    
     // MARK: - Helpers
     
     private func createAndReturnUser() async throws -> BlogUser {
@@ -623,77 +646,3 @@ class AdminMemberUpdateTests: XCTestCase {
         return "/\(blogIndexPath)/steampress/\(path)"
     }
 }
-
-
-
-
-//    func testPasswordIsActuallyHashedWhenEditingAUser() throws {
-//        try testWorld.shutdown()
-//        testWorld = try TestWorld.create(passwordHasherToUse: .reversed)
-//        let usersPassword = "password"
-//        let hashedPassword = String(usersPassword.reversed())
-//        user = testWorld.createUser(name: "Leia", username: "leia", password: hashedPassword)
-//
-//        struct EditUserData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let name = "Darth Vader"
-//            let username = "darth_vader"
-//            let password = "somenewpassword"
-//            let confirmPassword = "somenewpassword"
-//        }
-//
-//        let editData = EditUserData()
-//        _ = try testWorld.getResponse(to: "/admin/users/\(user.id!)/edit", body: editData, loggedInUser: user, passwordToLoginWith: usersPassword)
-//
-//        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
-//        XCTAssertEqual(updatedUser.password, String(editData.password.reversed()))
-//    }
-
-//
-//    // MARK: - Delete users
-//
-//    func testCanDeleteUser() throws {
-//        let user2 = testWorld.createUser(name: "Han", username: "han")
-//
-//        let response = try testWorld.getResponse(to: "/admin/users/\(user2.id!)/delete", body: EmptyContent(), loggedInUser: user)
-//
-//        XCTAssertEqual(response.status, .seeOther)
-//        XCTAssertEqual(response.headers[.location].first, "/admin/")
-//        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-//        XCTAssertNotEqual(testWorld.context.repository.users.last?.name, "Han")
-//    }
-//
-//    func testCannotDeleteSelf() throws {
-//        let user2 = testWorld.createUser(name: "Han", username: "han")
-//        let testData = try testWorld.createPost(author: user2)
-//
-//        _ = try testWorld.getResponse(to: "/admin/users/\(user2.id!)/delete", body: EmptyContent(), loggedInUser: user2)
-//
-//        let viewErrors = try XCTUnwrap(presenter.adminViewErrors)
-//        XCTAssertTrue(viewErrors.contains("You cannot delete yourself whilst logged in"))
-//        XCTAssertEqual(testWorld.context.repository.users.count, 2)
-//
-//        XCTAssertEqual(presenter.adminViewPosts?.count, 1)
-//        XCTAssertEqual(presenter.adminViewPosts?.first?.title, testData.post.title)
-//        XCTAssertEqual(presenter.adminViewUsers?.count, 2)
-//        XCTAssertEqual(presenter.adminViewUsers?.last?.username, user2.username)
-//    }
-//
-//    func testCannotDeleteLastUser() throws {
-//        try testWorld.shutdown()
-//        testWorld = try TestWorld.create()
-//        let adminUser = testWorld.createUser(name: "Admin", username: "admin")
-//        let testData = try testWorld.createPost(author: adminUser)
-//        _ = try testWorld.getResponse(to: "/admin/users/\(adminUser.id!)/delete", body: EmptyContent(), loggedInUser: adminUser)
-//
-//        let viewErrors = try XCTUnwrap(presenter.adminViewErrors)
-//        XCTAssertTrue(viewErrors.contains("You cannot delete the last user"))
-//        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-//
-//        XCTAssertEqual(presenter.adminViewPosts?.count, 1)
-//        XCTAssertEqual(presenter.adminViewPosts?.first?.title, testData.post.title)
-//        XCTAssertEqual(presenter.adminViewUsers?.count, 1)
-//        XCTAssertEqual(presenter.adminViewUsers?.first?.username, adminUser.username)
-//    }
-//
-//}

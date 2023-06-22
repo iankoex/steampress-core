@@ -3,7 +3,7 @@ import Vapor
 import Spec
 import SteamPressCore
 
-class AccessRestricted: XCTestCase {
+class AccessRestrictedTests: XCTestCase {
 
     // MARK: - Properties
     
