@@ -1,28 +1,57 @@
-//import XCTest
-//import Vapor
-//import SteamPressCore
-//
-//class AdminPostTests: XCTestCase {
-//
-//    // MARK: - Properties
-//    private var app: Application!
-//    private var testWorld: TestWorld!
-//    private let createPostPath = "/admin/createPost/"
-//    private var user: BlogUser!
-//    private var presenter: CapturingAdminPresenter {
-//        return testWorld.context.blogAdminPresenter
-//    }
-//
-//    // MARK: - Overrides
-//
-//    override func setUpWithError() throws {
-//        testWorld = try TestWorld.create(url: "/")
-//        user = testWorld.createUser(username: "leia")
-//    }
-//    
-//    override func tearDownWithError() throws {
-//        try testWorld.shutdown()
-//    }
+import XCTest
+import Vapor
+@testable import SteamPressCore
+
+class PostCreateTests: XCTestCase {
+    
+    // MARK: - Properties
+    
+    private var testWorld: TestWorld!
+    private var sessionCookie: HTTPCookies!
+    private let blogIndexPath = "blog"
+    private let owner = CreateOwnerData(name: "Steam Press Owner", password: "SP@Password", email: "admin@steampress.io")
+    private let websiteURL = "https://www.steampress.io"
+    
+    var app: Application {
+        testWorld.context.app
+    }
+    
+    // MARK: - Overrides
+    
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create(path: blogIndexPath, passwordHasherToUse: .real, url: websiteURL)
+        sessionCookie = try createAndLoginOwner()
+    }
+    
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
+    }
+    
+    // MARK: - Post Create Tests
+    
+    
+    
+    // MARK: - Helpers
+    
+    private func createAndLoginOwner() throws -> HTTPCookies {
+        var cookie: HTTPCookies = HTTPCookies()
+        try app
+            .describe("App should create and log in user")
+            .post(adminPath(for: "createOwner"))
+            .body(owner)
+            .expect(.seeOther)
+            .expect { response in
+                cookie = response.headers.setCookie!
+            }
+            .test()
+        return cookie
+    }
+    
+    private func adminPath(for path: String) -> String {
+        return "/\(blogIndexPath)/steampress/\(path)"
+    }
+}
+
 //
 //    // MARK: - Post Creation
 //
