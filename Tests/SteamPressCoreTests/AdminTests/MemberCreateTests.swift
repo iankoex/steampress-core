@@ -38,12 +38,12 @@ class MemberCreateTests: XCTestCase {
             .test()
         
         XCTAssertNotNil(CapturingAdminPresenter.createMembersViewUsers)
-        XCTAssertNotNil(CapturingAdminPresenter.createMembersViewSite)
         XCTAssertEqual(CapturingAdminPresenter.createMembersViewUsersCount, 1)
-        XCTAssertEqual(CapturingAdminPresenter.createMembersViewSite?.loggedInUser?.name, owner.name)
-        XCTAssertEqual(CapturingAdminPresenter.createMembersViewSite?.loggedInUser?.email, owner.email)
-        XCTAssertEqual(CapturingAdminPresenter.createMembersViewSite?.url, "\(websiteURL)/\(blogIndexPath)/")
-        XCTAssertEqual(CapturingAdminPresenter.createMembersViewSite?.currentPageURL, "\(websiteURL)\(adminPath(for: "members"))/")
+        let site = try XCTUnwrap(CapturingAdminPresenter.createMembersViewSite)
+        XCTAssertEqual(site.loggedInUser?.name, owner.name)
+        XCTAssertEqual(site.loggedInUser?.email, owner.email)
+        XCTAssertEqual(site.url, "\(websiteURL)/\(blogIndexPath)/")
+        XCTAssertEqual(site.currentPageURL, "\(websiteURL)\(adminPath(for: "members"))/")
     }
     
     func testPresenterGetsCorrectValuesForNewMembersPage() throws {
@@ -56,12 +56,13 @@ class MemberCreateTests: XCTestCase {
         
         XCTAssertNil(CapturingAdminPresenter.createCreateMembersViewUserData)
         XCTAssertNil(CapturingAdminPresenter.createCreateMembersViewErrors)
-        XCTAssertNotNil(CapturingAdminPresenter.createCreateMembersViewSite)
         XCTAssertEqual(CapturingAdminPresenter.createCreateMembersViewUsersCount, 1)
-        XCTAssertEqual(CapturingAdminPresenter.createCreateMembersViewSite?.loggedInUser?.name, owner.name)
-        XCTAssertEqual(CapturingAdminPresenter.createCreateMembersViewSite?.loggedInUser?.email, owner.email)
-        XCTAssertEqual(CapturingAdminPresenter.createCreateMembersViewSite?.url, "\(websiteURL)/\(blogIndexPath)/")
-        XCTAssertEqual(CapturingAdminPresenter.createCreateMembersViewSite?.currentPageURL, "\(websiteURL)\(adminPath(for: "members/new"))/")
+        XCTAssertNotNil(CapturingAdminPresenter.createCreateMembersViewSite)
+        let site = try XCTUnwrap(CapturingAdminPresenter.createCreateMembersViewSite)
+        XCTAssertEqual(site.loggedInUser?.name, owner.name)
+        XCTAssertEqual(site.loggedInUser?.email, owner.email)
+        XCTAssertEqual(site.url, "\(websiteURL)/\(blogIndexPath)/")
+        XCTAssertEqual(site.currentPageURL, "\(websiteURL)\(adminPath(for: "members/new"))/")
     }
     
     func testUserCanBeCreatedSuccessfully() async throws {
