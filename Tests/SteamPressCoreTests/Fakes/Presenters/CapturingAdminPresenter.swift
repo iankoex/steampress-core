@@ -19,24 +19,33 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     
     // MARK: - BlogPresenter
     
+    static private(set) var indexViewUsersCount: Int?
+    static private(set) var indexViewErrors: [String]?
+    static private(set) var indexViewSite: GlobalWebsiteInformation?
     func createIndexView(usersCount: Int, errors: [String]?, site: GlobalWebsiteInformation) async throws -> View {
-        self.usersCount = usersCount
-        self.adminViewErrors = errors
-        self.adminViewsite = site
+        CapturingAdminPresenter.indexViewUsersCount = usersCount
+        CapturingAdminPresenter.indexViewErrors = errors
+        CapturingAdminPresenter.indexViewSite = site
         return TestDataBuilder.createView()
     }
     
+    static private(set) var exploreViewUsersCount: Int?
+    static private(set) var exploreViewErrors: [String]?
+    static private(set) var exploreViewSite: GlobalWebsiteInformation?
     func createExploreView(usersCount: Int, errors: [String]?, site: GlobalWebsiteInformation) async throws -> View {
-        self.usersCount = usersCount
-        self.adminViewErrors = errors
-        self.adminViewsite = site
+        CapturingAdminPresenter.exploreViewUsersCount = usersCount
+        CapturingAdminPresenter.exploreViewErrors = errors
+        CapturingAdminPresenter.exploreViewSite = site
         return TestDataBuilder.createView()
     }
     
+    static private(set) var pagesViewUsersCount: Int?
+    static private(set) var pagesViewErrors: [String]?
+    static private(set) var pagesViewSite: GlobalWebsiteInformation?
     func createPagesView(usersCount: Int, errors: [String]?, site: GlobalWebsiteInformation) async throws -> View {
-        self.usersCount = usersCount
-        self.adminViewErrors = errors
-        self.adminViewsite = site
+        CapturingAdminPresenter.pagesViewUsersCount = usersCount
+        CapturingAdminPresenter.pagesViewErrors = errors
+        CapturingAdminPresenter.pagesViewSite = site
         return TestDataBuilder.createView()
     }
     
