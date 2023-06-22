@@ -15,8 +15,8 @@ public struct CreateUserData: Content, Codable {
     public init(
         name: String,
         username: String,
-        password: String?,
-        confirmPassword: String?,
+        password: String? = nil,
+        confirmPassword: String? = nil,
         email: String,
         profilePicture: String? = nil,
         tagline: String? = nil,

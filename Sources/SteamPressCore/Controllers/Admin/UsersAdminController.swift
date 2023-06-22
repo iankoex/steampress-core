@@ -81,6 +81,7 @@ struct UsersAdminController: RouteCollection {
         
         user.name = data.name
         user.username = data.username.lowercased()
+        user.email = data.email
         
         let profilePicture = data.profilePicture.isEmptyOrWhitespace() ? nil : data.profilePicture
         let twitterHandle = data.twitterHandle.isEmptyOrWhitespace() ? nil : data.twitterHandle
@@ -99,6 +100,7 @@ struct UsersAdminController: RouteCollection {
         if let password = data.password, password != "" {
             let hashedPassword = try await req.password.async.hash(password)
             user.password = hashedPassword
+            user.resetPasswordRequired = true
         }
         try await req.repositories.blogUser.save(user)
         return req.redirect(to: BlogPathCreator.createPath(for: "steampress/members"))

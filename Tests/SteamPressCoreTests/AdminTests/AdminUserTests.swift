@@ -350,7 +350,6 @@ class AdminUserTests: XCTestCase {
             .test()
         
         let users = try await testWorld.context.req.repositories.blogUser.getAllUsers()
-        
         // First is user created in setup, final is one just created
         XCTAssertEqual(users.count, 2)
         let user = try XCTUnwrap(users.last)
@@ -384,6 +383,420 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(data.resetPasswordOnLogin, user.resetPasswordRequired)
     }
     
+    func testUserCanBeUpdated() async throws {
+        let createData = CreateUserData(
+            name: "Luke",
+            username: "lukes",
+            password: "somePassword",
+            confirmPassword: "somePassword",
+            email: "luke@lukes.com",
+            profilePicture: "https://static.brokenhands.io/images/cat.png",
+            tagline: "awesomest",
+            biography: "bio bio bio",
+            twitterHandle: "lukes",
+            resetPasswordOnLogin: true
+        )
+        
+        try app
+            .describe("New User Can be Created Successfully")
+            .post(adminPath(for: "members/new"))
+            .body(createData)
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
+            }
+            .test()
+        
+        let users = try await testWorld.context.req.repositories.blogUser.getAllUsers()
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(users.count, 2)
+        let user = try XCTUnwrap(users.last)
+        
+        let editData = CreateUserData(
+            name: "Luke Sky",
+            username: "lukessky",
+            password: "somePasswordSky",
+            confirmPassword: "somePasswordSky",
+            email: "lukeSky@lukes.com",
+            profilePicture: "https://static.brokenhands.io/images/cat.png",
+            tagline: "awesomest Sky",
+            biography: "bio bio bio SKY",
+            twitterHandle: "lukesSky"
+        )
+        
+        try app
+            .describe("Update the Newly created User Successfully")
+            .post(adminPath(for: "members/\(user.id!)"))
+            .body(editData)
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
+            }
+            .test()
+        
+        let updatedUsers = try await testWorld.context.req.repositories.blogUser.getAllUsers()
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(updatedUsers.count, 2)
+        let updatedUser = try XCTUnwrap(updatedUsers.last)
+        
+        XCTAssertEqual(updatedUser.id, user.id)
+        XCTAssertEqual(updatedUser.username, editData.username.lowercased())
+        XCTAssertEqual(updatedUser.name, editData.name)
+        XCTAssertEqual(updatedUser.email, editData.email)
+    }
+    
+    func testOptionalInfoDoesntGetUpdatedWhenEditingUsernameAndSendingEmptyValuesIfSomeAlreadySet() async throws {
+        let createData = CreateUserData(
+            name: "Luke",
+            username: "lukes",
+            password: "somePassword",
+            confirmPassword: "somePassword",
+            email: "luke@lukes.com",
+            profilePicture: "https://static.brokenhands.io/images/cat.png",
+            tagline: "awesomest",
+            biography: "bio bio bio",
+            twitterHandle: "lukes",
+            resetPasswordOnLogin: true
+        )
+        
+        try app
+            .describe("New User Can be Created Successfully")
+            .post(adminPath(for: "members/new"))
+            .body(createData)
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
+            }
+            .test()
+        
+        let users = try await testWorld.context.req.repositories.blogUser.getAllUsers()
+        
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(users.count, 2)
+        let user = try XCTUnwrap(users.last)
+        
+        let editData = CreateUserData(
+            name: "Luke Sky",
+            username: "lukessky",
+            email: "lukeSky@lukes.com"
+        )
+        
+        try app
+            .describe("Update the Newly created User Successfully")
+            .post(adminPath(for: "members/\(user.id!)"))
+            .body(editData)
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
+            }
+            .test()
+        
+        let updatedUsers = try await testWorld.context.req.repositories.blogUser.getAllUsers()
+        
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(updatedUsers.count, 2)
+        let updatedUser = try XCTUnwrap(updatedUsers.last)
+        
+        XCTAssertEqual(updatedUser.id, user.id)
+        XCTAssertEqual(updatedUser.username, editData.username.lowercased())
+        XCTAssertEqual(updatedUser.name, editData.name)
+        XCTAssertEqual(updatedUser.email, editData.email)
+        
+        XCTAssertNil(updatedUser.profilePicture)
+        XCTAssertNil(updatedUser.tagline)
+        XCTAssertNil(updatedUser.biography)
+        XCTAssertNil(updatedUser.twitterHandle)
+    }
+    
+    func testWhenEditingUserPasswordResetIsRequiredEvenIfSetToFalse() async throws {
+        let createData = CreateUserData(
+            name: "Luke",
+            username: "lukes",
+            password: "somePassword",
+            confirmPassword: "somePassword",
+            email: "luke@lukes.com"
+        )
+        
+        try app
+            .describe("New User Can be Created Successfully")
+            .post(adminPath(for: "members/new"))
+            .body(createData)
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
+            }
+            .test()
+        
+        let users = try await testWorld.context.req.repositories.blogUser.getAllUsers()
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(users.count, 2)
+        let user = try XCTUnwrap(users.last)
+        
+        var cookie: HTTPCookies = HTTPCookies()
+        let loginData = LoginData(email: createData.email, password: createData.password!)
+        
+        try app
+            .describe("User Can login Successfully")
+            .post(adminPath(for: "login"))
+            .body(loginData)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: ""))
+                XCTAssertNotNil(response.headers[.setCookie].first)
+                cookie = response.headers.setCookie!
+            }
+            .test()
+        
+        let newPassword = "NewSP@Password"
+        let resetData = ResetPasswordData(password: newPassword, confirmPassword: newPassword)
+        
+        try app
+            .describe("Can Reset Password")
+            .post(adminPath(for: "resetPassword"))
+            .body(resetData)
+            .cookie(cookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: ""))
+                XCTAssertNotNil(response.headers[.setCookie].first)
+            }
+            .test()
+        
+        let editData = CreateUserData(
+            name: "Luke Sky",
+            username: "lukessky",
+            password: "somePasswordSky",
+            confirmPassword: "somePasswordSky",
+            email: "lukeSky@lukes.com",
+            resetPasswordOnLogin: false
+        )
+        
+        try app
+            .describe("Update the Newly created User Successfully")
+            .post(adminPath(for: "members/\(user.id!)"))
+            .body(editData)
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
+            }
+            .test()
+        
+        let updatedUsers = try await testWorld.context.req.repositories.blogUser.getAllUsers()
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(updatedUsers.count, 2)
+        let updatedUser = try XCTUnwrap(updatedUsers.last)
+        XCTAssertEqual(updatedUser.id, user.id)
+        XCTAssertEqual(updatedUser.username, editData.username.lowercased())
+        XCTAssertEqual(updatedUser.name, editData.name)
+        XCTAssertEqual(updatedUser.email, editData.email)
+        
+        XCTAssertTrue(updatedUser.resetPasswordRequired)
+        
+        try app
+            .describe("Assert Login Required When Accessing")
+            .get(adminPath(for: ""))
+            .cookie(cookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "resetPassword/"))
+            }
+            .test()
+    }
+    
+    func testWhenEditingUserResetPasswordFlagSetIfRequired() async throws {
+        let createData = CreateUserData(
+            name: "Luke",
+            username: "lukes",
+            password: "somePassword",
+            confirmPassword: "somePassword",
+            email: "luke@lukes.com"
+        )
+        
+        try app
+            .describe("New User Can be Created Successfully")
+            .post(adminPath(for: "members/new"))
+            .body(createData)
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
+            }
+            .test()
+        
+        let users = try await testWorld.context.req.repositories.blogUser.getAllUsers()
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(users.count, 2)
+        let user = try XCTUnwrap(users.last)
+        
+        var cookie: HTTPCookies = HTTPCookies()
+        let loginData = LoginData(email: createData.email, password: createData.password!)
+        
+        try app
+            .describe("User Can login Successfully")
+            .post(adminPath(for: "login"))
+            .body(loginData)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: ""))
+                XCTAssertNotNil(response.headers[.setCookie].first)
+                cookie = response.headers.setCookie!
+            }
+            .test()
+        
+        let newPassword = "NewSP@Password"
+        let resetData = ResetPasswordData(password: newPassword, confirmPassword: newPassword)
+        
+        try app
+            .describe("Can Reset Password")
+            .post(adminPath(for: "resetPassword"))
+            .body(resetData)
+            .cookie(cookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: ""))
+                XCTAssertNotNil(response.headers[.setCookie].first)
+            }
+            .test()
+        
+        let editData = CreateUserData(
+            name: "Luke Sky",
+            username: "lukessky",
+            email: "lukeSky@lukes.com",
+            resetPasswordOnLogin: true
+        )
+        
+        try app
+            .describe("Update the Newly created User Successfully")
+            .post(adminPath(for: "members/\(user.id!)"))
+            .body(editData)
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
+            }
+            .test()
+        
+        let updatedUsers = try await testWorld.context.req.repositories.blogUser.getAllUsers()
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(updatedUsers.count, 2)
+        let updatedUser = try XCTUnwrap(updatedUsers.last)
+        XCTAssertEqual(updatedUser.id, user.id)
+        XCTAssertEqual(updatedUser.username, editData.username.lowercased())
+        XCTAssertEqual(updatedUser.name, editData.name)
+        XCTAssertEqual(updatedUser.email, editData.email)
+        XCTAssertEqual(updatedUser.resetPasswordRequired, editData.resetPasswordOnLogin)
+        
+        XCTAssertTrue(updatedUser.resetPasswordRequired)
+        
+        try app
+            .describe("Assert Reset Required When Accessing Admin")
+            .get(adminPath(for: ""))
+            .cookie(cookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "resetPassword/"))
+            }
+            .test()
+    }
+    
+    func testWhenEditingUserResetPasswordFlagNotSetIfSetToFalse() async throws {
+        let createData = CreateUserData(
+            name: "Luke",
+            username: "lukes",
+            password: "somePassword",
+            confirmPassword: "somePassword",
+            email: "luke@lukes.com"
+        )
+        
+        try app
+            .describe("New User Can be Created Successfully")
+            .post(adminPath(for: "members/new"))
+            .body(createData)
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
+            }
+            .test()
+        
+        let users = try await testWorld.context.req.repositories.blogUser.getAllUsers()
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(users.count, 2)
+        let user = try XCTUnwrap(users.last)
+        
+        var cookie: HTTPCookies = HTTPCookies()
+        let loginData = LoginData(email: createData.email, password: createData.password!)
+        
+        try app
+            .describe("User Can login Successfully")
+            .post(adminPath(for: "login"))
+            .body(loginData)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: ""))
+                XCTAssertNotNil(response.headers[.setCookie].first)
+                cookie = response.headers.setCookie!
+            }
+            .test()
+        
+        let newPassword = "NewSP@Password"
+        let resetData = ResetPasswordData(password: newPassword, confirmPassword: newPassword)
+        
+        try app
+            .describe("Can Reset Password")
+            .post(adminPath(for: "resetPassword"))
+            .body(resetData)
+            .cookie(cookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: ""))
+                XCTAssertNotNil(response.headers[.setCookie].first)
+            }
+            .test()
+        
+        let editData = CreateUserData(
+            name: "Luke Sky",
+            username: "lukessky",
+            email: "lukeSky@lukes.com",
+            resetPasswordOnLogin: false
+        )
+        
+        try app
+            .describe("Update the Newly created User Successfully")
+            .post(adminPath(for: "members/\(user.id!)"))
+            .body(editData)
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
+            }
+            .test()
+        
+        let updatedUsers = try await testWorld.context.req.repositories.blogUser.getAllUsers()
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(updatedUsers.count, 2)
+        let updatedUser = try XCTUnwrap(updatedUsers.last)
+        XCTAssertEqual(updatedUser.id, user.id)
+        XCTAssertEqual(updatedUser.username, editData.username.lowercased())
+        XCTAssertEqual(updatedUser.name, editData.name)
+        XCTAssertEqual(updatedUser.email, editData.email)
+        XCTAssertEqual(updatedUser.resetPasswordRequired, editData.resetPasswordOnLogin)
+        
+        XCTAssertFalse(updatedUser.resetPasswordRequired)
+        
+        try app
+            .describe("Assert Reset Not Required When Accessing Admin Page")
+            .get(adminPath(for: ""))
+            .cookie(cookie)
+            .expect(.ok)
+            .test()
+    }
     
     // MARK: - Helpers
     
@@ -406,169 +819,8 @@ class AdminUserTests: XCTestCase {
     }
 }
 
-//
-//    func testUserCanBeUpdated() throws {
-//        struct EditUserData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let name = "Darth Vader"
-//            let username = "darth_vader"
-//        }
-//
-//        let editData = EditUserData()
-//        let response = try testWorld.getResponse(to: "/admin/users/\(user.id!)/edit", body: editData, loggedInUser: user)
-//
-//        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-//        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
-//        XCTAssertEqual(updatedUser.username, editData.username)
-//        XCTAssertEqual(updatedUser.name, editData.name)
-//        XCTAssertEqual(updatedUser.id, user.id)
-//        XCTAssertEqual(response.status, .seeOther)
-//        XCTAssertEqual(response.headers[.location].first, "/admin/")
-//    }
-//    
-//    func testUserCanBeUpdatedWithSameUsername() throws {
-//        struct EditUserData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let name = "Leia Organa"
-//            let username = "leia"
-//        }
-//
-//        let editData = EditUserData()
-//        let response = try testWorld.getResponse(to: "/admin/users/\(user.id!)/edit", body: editData, loggedInUser: user)
-//
-//        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-//        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
-//        XCTAssertEqual(updatedUser.username, editData.username)
-//        XCTAssertEqual(updatedUser.name, editData.name)
-//        XCTAssertEqual(updatedUser.id, user.id)
-//        XCTAssertEqual(response.status, .seeOther)
-//        XCTAssertEqual(response.headers[.location].first, "/admin/")
-//    }
-//
-//    func testUserCanBeUpdatedWithAllInformation() throws {
-//        struct EditUserData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let name = "Darth Vader"
-//            let username = "darth_vader"
-//            let twitterHandle = "darthVader"
-//            let profilePicture = "https://deathstar.org/pictures/dv.jpg"
-//            let tagline = "The Sith Lord formally known as Anakin"
-//            let biography = "Father of one, part cyborg, Sith Lord. Something something dark side."
-//        }
-//
-//        let editData = EditUserData()
-//        let response = try testWorld.getResponse(to: "/admin/users/\(user.id!)/edit", body: editData, loggedInUser: user)
-//
-//        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-//        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
-//        XCTAssertEqual(updatedUser.username, editData.username)
-//        XCTAssertEqual(updatedUser.name, editData.name)
-//        XCTAssertEqual(updatedUser.twitterHandle, editData.twitterHandle)
-//        XCTAssertEqual(updatedUser.profilePicture, editData.profilePicture)
-//        XCTAssertEqual(updatedUser.tagline, editData.tagline)
-//        XCTAssertEqual(updatedUser.biography, editData.biography)
-//        XCTAssertEqual(updatedUser.id, user.id)
-//        XCTAssertEqual(response.status, .seeOther)
-//        XCTAssertEqual(response.headers[.location].first, "/admin/")
-//    }
-//    
-//    func testOptionalInfoDoesntGetUpdatedWhenEditingUsernameAndSendingEmptyValuesIfSomeAlreadySet() throws {
-//        struct EditUserData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let name = "Darth Vader"
-//            let username = "darth_vader"
-//            let twitterHandle = ""
-//            let profilePicture = ""
-//            let tagline = ""
-//            let biography = ""
-//        }
-//        
-//        user.profilePicture = nil
-//        user.twitterHandle = nil
-//        user.tagline = nil
-//        user.biography = nil
-//
-//        let editData = EditUserData()
-//        _ = try testWorld.getResponse(to: "/admin/users/\(user.id!)/edit", body: editData, loggedInUser: user)
-//
-//        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-//        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
-//        XCTAssertEqual(updatedUser.username, editData.username)
-//        XCTAssertEqual(updatedUser.name, editData.name)
-//        XCTAssertNil(updatedUser.twitterHandle)
-//        XCTAssertNil(updatedUser.profilePicture)
-//        XCTAssertNil(updatedUser.tagline)
-//        XCTAssertNil(updatedUser.biography)
-//        XCTAssertEqual(updatedUser.id, user.id)
-//    }
-//    
-//    func testUpdatingOptionalInfoToEmptyValuesWhenValueOriginallySetSetsItToNil() throws {
-//        struct EditUserData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let name = "Darth Vader"
-//            let username = "darth_vader"
-//            let twitterHandle = ""
-//            let profilePicture = ""
-//            let tagline = ""
-//            let biography = ""
-//        }
-//
-//        user.profilePicture = "https://static.brokenhands.io/picture.png"
-//        user.tagline = "Tagline"
-//        user.biography = "Biography"
-//        user.twitterHandle = "darthVader"
-//        let editData = EditUserData()
-//        _ = try testWorld.getResponse(to: "/admin/users/\(user.id!)/edit", body: editData, loggedInUser: user)
-//
-//        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-//        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
-//        XCTAssertEqual(updatedUser.username, editData.username)
-//        XCTAssertEqual(updatedUser.name, editData.name)
-//        XCTAssertNil(updatedUser.twitterHandle)
-//        XCTAssertNil(updatedUser.profilePicture)
-//        XCTAssertNil(updatedUser.tagline)
-//        XCTAssertNil(updatedUser.biography)
-//        XCTAssertEqual(updatedUser.id, user.id)
-//    }
-//
-//    func testWhenEditingUserResetPasswordFlagSetIfRequired() throws {
-//        struct EditUserData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let name = "Luke"
-//            let username = "lukes"
-//            let resetPasswordOnLogin = true
-//        }
-//
-//        let editData = EditUserData()
-//        let response = try testWorld.getResponse(to: "/admin/users/\(user.id!)/edit", body: editData, loggedInUser: user)
-//
-//        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-//        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
-//        XCTAssertTrue(updatedUser.resetPasswordRequired)
-//        XCTAssertEqual(updatedUser.id, user.id)
-//        XCTAssertEqual(response.status, .seeOther)
-//        XCTAssertEqual(response.headers[.location].first, "/admin/")
-//    }
-//
-//    func testWhenEditingUserResetPasswordFlagNotSetIfSetToFalse() throws {
-//        struct EditUserData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let name = "Luke"
-//            let username = "lukes"
-//            let resetPasswordOnLogin = false
-//        }
-//
-//        let editData = EditUserData()
-//        let response = try testWorld.getResponse(to: "/admin/users/\(user.id!)/edit", body: editData, loggedInUser: user)
-//
-//        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-//        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
-//        XCTAssertFalse(updatedUser.resetPasswordRequired)
-//        XCTAssertEqual(updatedUser.id, user.id)
-//        XCTAssertEqual(response.status, .seeOther)
-//        XCTAssertEqual(response.headers[.location].first, "/admin/")
-//    }
-//
+
+
 //    func testPasswordIsUpdatedWhenNewPasswordProvidedWhenEditingUser() throws {
 //        struct EditUserData: Content {
 //            static let defaultContentType = HTTPMediaType.urlEncodedForm
