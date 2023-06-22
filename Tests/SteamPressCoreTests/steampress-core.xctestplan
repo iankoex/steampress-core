@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "D1E74C4E-02E4-4D24-B281-B9BA21842F28",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "SteamPressCoreTests",
+        "name" : "SteamPressCoreTests"
+      }
+    }
+  ],
+  "version" : 1
+}
