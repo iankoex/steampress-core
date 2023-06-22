@@ -445,6 +445,11 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(updatedUser.username, editData.username.lowercased())
         XCTAssertEqual(updatedUser.name, editData.name)
         XCTAssertEqual(updatedUser.email, editData.email)
+        XCTAssertEqual(updatedUser.profilePicture, editData.profilePicture)
+        XCTAssertEqual(updatedUser.tagline, editData.tagline)
+        XCTAssertEqual(updatedUser.biography, editData.biography)
+        XCTAssertEqual(updatedUser.twitterHandle, editData.twitterHandle)
+        XCTAssertNotEqual(updatedUser.password, editData.password)
     }
     
     func testOptionalInfoDoesntGetUpdatedWhenEditingUsernameAndSendingEmptyValuesIfSomeAlreadySet() async throws {
@@ -505,6 +510,9 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(updatedUser.username, editData.username.lowercased())
         XCTAssertEqual(updatedUser.name, editData.name)
         XCTAssertEqual(updatedUser.email, editData.email)
+        
+        // updating password with nil value does not change the password
+        XCTAssertEqual(user.password, updatedUser.password)
         
         XCTAssertNil(updatedUser.profilePicture)
         XCTAssertNil(updatedUser.tagline)
@@ -798,6 +806,292 @@ class AdminUserTests: XCTestCase {
             .test()
     }
     
+    func testUserCannotBeUpdatedWithRequiredFieldsMissingOrWhitespace() async throws {
+        let createData = CreateUserData(
+            name: "Luke",
+            username: "lukes",
+            password: "somePassword",
+            confirmPassword: "somePassword",
+            email: "luke@lukes.com",
+            profilePicture: "https://static.brokenhands.io/images/cat.png",
+            tagline: "awesomest",
+            biography: "bio bio bio",
+            twitterHandle: "lukes",
+            resetPasswordOnLogin: true
+        )
+        
+        try app
+            .describe("New User Can be Created Successfully")
+            .post(adminPath(for: "members/new"))
+            .body(createData)
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
+            }
+            .test()
+        
+        let users = try await testWorld.context.req.repositories.blogUser.getAllUsers()
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(users.count, 2)
+        let user = try XCTUnwrap(users.last)
+        
+        let editData = CreateUserData(
+            name: "",
+            username: "",
+            email: "  ", // whitespace character
+            profilePicture: "https://static.brokenhands.io/images/cat.png",
+            tagline: "awesomest",
+            biography: "bio bio bio",
+            twitterHandle: "lukes",
+            resetPasswordOnLogin: true
+        )
+        
+        try app
+            .describe("Cannot Be Updated With Required Fields Missing or Whitespace")
+            .post(adminPath(for: "members/\(user.id!)"))
+            .body(editData)
+            .cookie(sessionCookie)
+            .expect(.ok)
+            .test()
+        
+        XCTAssertNotNil(CapturingAdminPresenter.createCreateMembersViewUserData)
+        XCTAssertNotNil(CapturingAdminPresenter.createCreateMembersViewErrors)
+        let errors = try XCTUnwrap(CapturingAdminPresenter.createCreateMembersViewErrors)
+        XCTAssertTrue(errors.contains("You must specify a name"))
+        XCTAssertTrue(errors.contains("You must specify a username"))
+        XCTAssertTrue(errors.contains("You must specify an email"))
+    }
+    
+    func testUserCannotBeUpdatedWithShortOrMismatchingPasswords() async throws {
+        let createData = CreateUserData(
+            name: "Luke",
+            username: "lukes",
+            password: "somePassword",
+            confirmPassword: "somePassword",
+            email: "luke@lukes.com",
+            profilePicture: "https://static.brokenhands.io/images/cat.png",
+            tagline: "awesomest",
+            biography: "bio bio bio",
+            twitterHandle: "lukes",
+            resetPasswordOnLogin: true
+        )
+        
+        try app
+            .describe("New User Can be Created Successfully")
+            .post(adminPath(for: "members/new"))
+            .body(createData)
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
+            }
+            .test()
+        
+        let users = try await testWorld.context.req.repositories.blogUser.getAllUsers()
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(users.count, 2)
+        let user = try XCTUnwrap(users.last)
+        
+        let editData = CreateUserData(
+            name: "Luke",
+            username: "lukes",
+            password: "123",
+            confirmPassword: "321",
+            email: "luke@lukes.com",
+            profilePicture: "https://static.brokenhands.io/images/cat.png",
+            tagline: "awesomest",
+            biography: "bio bio bio",
+            twitterHandle: "lukes",
+            resetPasswordOnLogin: false
+        )
+
+        try app
+            .describe("User Cannot Be Updated With Short or Mismatching Passwords")
+            .post(adminPath(for: "members/\(user.id!)"))
+            .body(editData)
+            .cookie(sessionCookie)
+            .expect(.ok)
+            .test()
+
+        XCTAssertNotNil(CapturingAdminPresenter.createCreateMembersViewUserData)
+        XCTAssertNotNil(CapturingAdminPresenter.createCreateMembersViewErrors)
+        let errors = try XCTUnwrap(CapturingAdminPresenter.createCreateMembersViewErrors)
+        XCTAssertTrue(errors.contains("Your password must be at least 8 characters long"))
+        XCTAssertTrue(errors.contains("Your passwords must match"))
+    }
+
+    func testUserCannotBeUpdatedWithAnInvalidUsername() async throws {
+        let createData = CreateUserData(
+            name: "Luke",
+            username: "lukes",
+            password: "somePassword",
+            confirmPassword: "somePassword",
+            email: "luke@lukes.com",
+            profilePicture: "https://static.brokenhands.io/images/cat.png",
+            tagline: "awesomest",
+            biography: "bio bio bio",
+            twitterHandle: "lukes",
+            resetPasswordOnLogin: true
+        )
+        
+        try app
+            .describe("New User Can be Created Successfully")
+            .post(adminPath(for: "members/new"))
+            .body(createData)
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
+            }
+            .test()
+        
+        let users = try await testWorld.context.req.repositories.blogUser.getAllUsers()
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(users.count, 2)
+        let user = try XCTUnwrap(users.last)
+        
+        let editData = CreateUserData(
+            name: "Luke",
+            username: "lukes/luka!",
+            password: "somePassword",
+            confirmPassword: "somePassword",
+            email: "luke@lukes.com",
+            profilePicture: "https://static.brokenhands.io/images/cat.png",
+            tagline: "awesomest",
+            biography: "bio bio bio",
+            twitterHandle: "lukes",
+            resetPasswordOnLogin: false
+        )
+
+        try app
+            .describe("User Cannot Be Updated With An Invalid Username")
+            .post(adminPath(for: "members/\(user.id!)"))
+            .body(editData)
+            .cookie(sessionCookie)
+            .expect(.ok)
+            .test()
+
+        XCTAssertNotNil(CapturingAdminPresenter.createCreateMembersViewUserData)
+        XCTAssertNotNil(CapturingAdminPresenter.createCreateMembersViewErrors)
+        let errors = try XCTUnwrap(CapturingAdminPresenter.createCreateMembersViewErrors)
+        XCTAssertTrue(errors.contains("The username provided is not valid"))
+    }
+
+    func testUserCannotBeUpdatedWithUsernameThatAlreadyExists() async throws {
+        let createData = CreateUserData(
+            name: "Luke",
+            username: "lukes",
+            password: "somePassword",
+            confirmPassword: "somePassword",
+            email: "luke@lukes.com",
+            profilePicture: "https://static.brokenhands.io/images/cat.png",
+            tagline: "awesomest",
+            biography: "bio bio bio",
+            twitterHandle: "lukes",
+            resetPasswordOnLogin: true
+        )
+        
+        try app
+            .describe("New User Can be Created Successfully")
+            .post(adminPath(for: "members/new"))
+            .body(createData)
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
+            }
+            .test()
+        
+        let users = try await testWorld.context.req.repositories.blogUser.getAllUsers()
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(users.count, 2)
+        let user = try XCTUnwrap(users.last)
+        
+        let editData = CreateUserData(
+            name: "Luke",
+            username: owner.name.replacingOccurrences(of: " ", with: "").lowercased(),
+            password: "somePassword",
+            confirmPassword: "somePassword",
+            email: "luke@lukes.com",
+            profilePicture: "https://static.brokenhands.io/images/cat.png",
+            tagline: "awesomest",
+            biography: "bio bio bio",
+            twitterHandle: "lukes",
+            resetPasswordOnLogin: false
+        )
+
+        try app
+            .describe("User Cannot Be Updated With Username That Already Exists")
+            .post(adminPath(for: "members/\(user.id!)"))
+            .body(editData)
+            .cookie(sessionCookie)
+            .expect(.ok)
+            .test()
+
+        XCTAssertNotNil(CapturingAdminPresenter.createCreateMembersViewUserData)
+        XCTAssertNotNil(CapturingAdminPresenter.createCreateMembersViewErrors)
+        let errors = try XCTUnwrap(CapturingAdminPresenter.createCreateMembersViewErrors)
+        XCTAssertTrue(errors.contains("Sorry that username has already been taken"))
+    }
+
+    func testUserCannotBeUpdatedWithUsernameThatAlreadyExistsIgnoringCase() async throws {
+        let createData = CreateUserData(
+            name: "Luke",
+            username: "lukes",
+            password: "somePassword",
+            confirmPassword: "somePassword",
+            email: "luke@lukes.com",
+            profilePicture: "https://static.brokenhands.io/images/cat.png",
+            tagline: "awesomest",
+            biography: "bio bio bio",
+            twitterHandle: "lukes",
+            resetPasswordOnLogin: true
+        )
+        
+        try app
+            .describe("New User Can be Created Successfully")
+            .post(adminPath(for: "members/new"))
+            .body(createData)
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
+            }
+            .test()
+        
+        let users = try await testWorld.context.req.repositories.blogUser.getAllUsers()
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(users.count, 2)
+        let user = try XCTUnwrap(users.last)
+        
+        let editData = CreateUserData(
+            name: "Luke",
+            username: owner.name.replacingOccurrences(of: " ", with: ""),
+            password: "somePassword",
+            confirmPassword: "somePassword",
+            email: "luke@lukes.com",
+            profilePicture: "https://static.brokenhands.io/images/cat.png",
+            tagline: "awesomest",
+            biography: "bio bio bio",
+            twitterHandle: "lukes",
+            resetPasswordOnLogin: false
+        )
+
+        try app
+            .describe("New User Cannot Be Created With Username That Already Exists Ignoring Case")
+            .post(adminPath(for: "members/\(user.id!)"))
+            .body(editData)
+            .cookie(sessionCookie)
+            .expect(.ok)
+            .test()
+
+        XCTAssertNotNil(CapturingAdminPresenter.createCreateMembersViewUserData)
+        XCTAssertNotNil(CapturingAdminPresenter.createCreateMembersViewErrors)
+        let errors = try XCTUnwrap(CapturingAdminPresenter.createCreateMembersViewErrors)
+        XCTAssertTrue(errors.contains("Sorry that username has already been taken"))
+    }
+    
     // MARK: - Helpers
     
     private func createAndLoginOwner() throws -> HTTPCookies {
@@ -821,86 +1115,7 @@ class AdminUserTests: XCTestCase {
 
 
 
-//    func testPasswordIsUpdatedWhenNewPasswordProvidedWhenEditingUser() throws {
-//        struct EditUserData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let name = "Luke"
-//            let username = "lukes"
-//            let password = "anewpassword"
-//            let confirmPassword = "anewpassword"
-//        }
-//
-//        let editData = EditUserData()
-//        let response = try testWorld.getResponse(to: "/admin/users/\(user.id!)/edit", body: editData, loggedInUser: user)
-//
-//        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-//        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
-//        XCTAssertEqual(updatedUser.password, editData.password)
-//        XCTAssertEqual(updatedUser.id, user.id)
-//        XCTAssertEqual(response.status, .seeOther)
-//        XCTAssertEqual(response.headers[.location].first, "/admin/")
-//    }
-//    
-//    func testPasswordIsNotUpdatedWhenEmptyPasswordProvidedWhenEditingUser() throws {
-//        struct EditUserData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let name = "Luke"
-//            let username = "lukes"
-//            let password = ""
-//            let confirmPassword = ""
-//        }
-//
-//        let oldPassword = user.password
-//        let editData = EditUserData()
-//        let response = try testWorld.getResponse(to: "/admin/users/\(user.id!)/edit", body: editData, loggedInUser: user)
-//
-//        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-//        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
-//        XCTAssertEqual(updatedUser.password, oldPassword)
-//        XCTAssertEqual(updatedUser.id, user.id)
-//        XCTAssertEqual(response.status, .seeOther)
-//        XCTAssertEqual(response.headers[.location].first, "/admin/")
-//    }
-//
-//    func testErrorShownWhenUpdatingUsersPasswordWithNonMatchingPasswords() throws {
-//        struct EditUserData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let name = "Luke"
-//            let username = "lukes"
-//            let password = "anewpassword"
-//            let confirmPassword = "someotherpassword"
-//        }
-//
-//        let editData = EditUserData()
-//        _ = try testWorld.getResponse(to: "/admin/users/\(user.id!)/edit", body: editData, loggedInUser: user)
-//
-//        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
-//        XCTAssertTrue(viewErrors.contains("Your passwords must match"))
-//        let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
-//        let confirmPasswordError = try XCTUnwrap(presenter.createUserConfirmPasswordError)
-//        XCTAssertEqual(presenter.createUserUserID, user.id)
-//        XCTAssertTrue(passwordError)
-//        XCTAssertTrue(confirmPasswordError)
-//    }
-//
-//    func testErrorShownWhenChangingUsersPasswordWithShortPassword() throws {
-//        struct EditUserData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let name = "Luke"
-//            let username = "lukes"
-//            let password = "a"
-//            let confirmPassword = "a"
-//        }
-//
-//        let editData = EditUserData()
-//        _ = try testWorld.getResponse(to: "/admin/users/\(user.id!)/edit", body: editData, loggedInUser: user)
-//
-//        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
-//        XCTAssertTrue(viewErrors.contains("Your password must be at least 10 characters long"))
-//        let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
-//        XCTAssertTrue(passwordError)
-//    }
-//
+
 //    func testPasswordIsActuallyHashedWhenEditingAUser() throws {
 //        try testWorld.shutdown()
 //        testWorld = try TestWorld.create(passwordHasherToUse: .reversed)
@@ -922,42 +1137,7 @@ class AdminUserTests: XCTestCase {
 //        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
 //        XCTAssertEqual(updatedUser.password, String(editData.password.reversed()))
 //    }
-//
-//    func testNameMustBeSetWhenEditingAUser() throws {
-//        struct EditUserData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let name = ""
-//            let username = "darth_vader"
-//            let password = "somenewpassword"
-//            let confirmPassword = "somenewpassword"
-//        }
-//
-//        let editData = EditUserData()
-//        _ = try testWorld.getResponse(to: "/admin/users/\(user.id!)/edit", body: editData, loggedInUser: user)
-//
-//        let editErrors = try XCTUnwrap(presenter.createUserErrors)
-//        XCTAssertTrue(editErrors.contains("You must specify a name"))
-//        let nameError = try XCTUnwrap(presenter.createUserNameError)
-//        XCTAssertTrue(nameError)
-//    }
-//
-//    func testUsernameMustBeSetWhenEditingAUser() throws {
-//        struct EditUserData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let name = "Darth Vader"
-//            let username = ""
-//            let password = "somenewpassword"
-//            let confirmPassword = "somenewpassword"
-//        }
-//
-//        let editData = EditUserData()
-//        _ = try testWorld.getResponse(to: "/admin/users/\(user.id!)/edit", body: editData, loggedInUser: user)
-//
-//        let editErrors = try XCTUnwrap(presenter.createUserErrors)
-//        XCTAssertTrue(editErrors.contains("You must specify a username"))
-//        let usernameError = try XCTUnwrap(presenter.createUserUsernameError)
-//        XCTAssertTrue(usernameError)
-//    }
+
 //
 //    // MARK: - Delete users
 //
