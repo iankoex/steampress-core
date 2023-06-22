@@ -135,59 +135,7 @@ class MemberUpdateTests: XCTestCase {
     }
     
     func testWhenEditingUserPasswordResetIsRequiredEvenIfSetToFalse() async throws {
-        let createData = CreateUserData(
-            name: "Luke",
-            username: "lukes",
-            password: "somePassword",
-            confirmPassword: "somePassword",
-            email: "luke@lukes.com"
-        )
-        
-        try app
-            .describe("New User Can be Created Successfully")
-            .post(adminPath(for: "members/new"))
-            .body(createData)
-            .cookie(sessionCookie)
-            .expect(.seeOther)
-            .expect { response in
-                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
-            }
-            .test()
-        
-        let users = try await testWorld.context.req.repositories.blogUser.getAllUsers()
-        // First is user created in setup, final is one just created
-        XCTAssertEqual(users.count, 2)
-        let user = try XCTUnwrap(users.last)
-        
-        var cookie: HTTPCookies = HTTPCookies()
-        let loginData = LoginData(email: createData.email, password: createData.password!)
-        
-        try app
-            .describe("User Can login Successfully")
-            .post(adminPath(for: "login"))
-            .body(loginData)
-            .expect(.seeOther)
-            .expect { response in
-                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: ""))
-                XCTAssertNotNil(response.headers[.setCookie].first)
-                cookie = response.headers.setCookie!
-            }
-            .test()
-        
-        let newPassword = "NewSP@Password"
-        let resetData = ResetPasswordData(password: newPassword, confirmPassword: newPassword)
-        
-        try app
-            .describe("Can Reset Password")
-            .post(adminPath(for: "resetPassword"))
-            .body(resetData)
-            .cookie(cookie)
-            .expect(.seeOther)
-            .expect { response in
-                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: ""))
-                XCTAssertNotNil(response.headers[.setCookie].first)
-            }
-            .test()
+        let (user, cookie) = try await createAndLoginUser()
         
         let editData = CreateUserData(
             name: "Luke Sky",
@@ -199,7 +147,7 @@ class MemberUpdateTests: XCTestCase {
         )
         
         try app
-            .describe("Update the Newly created User Successfully")
+            .describe("Update the Newly Created User Successfully")
             .post(adminPath(for: "members/\(user.id!)"))
             .body(editData)
             .cookie(sessionCookie)
@@ -232,59 +180,7 @@ class MemberUpdateTests: XCTestCase {
     }
     
     func testWhenEditingUserResetPasswordFlagSetIfRequired() async throws {
-        let createData = CreateUserData(
-            name: "Luke",
-            username: "lukes",
-            password: "somePassword",
-            confirmPassword: "somePassword",
-            email: "luke@lukes.com"
-        )
-        
-        try app
-            .describe("New User Can be Created Successfully")
-            .post(adminPath(for: "members/new"))
-            .body(createData)
-            .cookie(sessionCookie)
-            .expect(.seeOther)
-            .expect { response in
-                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
-            }
-            .test()
-        
-        let users = try await testWorld.context.req.repositories.blogUser.getAllUsers()
-        // First is user created in setup, final is one just created
-        XCTAssertEqual(users.count, 2)
-        let user = try XCTUnwrap(users.last)
-        
-        var cookie: HTTPCookies = HTTPCookies()
-        let loginData = LoginData(email: createData.email, password: createData.password!)
-        
-        try app
-            .describe("User Can login Successfully")
-            .post(adminPath(for: "login"))
-            .body(loginData)
-            .expect(.seeOther)
-            .expect { response in
-                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: ""))
-                XCTAssertNotNil(response.headers[.setCookie].first)
-                cookie = response.headers.setCookie!
-            }
-            .test()
-        
-        let newPassword = "NewSP@Password"
-        let resetData = ResetPasswordData(password: newPassword, confirmPassword: newPassword)
-        
-        try app
-            .describe("Can Reset Password")
-            .post(adminPath(for: "resetPassword"))
-            .body(resetData)
-            .cookie(cookie)
-            .expect(.seeOther)
-            .expect { response in
-                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: ""))
-                XCTAssertNotNil(response.headers[.setCookie].first)
-            }
-            .test()
+        let (user, cookie) = try await createAndLoginUser()
         
         let editData = CreateUserData(
             name: "Luke Sky",
@@ -328,59 +224,7 @@ class MemberUpdateTests: XCTestCase {
     }
     
     func testWhenEditingUserResetPasswordFlagNotSetIfSetToFalse() async throws {
-        let createData = CreateUserData(
-            name: "Luke",
-            username: "lukes",
-            password: "somePassword",
-            confirmPassword: "somePassword",
-            email: "luke@lukes.com"
-        )
-        
-        try app
-            .describe("New User Can be Created Successfully")
-            .post(adminPath(for: "members/new"))
-            .body(createData)
-            .cookie(sessionCookie)
-            .expect(.seeOther)
-            .expect { response in
-                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
-            }
-            .test()
-        
-        let users = try await testWorld.context.req.repositories.blogUser.getAllUsers()
-        // First is user created in setup, final is one just created
-        XCTAssertEqual(users.count, 2)
-        let user = try XCTUnwrap(users.last)
-        
-        var cookie: HTTPCookies = HTTPCookies()
-        let loginData = LoginData(email: createData.email, password: createData.password!)
-        
-        try app
-            .describe("User Can login Successfully")
-            .post(adminPath(for: "login"))
-            .body(loginData)
-            .expect(.seeOther)
-            .expect { response in
-                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: ""))
-                XCTAssertNotNil(response.headers[.setCookie].first)
-                cookie = response.headers.setCookie!
-            }
-            .test()
-        
-        let newPassword = "NewSP@Password"
-        let resetData = ResetPasswordData(password: newPassword, confirmPassword: newPassword)
-        
-        try app
-            .describe("Can Reset Password")
-            .post(adminPath(for: "resetPassword"))
-            .body(resetData)
-            .cookie(cookie)
-            .expect(.seeOther)
-            .expect { response in
-                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: ""))
-                XCTAssertNotNil(response.headers[.setCookie].first)
-            }
-            .test()
+        let (user, cookie) = try await createAndLoginUser()
         
         let editData = CreateUserData(
             name: "Luke Sky",
@@ -390,7 +234,7 @@ class MemberUpdateTests: XCTestCase {
         )
         
         try app
-            .describe("Update the Newly created User Successfully")
+            .describe("Update the Newly Created User Successfully")
             .post(adminPath(for: "members/\(user.id!)"))
             .body(editData)
             .cookie(sessionCookie)
@@ -592,9 +436,67 @@ class MemberUpdateTests: XCTestCase {
     //        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
     //        XCTAssertEqual(updatedUser.password, String(editData.password.reversed()))
     //    }
-
+    
     
     // MARK: - Helpers
+    
+    private func createAndLoginUser() async throws -> (BlogUser, HTTPCookies) {
+        let createData = CreateUserData(
+            name: "Luke",
+            username: "lukes",
+            password: "somePassword",
+            confirmPassword: "somePassword",
+            email: "luke@lukes.com"
+        )
+        
+        try app
+            .describe("New User Can be Created Successfully")
+            .post(adminPath(for: "members/new"))
+            .body(createData)
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "members/"))
+            }
+            .test()
+        
+        let users = try await testWorld.context.req.repositories.blogUser.getAllUsers()
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(users.count, 2)
+        let user = try XCTUnwrap(users.last)
+        
+        var cookie: HTTPCookies = HTTPCookies()
+        let loginData = LoginData(email: createData.email, password: createData.password!)
+        
+        try app
+            .describe("User Can login Successfully")
+            .post(adminPath(for: "login"))
+            .body(loginData)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: ""))
+                XCTAssertNotNil(response.headers[.setCookie].first)
+                cookie = response.headers.setCookie!
+            }
+            .test()
+        
+        let newPassword = "NewSP@Password"
+        let resetData = ResetPasswordData(password: newPassword, confirmPassword: newPassword)
+        
+        try app
+            .describe("Can Reset Password")
+            .post(adminPath(for: "resetPassword"))
+            .body(resetData)
+            .cookie(cookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: ""))
+                XCTAssertNotNil(response.headers[.setCookie].first)
+            }
+            .test()
+        
+        return (user, cookie)
+    }
     
     private func createAndReturnUser() async throws -> BlogUser {
         let createData = CreateUserData(
