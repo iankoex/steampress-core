@@ -43,10 +43,10 @@ extension Parameters {
     }
     
     func findTag(on req: Request) async throws -> BlogTag {
-        guard let tagName = req.parameters.get(BlogTag.parameterKey) else {
+        guard let tagSlug = req.parameters.get(BlogTag.parameterKey) else {
             throw Abort(.notFound)
         }
-        guard let tag = try await req.repositories.blogTag.getTag(tagName) else {
+        guard let tag = try await req.repositories.blogTag.getTag(using: tagSlug) else {
             throw Abort(.notFound)
         }
         return tag

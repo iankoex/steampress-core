@@ -3,14 +3,8 @@ import Vapor
 
 class CapturingAdminPresenter: BlogAdminPresenter {
     
-    private(set) var adminViewErrors: [String]?
-    private(set) var usersCount: Int
-    private(set) var adminViewsite: GlobalWebsiteInformation?
-    private(set) var adminViewTags: [BlogTag]
-    
     required init(_ req: Request) {
-        usersCount = 0
-        adminViewTags = []
+        
     }
     
     func `for`(_ request: Request) -> BlogAdminPresenter {
@@ -49,23 +43,28 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         return TestDataBuilder.createView()
     }
     
-    
+    static private(set) var createTagsViewTags: [BlogTag]?
+    static private(set) var createTagsViewSite: GlobalWebsiteInformation?
+    static private(set) var createTagsViewUsersCount: Int?
     func createTagsView(tags: [BlogTag], usersCount: Int, site: GlobalWebsiteInformation) async throws -> View {
-        self.usersCount = usersCount
-        self.adminViewTags = tags
-        self.adminViewsite = site
+        CapturingAdminPresenter.createTagsViewTags = tags
+        CapturingAdminPresenter.createTagsViewUsersCount = usersCount
+        CapturingAdminPresenter.createTagsViewSite = site
         return TestDataBuilder.createView()
     }
     
-    func createCreateTagView(usersCount: Int, site: GlobalWebsiteInformation) async throws -> View {
-        self.usersCount = usersCount
-        self.adminViewsite = site
+    static private(set) var createCreateTagsViewErrors: [String]?
+    static private(set) var createCreateTagsViewSite: GlobalWebsiteInformation?
+    static private(set) var createCreateTagsViewUsersCount: Int?
+    func createCreateTagView(errors: [String]?, usersCount: Int, site: GlobalWebsiteInformation) async throws -> View {
+        CapturingAdminPresenter.createCreateTagsViewErrors = errors
+        CapturingAdminPresenter.createCreateTagsViewUsersCount = usersCount
+        CapturingAdminPresenter.createCreateTagsViewSite = site
         return TestDataBuilder.createView()
     }
     
     func createEditTagView(tag: BlogTag, usersCount: Int, site: GlobalWebsiteInformation) async throws -> View {
-        self.usersCount = usersCount
-        self.adminViewsite = site
+        
         return TestDataBuilder.createView()
     }
     

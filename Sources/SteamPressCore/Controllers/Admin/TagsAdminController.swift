@@ -22,23 +22,24 @@ struct TagsAdminController: RouteCollection {
     
     func createTagHandler(_ req: Request) async throws -> View {
         let usersCount = try await req.repositories.blogUser.getUsersCount()
-        return try await req.presenters.admin.createCreateTagView(usersCount: usersCount, site: req.siteInformation())
+        return try await req.presenters.admin.createCreateTagView(errors: nil, usersCount: usersCount, site: req.siteInformation())
     }
     
     func createNewTagHandler(_ req: Request) async throws -> Response {
         let data = try req.content.decode(CreateTagData.self)
         let usersCount = try await req.repositories.blogUser.getUsersCount()
-        guard !data.name.isEmpty else {
-            let tags = try await req.repositories.blogTag.getAllTags()
-            return try await req.presenters.admin.createTagsView(tags: tags, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
+        guard !data.name.isEmptyOrWhitespace() else {
+            let errors = ["You must specify a tag name"]
+            return try await req.presenters.admin.createCreateTagView(errors: errors, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
         }
-        let tag = BlogTag(name: data.name, visibility: .public)
-        if data.name.hasPrefix("#zw") {
-            tag.visibility = .private
+        let existingTag = try await req.repositories.blogTag.getTag(data.name)
+        guard existingTag == nil else {
+            let errors = ["Sorry that tag name has already been taken"]
+            return try await req.presenters.admin.createCreateTagView(errors: errors, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
         }
-        tag.name = data.name.replacingOccurrences(of: "#", with: "")
+        let slug = BlogTag.generateUniqueSlugURL(from: data.name)
+        let tag = BlogTag(name: data.name, visibility: data.visibility, slugURL: slug)
         try await req.repositories.blogTag.save(tag)
-        let tags = try await req.repositories.blogTag.getAllTags()
         return req.redirect(to: BlogPathCreator.createPath(for: "steampress/tags"))
     }
     
@@ -52,16 +53,18 @@ struct TagsAdminController: RouteCollection {
         let tag = try await req.parameters.findTag(on: req)
         let data = try req.content.decode(CreateTagData.self)
         let usersCount = try await req.repositories.blogUser.getUsersCount()
-        guard !data.name.isEmpty else {
-            let tags = try await req.repositories.blogTag.getAllTags()
-            return try await req.presenters.admin.createTagsView(tags: tags, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
+        guard !data.name.isEmptyOrWhitespace() else {
+            let errors = ["You must specify a tag name"]
+            return try await req.presenters.admin.createCreateTagView(errors: errors, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
         }
-        if data.name.contains(where: { $0 == "#" }) {
-            tag.visibility = .private
+        let existingTag = try await req.repositories.blogTag.getTag(data.name)
+        if let existingTag = existingTag, existingTag.name != tag.name {
+            let errors = ["Sorry that tag name has already been taken"]
+            return try await req.presenters.admin.createCreateTagView(errors: errors, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
         }
-        tag.name = data.name.replacingOccurrences(of: "#", with: "")
+        tag.name = data.name
+        tag.visibility = data.visibility
         try await req.repositories.blogTag.update(tag)
-        let tags = try await req.repositories.blogTag.getAllTags()
         return req.redirect(to: BlogPathCreator.createPath(for: "steampress/tags"))
     }
     

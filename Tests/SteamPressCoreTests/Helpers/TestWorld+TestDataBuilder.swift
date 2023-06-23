@@ -25,7 +25,7 @@ extension TestWorld {
     }
 
     func createTag(_ name: String = "Engineering") async throws -> BlogTag {
-        let tag = BlogTag(name: name, visibility: .public)
+        let tag = BlogTag(name: name, visibility: .public, slugURL: BlogTag.generateUniqueSlugURL(from: name))
         try await self.context.req.repositories.blogTag.save(tag)
         return tag
     }

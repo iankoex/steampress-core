@@ -10,6 +10,7 @@ public protocol BlogTagRepository: SteamPressRepository {
     func getAllTagsWithPostCount() async throws -> [(BlogTag, Int)]
     func getTags(for post: BlogPost) async throws -> [BlogTag]
     func getTag(_ name: String) async throws -> BlogTag?
+    func getTag(using slug: String) async throws -> BlogTag?
     func save(_ tag: BlogTag) async throws -> Void
     func update(_ tag: BlogTag) async throws -> Void
     func delete(_ tag: BlogTag) async throws -> Void

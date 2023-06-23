@@ -29,7 +29,7 @@ struct TestDataBuilder {
     }
     
     static func anyTag(name: String = "Engineering", visibility: BlogTag.TagVisibility = .public) -> BlogTag {
-        BlogTag(name: name, visibility: visibility)
+        BlogTag(name: name, visibility: visibility, slugURL: BlogTag.generateUniqueSlugURL(from: name))
     }
 
     static func createPost(on req: Request, tags: [BlogTag]? = nil, createdDate: Date? = nil, title: String = "An Exciting Post!", contents: String = "This is a blog post", slugURL: String = "an-exciting-post", author: BlogUser? = nil, published: Bool = true) async throws -> TestData {
