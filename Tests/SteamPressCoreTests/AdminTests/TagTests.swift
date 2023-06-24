@@ -30,7 +30,7 @@ class TagCreateTests: XCTestCase {
     
     // MARK: - Tag Create Tests
     
-    func testPresenterGetsCorrectValuesForMembersPage() throws {
+    func testPresenterGetsCorrectValuesForTagsPage() throws {
         try app
             .describe("Presenter Gets The Correct Information for Tags Page")
             .get(adminPath(for: "tags"))
@@ -48,7 +48,7 @@ class TagCreateTests: XCTestCase {
         XCTAssertEqual(site.currentPageURL, "\(websiteURL)\(adminPath(for: "tags"))/")
     }
     
-    func testPresenterGetsCorrectValuesForNewMembersPage() throws {
+    func testPresenterGetsCorrectValuesForNewTagPage() throws {
         try app
             .describe("Presenter Gets The Correct Information for New Tags Page")
             .get(adminPath(for: "tags/new"))
