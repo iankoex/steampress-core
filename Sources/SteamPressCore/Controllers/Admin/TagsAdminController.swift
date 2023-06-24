@@ -34,7 +34,7 @@ struct TagsAdminController: RouteCollection {
         }
         let existingTag = try await req.repositories.blogTag.getTag(data.name)
         guard existingTag == nil else {
-            let errors = ["Sorry that tag name has already been taken"]
+            let errors = ["Sorry that tag name already exists"]
             return try await req.presenters.admin.createCreateTagView(errors: errors, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
         }
         let slug = BlogTag.generateUniqueSlugURL(from: data.name)
@@ -59,7 +59,7 @@ struct TagsAdminController: RouteCollection {
         }
         let existingTag = try await req.repositories.blogTag.getTag(data.name)
         if let existingTag = existingTag, existingTag.name != tag.name {
-            let errors = ["Sorry that tag name has already been taken"]
+            let errors = ["Sorry that tag name already exists"]
             return try await req.presenters.admin.createCreateTagView(errors: errors, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
         }
         tag.name = data.name

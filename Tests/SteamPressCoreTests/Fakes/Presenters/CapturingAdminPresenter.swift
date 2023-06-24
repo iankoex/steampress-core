@@ -119,4 +119,44 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         CapturingAdminPresenter.createCreateMembersViewSite = site
         return TestDataBuilder.createView()
     }
+    
+    static func resetValues() {
+        CapturingAdminPresenter.indexViewUsersCount = nil
+        CapturingAdminPresenter.indexViewErrors = nil
+        CapturingAdminPresenter.indexViewSite = nil
+        
+        CapturingAdminPresenter.exploreViewUsersCount = nil
+        CapturingAdminPresenter.exploreViewErrors = nil
+        CapturingAdminPresenter.exploreViewSite = nil
+        
+        CapturingAdminPresenter.pagesViewUsersCount = nil
+        CapturingAdminPresenter.pagesViewErrors = nil
+        CapturingAdminPresenter.pagesViewSite = nil
+        
+        CapturingAdminPresenter.createTagsViewTags = nil
+        CapturingAdminPresenter.createTagsViewUsersCount = nil
+        CapturingAdminPresenter.createTagsViewSite = nil
+        
+        CapturingAdminPresenter.createCreateTagsViewErrors = nil
+        CapturingAdminPresenter.createCreateTagsViewUsersCount = nil
+        CapturingAdminPresenter.createCreateTagsViewSite = nil
+        
+        CapturingAdminPresenter.createCreateMembersViewUserData = nil
+        CapturingAdminPresenter.createCreateMembersViewUsersCount = nil
+        CapturingAdminPresenter.createCreateMembersViewErrors = nil
+        CapturingAdminPresenter.createCreateMembersViewSite = nil
+        
+        CapturingAdminPresenter.createMembersViewUsers = nil
+        CapturingAdminPresenter.createMembersViewSite = nil
+        CapturingAdminPresenter.createMembersViewUsersCount = nil
+        
+        CapturingAdminPresenter.loginWarning = nil
+        CapturingAdminPresenter.loginErrors = nil
+        CapturingAdminPresenter.loginEmail = nil
+        CapturingAdminPresenter.loginsite = nil
+        CapturingAdminPresenter.loginPageRememberMe = nil
+        
+        CapturingAdminPresenter.resetPasswordsite = nil
+        CapturingAdminPresenter.resetPasswordErrors = nil
+    }
 }

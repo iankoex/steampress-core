@@ -21,6 +21,7 @@ class TagCreateTests: XCTestCase {
     override func setUpWithError() throws {
         testWorld = try TestWorld.create(path: blogIndexPath, passwordHasherToUse: .real, url: websiteURL)
         sessionCookie = try createAndLoginOwner()
+        CapturingAdminPresenter.resetValues()
     }
     
     override func tearDownWithError() throws {
@@ -126,7 +127,7 @@ class TagCreateTests: XCTestCase {
         XCTAssertEqual(tags.count, 1) // already created 1
         XCTAssertNotNil(CapturingAdminPresenter.createCreateTagsViewErrors)
         let errors = try XCTUnwrap(CapturingAdminPresenter.createCreateTagsViewErrors)
-        XCTAssertTrue(errors.contains("Sorry that tag name has already been taken"))
+        XCTAssertTrue(errors.contains("Sorry that tag name already exists"))
     }
     
     func testTagCannotBeCreatedWithAnEmptyName() async throws {
@@ -167,14 +168,14 @@ class TagCreateTests: XCTestCase {
         XCTAssertTrue(errors.contains("You must specify a tag name"))
     }
     
-    // MARK: - Update Tag
+    // MARK: - Update Tag Tests
     
     func testTagCanBeUpdatedSuccessfully() async throws {
         let tag = try await createAndReturnTag()
-        let createData = CreateTagData(name: "Events", visibility: .private)
+        let createData = CreateTagData(name: "Nairobi Events", visibility: .private)
         
         try app
-            .describe("New Private/Internal Tag Can be Created Successfully")
+            .describe("Tag Can be Updated Successfully")
             .post(adminPath(for: "tags/\(tag.slugURL)"))
             .body(createData)
             .cookie(sessionCookie)
@@ -193,10 +194,55 @@ class TagCreateTests: XCTestCase {
         XCTAssertNil(CapturingAdminPresenter.createCreateTagsViewErrors)
     }
     
+    func testTagCannotBeUpdatedWithATagNameThatAlreadyExists() async throws {
+        let tag1 = try await createAndReturnTag()
+        let tag2 = try await createAndReturnTag("World News")
+        let createData = CreateTagData(name: tag2.name)
+        
+        try app
+            .describe("Tag Cannot Be Updated With a Tag Name That Already Exists")
+            .post(adminPath(for: "tags/\(tag1.slugURL)"))
+            .body(createData)
+            .cookie(sessionCookie)
+            .expect(.ok)
+            .test()
+        
+        let tags = try await testWorld.context.req.repositories.blogTag.getAllTags()
+        
+        XCTAssertEqual(tags.count, 2)
+        let updatedTag = try XCTUnwrap(tags.first)
+        XCTAssertEqual(updatedTag.name, createData.name)
+        XCTAssertEqual(updatedTag.visibility, .public)
+        XCTAssertNotNil(CapturingAdminPresenter.createCreateTagsViewErrors)
+        let errors = try XCTUnwrap(CapturingAdminPresenter.createCreateTagsViewErrors)
+        XCTAssertTrue(errors.contains("Sorry that tag name already exists"))
+    }
+    
+    // MARK: - Delete Tag Tests
+    
+    func testTagCanBeDeletedSuccessfully() async throws {
+        let tag = try await createAndReturnTag()
+        
+        try app
+            .describe("Tag Can be Deleted Successfully")
+            .get(adminPath(for: "tags/\(tag.slugURL)/delete"))
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "tags/"))
+            }
+            .test()
+        
+        let tags = try await testWorld.context.req.repositories.blogTag.getAllTags()
+        
+        XCTAssertEqual(tags.count, 0)
+        XCTAssertNil(CapturingAdminPresenter.createCreateTagsViewErrors)
+    }
+    
     // MARK: - Helpers
     
-    private func createAndReturnTag() async  throws -> BlogTag {
-        let createData = CreateTagData(name: "Events")
+    private func createAndReturnTag(_ name: String = "Events") async  throws -> BlogTag {
+        let createData = CreateTagData(name: name)
         
         try app
             .describe("New Tag Can be Created Successfully")
@@ -211,7 +257,6 @@ class TagCreateTests: XCTestCase {
         
         let tags = try await testWorld.context.req.repositories.blogTag.getAllTags()
         
-        XCTAssertEqual(tags.count, 1)
         let tag = try XCTUnwrap(tags.first)
         XCTAssertEqual(tag.name, createData.name)
         XCTAssertEqual(tag.visibility, .public)

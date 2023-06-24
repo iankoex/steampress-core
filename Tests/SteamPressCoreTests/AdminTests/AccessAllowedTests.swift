@@ -104,18 +104,18 @@ class AccessAllowedTests: XCTestCase {
     
     func testCanAccessEditTagPageWhenLoggedIn() async throws {
         let testData = try await getTestData()
-        try assertCanAccess(path: "tags/\(testData.tag.name)", method: .GET)
+        try assertCanAccess(path: "tags/\(testData.tag.slugURL)", method: .GET)
     }
     
     func testCanAccessPostEditTagPageWhenLoggedIn() async throws {
         let testData = try await getTestData()
         let body = CreateTagData(name: "some")
-        try assertCanAccess(path: "tags/\(testData.tag.name)", method: .POST, body: body, expectStatus: .seeOther)
+        try assertCanAccess(path: "tags/\(testData.tag.slugURL)", method: .POST, body: body, expectStatus: .seeOther)
     }
     
     func testCanAccessDeleteTagWhenLoggedIn() async throws {
         let testData = try await getTestData()
-        try assertCanAccess(path: "tags/\(testData.tag.name)/delete", method: .GET, expectStatus: .seeOther)
+        try assertCanAccess(path: "tags/\(testData.tag.slugURL)/delete", method: .GET, expectStatus: .seeOther)
     }
     
     func testCanAccessResetPasswordPage() async throws {
