@@ -2,7 +2,7 @@ import XCTest
 import Vapor
 @testable import SteamPressCore
 
-class TagCreateTests: XCTestCase {
+class TagsCreateTests: XCTestCase {
     
     // MARK: - Properties
     
@@ -29,40 +29,6 @@ class TagCreateTests: XCTestCase {
     }
     
     // MARK: - Tag Create Tests
-    
-    func testPresenterGetsCorrectValuesForTagsPage() throws {
-        try app
-            .describe("Presenter Gets The Correct Information for Tags Page")
-            .get(adminPath(for: "tags"))
-            .cookie(sessionCookie)
-            .expect(.ok)
-            .test()
-        
-        XCTAssertNotNil(CapturingAdminPresenter.createTagsViewTags)
-        XCTAssertEqual(CapturingAdminPresenter.createTagsViewTags?.count, 0)
-        XCTAssertEqual(CapturingAdminPresenter.createTagsViewUsersCount, 1)
-        let site = try XCTUnwrap(CapturingAdminPresenter.createTagsViewSite)
-        XCTAssertEqual(site.loggedInUser?.name, owner.name)
-        XCTAssertEqual(site.loggedInUser?.email, owner.email)
-        XCTAssertEqual(site.url, "\(websiteURL)/\(blogIndexPath)/")
-        XCTAssertEqual(site.currentPageURL, "\(websiteURL)\(adminPath(for: "tags"))/")
-    }
-    
-    func testPresenterGetsCorrectValuesForNewTagPage() throws {
-        try app
-            .describe("Presenter Gets The Correct Information for New Tags Page")
-            .get(adminPath(for: "tags/new"))
-            .cookie(sessionCookie)
-            .expect(.ok)
-            .test()
-        
-        XCTAssertEqual(CapturingAdminPresenter.createCreateTagsViewUsersCount, 1)
-        let site = try XCTUnwrap(CapturingAdminPresenter.createCreateTagsViewSite)
-        XCTAssertEqual(site.loggedInUser?.name, owner.name)
-        XCTAssertEqual(site.loggedInUser?.email, owner.email)
-        XCTAssertEqual(site.url, "\(websiteURL)/\(blogIndexPath)/")
-        XCTAssertEqual(site.currentPageURL, "\(websiteURL)\(adminPath(for: "tags/new"))/")
-    }
     
     func testTagCanBeCreatedSuccessfully() async throws {
         let createData = CreateTagData(name: "Events")

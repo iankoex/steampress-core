@@ -2,7 +2,7 @@ import XCTest
 import Vapor
 @testable import SteamPressCore
 
-class PostCreateTests: XCTestCase {
+class PostsCreateTests: XCTestCase {
     
     // MARK: - Properties
     

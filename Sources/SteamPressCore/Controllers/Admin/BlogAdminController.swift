@@ -10,7 +10,6 @@ struct BlogAdminController: RouteCollection {
         let adminProtectedRoutes = adminRoutes.grouped(redirectMiddleware)
         adminProtectedRoutes.get(use: adminHandler)
         adminProtectedRoutes.get("explore", use: exploreHandler)
-        adminProtectedRoutes.get("posts", use: postsHandler)
         adminProtectedRoutes.get("pages", use: pagesHandler)
         adminProtectedRoutes.post("uploadImage", use: imageUploadHandler)
         adminProtectedRoutes.post("uploadFile", use: fileUploadHandler)
@@ -34,22 +33,6 @@ struct BlogAdminController: RouteCollection {
     func exploreHandler(_ req: Request) async throws -> View {
         let usersCount = try await req.repositories.blogUser.getUsersCount()
         return try await req.presenters.admin.createExploreView(usersCount: usersCount, errors: nil, site: req.siteInformation())
-    }
-    
-    func postsHandler(_ req: Request) async throws -> View {
-        var posts: [BlogPost] = []
-        let queryType = try? req.query.get(String.self, at: "type")
-        if queryType == "draft" {
-            posts = try await req.repositories.blogPost.getAllDraftsPostsSortedByPublishDate()
-        } else if queryType == "published" {
-            posts = try await req.repositories.blogPost.getAllPostsSortedByPublishDate(includeDrafts: false)
-        } else if queryType == "scheduled" {
-            posts = []
-        } else {
-            posts = try await req.repositories.blogPost.getAllPostsSortedByPublishDate(includeDrafts: true)
-        }
-        let usersCount = try await req.repositories.blogUser.getUsersCount()
-        return try await req.presenters.admin.createPostsView(posts: posts, usersCount: usersCount, site: req.siteInformation())
     }
     
     func pagesHandler(_ req: Request) async throws -> View {

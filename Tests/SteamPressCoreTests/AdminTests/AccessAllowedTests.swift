@@ -35,13 +35,13 @@ class AccessAllowedTests: XCTestCase {
     }
     
     func testCanAccessCreatePostPageWhenLoggedIn() async throws {
-        try assertCanAccess(path: "createPost", method: .GET)
+        try assertCanAccess(path: "posts/new", method: .GET)
     }
     
     func testCanAccessPostCreatePostPageWhenLoggedIn() async throws {
         let testData = try await getTestData()
         let body = CreatePostData(title: "q", contents: "q", snippet: "q", isDraft: false, tags: [testData.tag.name])
-        try assertCanAccess(path: "createPost", method: .POST, body: body, expectStatus: .seeOther)
+        try assertCanAccess(path: "posts/new", method: .POST, body: body, expectStatus: .seeOther)
     }
     
     func testCanAccessEditPostPageWhenLoggedIn() async throws {

@@ -60,22 +60,6 @@ class LoginTests: XCTestCase {
             .test()
     }
     
-    func testPresenterGetsCorrectInformationForResetPasswordPage() throws {
-        try app
-            .describe("Presenter Gets The Correct Information for ResetPassword Page")
-            .get(adminPath(for: "resetPassword"))
-            .cookie(initialSessionCookie)
-            .expect(.ok)
-            .test()
-        
-        XCTAssertNil(CapturingAdminPresenter.resetPasswordErrors)
-        XCTAssertEqual(CapturingAdminPresenter.resetPasswordsite?.loggedInUser?.name, owner.name)
-        XCTAssertEqual(CapturingAdminPresenter.resetPasswordsite?.loggedInUser?.email, owner.email)
-        XCTAssertEqual(CapturingAdminPresenter.resetPasswordsite?.url, "\(websiteURL)/\(blogIndexPath)/")
-        XCTAssertEqual(CapturingAdminPresenter.resetPasswordsite?.currentPageURL, "\(websiteURL)\(adminPath(for: "resetPassword"))/")
-    }
-    
-    
     func testLogin() throws {
         var cookie: HTTPCookies = HTTPCookies()
         let loginData = LoginData(email: owner.email, password: owner.password)

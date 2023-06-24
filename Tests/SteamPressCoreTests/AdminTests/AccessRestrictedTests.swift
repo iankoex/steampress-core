@@ -31,16 +31,16 @@ class AccessRestrictedTests: XCTestCase {
         try assertLoginRequired(method: .GET, path: "")
     }
 
-    func testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn() async throws {
-        try assertLoginRequired(method: .GET, path: "createPost")
-    }
-
-    func testCannotSendCreateBlogPostPageWithoutBeingLoggedIn() async throws {
-        try assertLoginRequired(method: .POST, path: "createPost")
-    }
-
     func testCannotAccessPostsPageWithoutLogin() async throws {
         try assertLoginRequired(method: .GET, path: "posts")
+    }
+    
+    func testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn() async throws {
+        try assertLoginRequired(method: .GET, path: "posts/new")
+    }
+    
+    func testCannotSendCreateBlogPostPageWithoutBeingLoggedIn() async throws {
+        try assertLoginRequired(method: .POST, path: "posts/new")
     }
 
     func testCannotAccessEditPostPageWithoutLogin() async throws {

@@ -68,11 +68,32 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         return TestDataBuilder.createView()
     }
     
+    static private(set) var createPostsViewPosts: [BlogPost]?
+    static private(set) var createPostsViewSite: GlobalWebsiteInformation?
+    static private(set) var createPostsViewUsersCount: Int?
     func createPostsView(posts: [BlogPost], usersCount: Int, site: GlobalWebsiteInformation) async throws -> View {
+        CapturingAdminPresenter.createPostsViewPosts = posts
+        CapturingAdminPresenter.createPostsViewUsersCount = usersCount
+        CapturingAdminPresenter.createPostsViewSite = site
         return TestDataBuilder.createView()
     }
     
+    static private(set) var createPostViewErrors: [String]?
+    static private(set) var createPostViewTags: [BlogTag]?
+    static private(set) var createPostViewPost: BlogPost?
+    static private(set) var createPostViewTitleSupplied: String?
+    static private(set) var createPostViewContentSupplied: String?
+    static private(set) var createPostViewSnippetSupplied: String?
+    static private(set) var createPostViewSite: GlobalWebsiteInformation?
+    
     func createPostView(errors: [String]?, tags: [BlogTag], post: BlogPost?, titleSupplied: String?, contentSupplied: String?, snippetSupplied: String?, site: GlobalWebsiteInformation) async throws -> View {
+        CapturingAdminPresenter.createPostViewErrors = errors
+        CapturingAdminPresenter.createPostViewTags = tags
+        CapturingAdminPresenter.createPostViewPost = post
+        CapturingAdminPresenter.createPostViewTitleSupplied = titleSupplied
+        CapturingAdminPresenter.createPostViewContentSupplied = contentSupplied
+        CapturingAdminPresenter.createPostViewSnippetSupplied = snippetSupplied
+        CapturingAdminPresenter.createPostViewSite = site
         return TestDataBuilder.createView()
     }
     
@@ -158,5 +179,17 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         
         CapturingAdminPresenter.resetPasswordsite = nil
         CapturingAdminPresenter.resetPasswordErrors = nil
+        
+        CapturingAdminPresenter.createPostsViewPosts = nil
+        CapturingAdminPresenter.createPostsViewUsersCount = nil
+        CapturingAdminPresenter.createPostsViewSite = nil
+        
+        CapturingAdminPresenter.createPostViewErrors = nil
+        CapturingAdminPresenter.createPostViewTags = nil
+        CapturingAdminPresenter.createPostViewPost = nil
+        CapturingAdminPresenter.createPostViewTitleSupplied = nil
+        CapturingAdminPresenter.createPostViewContentSupplied = nil
+        CapturingAdminPresenter.createPostViewSnippetSupplied = nil
+        CapturingAdminPresenter.createPostViewSite = nil
     }
 }
