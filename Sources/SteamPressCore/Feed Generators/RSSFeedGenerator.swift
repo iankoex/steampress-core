@@ -29,7 +29,7 @@ struct RSSFeedGenerator {
     // MARK: - Route Handler
 
     func feedHandler(_ request: Request) async throws -> Response {
-        let posts = try await request.repositories.blogPost.getAllPostsSortedByPublishDate(includeDrafts: false)
+        let posts = try await request.repositories.blogPost.getAllPosts(includeDrafts: false)
         var xmlFeed = try self.getXMLStart(for: request)
         
         if !posts.isEmpty {

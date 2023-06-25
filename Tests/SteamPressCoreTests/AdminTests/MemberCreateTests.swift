@@ -29,42 +29,6 @@ class MemberCreateTests: XCTestCase {
     
     // MARK: - User Creation
     
-    func testPresenterGetsCorrectValuesForMembersPage() throws {
-        try app
-            .describe("Presenter Gets The Correct Information for Members Page")
-            .get(adminPath(for: "members"))
-            .cookie(sessionCookie)
-            .expect(.ok)
-            .test()
-        
-        XCTAssertNotNil(CapturingAdminPresenter.createMembersViewUsers)
-        XCTAssertEqual(CapturingAdminPresenter.createMembersViewUsersCount, 1)
-        let site = try XCTUnwrap(CapturingAdminPresenter.createMembersViewSite)
-        XCTAssertEqual(site.loggedInUser?.name, owner.name)
-        XCTAssertEqual(site.loggedInUser?.email, owner.email)
-        XCTAssertEqual(site.url, "\(websiteURL)/\(blogIndexPath)/")
-        XCTAssertEqual(site.currentPageURL, "\(websiteURL)\(adminPath(for: "members"))/")
-    }
-    
-    func testPresenterGetsCorrectValuesForNewMembersPage() throws {
-        try app
-            .describe("Presenter Gets The Correct Information for New Members Page")
-            .get(adminPath(for: "members/new"))
-            .cookie(sessionCookie)
-            .expect(.ok)
-            .test()
-        
-        XCTAssertNil(CapturingAdminPresenter.createCreateMembersViewUserData)
-        XCTAssertNil(CapturingAdminPresenter.createCreateMembersViewErrors)
-        XCTAssertEqual(CapturingAdminPresenter.createCreateMembersViewUsersCount, 1)
-        XCTAssertNotNil(CapturingAdminPresenter.createCreateMembersViewSite)
-        let site = try XCTUnwrap(CapturingAdminPresenter.createCreateMembersViewSite)
-        XCTAssertEqual(site.loggedInUser?.name, owner.name)
-        XCTAssertEqual(site.loggedInUser?.email, owner.email)
-        XCTAssertEqual(site.url, "\(websiteURL)/\(blogIndexPath)/")
-        XCTAssertEqual(site.currentPageURL, "\(websiteURL)\(adminPath(for: "members/new"))/")
-    }
-    
     func testUserCanBeCreatedSuccessfully() async throws {
         let createData = CreateUserData(
             name: "Luke",

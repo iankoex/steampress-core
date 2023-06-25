@@ -29,7 +29,7 @@ struct AtomFeedGenerator {
     // MARK: - Route Handler
 
     func feedHandler(_ request: Request) async throws -> Response {
-        let posts = try await request.repositories.blogPost.getAllPostsSortedByPublishDate(includeDrafts: false)
+        let posts = try await request.repositories.blogPost.getAllPosts(includeDrafts: false)
         var feed = try self.getFeedStart(for: request)
         
         if !posts.isEmpty {

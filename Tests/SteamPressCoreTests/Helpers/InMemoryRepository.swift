@@ -108,7 +108,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return self
     }
     
-    func getAllPostsSortedByPublishDate(includeDrafts: Bool) async throws -> [BlogPost] {
+    func getAllPosts(includeDrafts: Bool) async throws -> [BlogPost] {
         let query = BlogPost.query(on: req.db)
             .sort(\.$created, .descending)
             .with(\.$author)
@@ -119,7 +119,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return try await query.all()
     }
     
-    func getAllDraftsPostsSortedByPublishDate() async throws -> [BlogPost] {
+    func getAllDraftsPosts() async throws -> [BlogPost] {
         let query = BlogPost.query(on: req.db)
             .sort(\.$created, .descending)
             .with(\.$author)
@@ -128,7 +128,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return try await query.all()
     }
     
-    func getAllPostsSortedByPublishDate(includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost] {
+    func getAllPosts(includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost] {
         let query = BlogPost.query(on: req.db)
             .sort(\.$created, .descending)
             .with(\.$author)
@@ -148,7 +148,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return try await query.count()
     }
     
-    func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost] {
+    func getAllPosts(for user: BlogUser, includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost] {
         let query = user.$posts.query(on: req.db)
             .sort(\.$created, .descending)
             .with(\.$author)

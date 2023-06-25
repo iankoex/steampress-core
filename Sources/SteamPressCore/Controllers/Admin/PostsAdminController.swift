@@ -18,13 +18,13 @@ struct PostsAdminController: RouteCollection {
         var posts: [BlogPost] = []
         let queryType = try? req.query.get(String.self, at: "type")
         if queryType == "draft" {
-            posts = try await req.repositories.blogPost.getAllDraftsPostsSortedByPublishDate()
+            posts = try await req.repositories.blogPost.getAllDraftsPosts()
         } else if queryType == "published" {
-            posts = try await req.repositories.blogPost.getAllPostsSortedByPublishDate(includeDrafts: false)
+            posts = try await req.repositories.blogPost.getAllPosts(includeDrafts: false)
         } else if queryType == "scheduled" {
             posts = []
         } else {
-            posts = try await req.repositories.blogPost.getAllPostsSortedByPublishDate(includeDrafts: true)
+            posts = try await req.repositories.blogPost.getAllPosts(includeDrafts: true)
         }
         let usersCount = try await req.repositories.blogUser.getUsersCount()
         return try await req.presenters.admin.createPostsView(posts: posts, usersCount: usersCount, site: req.siteInformation())

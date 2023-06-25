@@ -21,11 +21,11 @@ public protocol BlogTagRepository: SteamPressRepository {
 
 public protocol BlogPostRepository: SteamPressRepository {
     func `for`(_ request: Request) -> BlogPostRepository
-    func getAllPostsSortedByPublishDate(includeDrafts: Bool) async throws -> [BlogPost]
+    func getAllPosts(includeDrafts: Bool) async throws -> [BlogPost]
     func getAllPostsCount(includeDrafts: Bool) async throws -> Int
-    func getAllPostsSortedByPublishDate(includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost]
-    func getAllDraftsPostsSortedByPublishDate() async throws -> [BlogPost]
-    func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost]
+    func getAllPosts(includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost]
+    func getAllDraftsPosts() async throws -> [BlogPost]
+    func getAllPosts(for user: BlogUser, includeDrafts: Bool, count: Int, offset: Int) async throws -> [BlogPost]
     func getPostCount(for user: BlogUser) async throws -> Int
     func getPost(slug: String) async throws -> BlogPost?
     func getPost(id: UUID) async throws -> BlogPost?
