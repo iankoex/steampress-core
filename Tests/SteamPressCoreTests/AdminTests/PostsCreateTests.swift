@@ -100,6 +100,32 @@ class PostsCreateTests: XCTestCase {
         XCTAssertNil(post.imageAlt)
     }
     
+    func testCreatePostWithDraftDoesNotPublishPost() async throws {
+        let tag = try await createAndReturnTag()
+        let createData = CreatePostData(
+            title: "This is title",
+            contents: "The contents of the post",
+            snippet: "Short Snippet for SEO",
+            isDraft: true,
+            tags: [tag.name]
+        )
+        
+        try app
+            .describe("New Post Created as Draft is not Published")
+            .post(adminPath(for: "posts/new"))
+            .body(createData)
+            .cookie(sessionCookie)
+            .expect(.seeOther)
+            .expect { response in
+                XCTAssertEqual(response.headers[.location].first, self.adminPath(for: "posts/"))
+            }
+            .test()
+        
+        let posts = try await testWorld.context.req.repositories.blogPost.getAllPosts(includeDrafts: false)
+        
+        XCTAssertEqual(posts.count, 0)
+    }
+    
     func testPostCannotBeCreatedWithEmptyFields() async throws {
         let tag = try await createAndReturnTag()
         let createData = CreatePostData(
@@ -200,6 +226,28 @@ class PostsCreateTests: XCTestCase {
         XCTAssertTrue(errors.contains("You must have some content in your blog post"))
     }
     
+    func testPostCannotBeCreatedWithNonExistantTag() async throws {
+        let createData = CreatePostData(
+            title: "title here",
+            contents: "content goes brrr",
+            snippet: "brrr",
+            isDraft: false,
+            tags: ["some tag"]
+        )
+        
+        try app
+            .describe("New Post Cannot be Created with Whitespace Fields")
+            .post(adminPath(for: "posts/new"))
+            .body(createData)
+            .cookie(sessionCookie)
+            .expect(.ok)
+            .test()
+        
+        XCTAssertNotNil(CapturingAdminPresenter.createPostViewErrors)
+        let errors = try XCTUnwrap(CapturingAdminPresenter.createPostViewErrors)
+        XCTAssertTrue(errors.contains("Tag not found"))
+    }
+    
     
     // MARK: - Helpers
     
@@ -248,171 +296,7 @@ class PostsCreateTests: XCTestCase {
 //
 //    // MARK: - Post Creation
 //
-//    func testPostCanBeCreated() throws {
-//        struct CreatePostData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let title = "Post Title"
-//            let contents = "# Post Title\n\nWe have a post"
-//            let tags = ["First Tag", "Second Tag"]
-//            let publish = true
-//        }
-//        let createData = CreatePostData()
-//        let response = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
 //
-//        let post = try XCTUnwrap(testWorld.context.repository.posts.first)
-//        XCTAssertEqual(testWorld.context.repository.posts.count, 1)
-//        XCTAssertEqual(post.title, createData.title)
-//        XCTAssertEqual(post.slugURL, "post-title")
-//        XCTAssertTrue(post.published)
-//        XCTAssertEqual(post.created.timeIntervalSince1970, Date().timeIntervalSince1970, accuracy: 0.1)
-//        XCTAssertTrue(post.created < Date())
-//
-//        XCTAssertEqual(testWorld.context.repository.tags.count, 2)
-//        let firstid = testWorld.context.repository.tags[0].id!
-//        let secondid = testWorld.context.repository.tags[1].id!
-//        XCTAssertTrue(testWorld.context.repository.postTagLinks
-//            .contains { $0.postID == post.id! && $0.tagID == firstid })
-//        XCTAssertTrue(testWorld.context.repository.postTagLinks
-//            .contains { $0.postID == post.id! && $0.tagID == secondid })
-//
-//        XCTAssertEqual(response.status, .seeOther)
-//        XCTAssertEqual(response.headers[.location].first, "/posts/post-title/")
-//    }
-//
-//    func testCreatingPostWithNonUniqueSlugFromSameTitle() throws {
-//        let randomNumber = 345
-//        try testWorld.shutdown()
-//        testWorld = try TestWorld.create(randomNumberGenerator: StubbedRandomNumberGenerator(numberToReturn: randomNumber))
-//        let initialPostData = try testWorld.createPost(title: "Post Title", slugURL: "post-title")
-//
-//        struct CreatePostData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let title = "Post Title"
-//            let contents = "# Post Title\n\nWe have a post"
-//            let tags = ["First Tag", "Second Tag"]
-//            let publish = true
-//        }
-//        let createData = CreatePostData()
-//        let response = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: initialPostData.author)
-//
-//        XCTAssertEqual(testWorld.context.repository.posts.count, 2)
-//        let post = try XCTUnwrap(testWorld.context.repository.posts.last)
-//        XCTAssertEqual(post.slugURL, "post-title-\(randomNumber)")
-//        XCTAssertEqual(response.headers[.location].first, "/posts/post-title-\(randomNumber)/")
-//    }
-//
-//    func testPostCreationPageGetsBasicInfo() throws {
-//        _ = try testWorld.getResponse(to: createPostPath, loggedInUser: user)
-//
-//        let isEditing = try XCTUnwrap(presenter.createPostIsEditing)
-//        let titleError = try XCTUnwrap(presenter.createPostTitleError)
-//        let contentsError = try XCTUnwrap(presenter.createPostContentsError)
-//        XCTAssertNil(presenter.createPostErrors)
-//        XCTAssertNil(presenter.createPostTitle)
-//        XCTAssertNil(presenter.createPostContents)
-//        XCTAssertNil(presenter.createPostSlugURL)
-//        XCTAssertNil(presenter.createPostTags)
-//        XCTAssertFalse(isEditing)
-//        XCTAssertNil(presenter.createPostPost)
-//        XCTAssertNil(presenter.createPostDraft)
-//        XCTAssertFalse(titleError)
-//        XCTAssertFalse(contentsError)
-//        XCTAssertEqual(presenter.createPostsite?.loggedInUser.username, user.username)
-//        XCTAssertEqual(presenter.createPostsite?.currentPageURL.absoluteString, "/admin/createPost/")
-//        XCTAssertEqual(presenter.createPostsite?.url.absoluteString, "/")
-//    }
-//
-//    func testPostCannotBeCreatedIfDraftAndPublishNotSet() throws {
-//        struct CreatePostData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let title = "Post Title"
-//            let contents = "# Post Title\n\nWe have a post"
-//            let tags = ["First Tag", "Second Tag"]
-//        }
-//        let createData = CreatePostData()
-//
-//        let response = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
-//
-//        XCTAssertEqual(response.status, .badRequest)
-//    }
-//
-//    func testCreatePostMustIncludeTitle() throws {
-//        struct CreatePostData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let contents = "# Post Title\n\nWe have a post"
-//            let tags = ["First Tag", "Second Tag"]
-//            let publish = true
-//        }
-//        let createData = CreatePostData()
-//        _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
-//
-//        let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
-//        let titleError = try XCTUnwrap(presenter.createPostTitleError)
-//        let contentsError = try XCTUnwrap(presenter.createPostContentsError)
-//        XCTAssertTrue(createPostErrors.contains("You must specify a blog post title"))
-//        XCTAssertTrue(titleError)
-//        XCTAssertFalse(contentsError)
-//        XCTAssertEqual(presenter.createPostsite?.loggedInUser.username, user.username)
-//        XCTAssertEqual(presenter.createPostsite?.currentPageURL.absoluteString, "/admin/createPost/")
-//        XCTAssertEqual(presenter.createPostsite?.url.absoluteString, "/")
-//    }
-//
-//    func testCreatePostMustIncludeContents() throws {
-//        struct CreatePostData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let title = "Post Title"
-//            let tags = ["First Tag", "Second Tag"]
-//            let publish = true
-//        }
-//        let createData = CreatePostData()
-//        _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
-//
-//        let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
-//        let titleError = try XCTUnwrap(presenter.createPostTitleError)
-//        let contentsError = try XCTUnwrap(presenter.createPostContentsError)
-//        XCTAssertTrue(createPostErrors.contains("You must have some content in your blog post"))
-//        XCTAssertFalse(titleError)
-//        XCTAssertTrue(contentsError)
-//    }
-//
-//    func testPresenterGetsDataIfValidationOfDataFails() throws {
-//        struct CreatePostData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let title = "Post Title"
-//            let tags = ["First Tag", "Second Tag"]
-//            let publish = true
-//            let contents = ""
-//        }
-//        let createData = CreatePostData()
-//        _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
-//
-//        let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
-//        let titleError = try XCTUnwrap(presenter.createPostTitleError)
-//        let contentsError = try XCTUnwrap(presenter.createPostContentsError)
-//        XCTAssertTrue(createPostErrors.contains("You must have some content in your blog post"))
-//        XCTAssertEqual(presenter.createPostTags, createData.tags)
-//        XCTAssertEqual(presenter.createPostContents, createData.contents)
-//        XCTAssertEqual(presenter.createPostTitle, createData.title)
-//        XCTAssertFalse(titleError)
-//        XCTAssertTrue(contentsError)
-//    }
-//
-//    func testCreatePostWithDraftDoesNotPublishPost() throws {
-//        struct CreatePostData: Content {
-//            static let defaultContentType = HTTPMediaType.urlEncodedForm
-//            let title = "Post Title"
-//            let contents = "# Post Title\n\nWe have a post"
-//            let tags = ["First Tag", "Second Tag"]
-//            let draft = true
-//        }
-//        let createData = CreatePostData()
-//        _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
-//
-//        XCTAssertEqual(testWorld.context.repository.posts.count, 1)
-//        let post = try XCTUnwrap(testWorld.context.repository.posts.first)
-//        XCTAssertEqual(post.title, createData.title)
-//        XCTAssertFalse(post.published)
-//    }
 //
 //    func testCreatingPostWithExistingTagsDoesntDuplicateTag() throws {
 //        let existingPost = try testWorld.createPost()
