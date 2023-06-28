@@ -104,6 +104,8 @@ struct PostsAdminController: RouteCollection {
         } else {
             post.created = Date()
         }
+        post.imageURL = data.imageURL
+        post.imageAlt = data.imageAlt
         
         var newTags: [BlogTag]  = []
         for tagStr in data.tags {

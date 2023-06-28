@@ -56,15 +56,10 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     static private(set) var createCreateTagsViewErrors: [String]?
     static private(set) var createCreateTagsViewSite: GlobalWebsiteInformation?
     static private(set) var createCreateTagsViewUsersCount: Int?
-    func createCreateTagView(errors: [String]?, usersCount: Int, site: GlobalWebsiteInformation) async throws -> View {
+    func createTagView(errors: [String]?, tag: BlogTag?, usersCount: Int, site: GlobalWebsiteInformation) async throws -> View {
         CapturingAdminPresenter.createCreateTagsViewErrors = errors
         CapturingAdminPresenter.createCreateTagsViewUsersCount = usersCount
         CapturingAdminPresenter.createCreateTagsViewSite = site
-        return TestDataBuilder.createView()
-    }
-    
-    func createEditTagView(tag: BlogTag, usersCount: Int, site: GlobalWebsiteInformation) async throws -> View {
-        
         return TestDataBuilder.createView()
     }
     

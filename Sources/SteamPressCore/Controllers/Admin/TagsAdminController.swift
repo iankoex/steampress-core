@@ -22,7 +22,7 @@ struct TagsAdminController: RouteCollection {
     
     func createTagHandler(_ req: Request) async throws -> View {
         let usersCount = try await req.repositories.blogUser.getUsersCount()
-        return try await req.presenters.admin.createCreateTagView(errors: nil, usersCount: usersCount, site: req.siteInformation())
+        return try await req.presenters.admin.createTagView(errors: nil, tag: nil, usersCount: usersCount, site: req.siteInformation())
     }
     
     func createNewTagHandler(_ req: Request) async throws -> Response {
@@ -30,12 +30,12 @@ struct TagsAdminController: RouteCollection {
         let usersCount = try await req.repositories.blogUser.getUsersCount()
         guard !data.name.isEmptyOrWhitespace() else {
             let errors = ["You must specify a tag name"]
-            return try await req.presenters.admin.createCreateTagView(errors: errors, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
+            return try await req.presenters.admin.createTagView(errors: errors, tag: nil, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
         }
         let existingTag = try await req.repositories.blogTag.getTag(data.name)
         guard existingTag == nil else {
             let errors = ["Sorry that tag name already exists"]
-            return try await req.presenters.admin.createCreateTagView(errors: errors, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
+            return try await req.presenters.admin.createTagView(errors: errors, tag: nil, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
         }
         let slug = BlogTag.generateUniqueSlugURL(from: data.name)
         let tag = BlogTag(name: data.name, visibility: data.visibility, slugURL: slug)
@@ -46,7 +46,7 @@ struct TagsAdminController: RouteCollection {
     func tagHandler(_ req: Request) async throws -> View {
         let tag = try await req.parameters.findTag(on: req)
         let usersCount = try await req.repositories.blogUser.getUsersCount()
-        return try await req.presenters.admin.createEditTagView(tag: tag, usersCount: usersCount, site: req.siteInformation())
+        return try await req.presenters.admin.createTagView(errors: nil, tag: tag, usersCount: usersCount, site: req.siteInformation())
     }
     
     func updateTagHandler(_ req: Request) async throws -> Response {
@@ -55,12 +55,12 @@ struct TagsAdminController: RouteCollection {
         let usersCount = try await req.repositories.blogUser.getUsersCount()
         guard !data.name.isEmptyOrWhitespace() else {
             let errors = ["You must specify a tag name"]
-            return try await req.presenters.admin.createCreateTagView(errors: errors, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
+            return try await req.presenters.admin.createTagView(errors: errors, tag: tag, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
         }
         let existingTag = try await req.repositories.blogTag.getTag(data.name)
         if let existingTag = existingTag, existingTag.name != tag.name {
             let errors = ["Sorry that tag name already exists"]
-            return try await req.presenters.admin.createCreateTagView(errors: errors, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
+            return try await req.presenters.admin.createTagView(errors: errors, tag: tag, usersCount: usersCount, site: req.siteInformation()).encodeResponse(for: req)
         }
         tag.name = data.name
         tag.visibility = data.visibility
