@@ -41,7 +41,6 @@ struct BlogAdminController: RouteCollection {
     }
     
     func imageUploadHandler(_ req: Request) async throws -> FileUploadResponse {
-        print(req.content)
         let imageFile = try req.content.decode(ImageContainer.self)
         
         let (filePath, fileURL) = req.filePath(for: imageFile.image.filename)

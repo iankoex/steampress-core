@@ -16,7 +16,7 @@ extension Request {
         }
         folderPath.append(contentsOf: "/\(fileName)")
         if FileManager.default.fileExists(atPath: folderPath) {
-            let newFileName = "\(UUID())\(fileName)"
+            let newFileName = "\(UUID())-\(fileName)"
             folderPath = folderPath.replacingOccurrences(of: fileName, with: newFileName)
         }
         let fileURL = folderPath.replacingOccurrences(of: publicDir, with: "/")
