@@ -13,6 +13,8 @@ struct BlogAdminController: RouteCollection {
         adminProtectedRoutes.get("pages", use: pagesHandler)
         adminProtectedRoutes.post("uploadImage", use: imageUploadHandler)
         adminProtectedRoutes.post("uploadFile", use: fileUploadHandler)
+        adminProtectedRoutes.get("settings", use: settingsHandler)
+        adminProtectedRoutes.post("settings", use: settingsPostHandler)
         
         let loginController = LoginController()
         try adminRoutes.register(collection: loginController)
@@ -76,5 +78,27 @@ struct BlogAdminController: RouteCollection {
         ).get()
         try nioFileHandle.close()
         return FileUploadResponse(success: 1, file: .init(url: fileURL))
+    }
+    
+    func settingsHandler(_ req: Request) async throws -> View {
+        let usersCount = try await req.repositories.blogUser.getUsersCount()
+        return try await req.presenters.admin.createSettingsView(errors: nil, usersCount: usersCount, site: req.siteInformation())
+    }
+    
+    func settingsPostHandler(_ req: Request) async throws -> View {
+        let data = try req.content.decode(UpdateSiteInformation.self)
+        let usersCount = try await req.repositories.blogUser.getUsersCount()
+        
+        let info = try await SPSiteInformation.query(on: req.db).first()
+        guard let info = info else {
+            let error = ["Something wrong with Site Information. Because the Record is missing. Restart your Server"]
+            return try await req.presenters.admin.createSettingsView(errors: error, usersCount: usersCount, site: req.siteInformation())
+        }
+        info.title = data.title
+        info.description = data.description
+        try await info.save(on: req.db)
+        SPSiteInformation.current = info
+        
+        return try await req.presenters.admin.createSettingsView(errors: nil, usersCount: usersCount, site: req.siteInformation())
     }
 }

@@ -1,20 +1,22 @@
 import Vapor
+import Fluent
 
-public class SteamPressConfiguration {
-    let feedInformation: FeedInformation
-    let postsPerPage: Int
-    let enableAuthorPages: Bool
-    let enableTagPages: Bool
+extension SteamPressLifecycleHandler {
     
-    public init(
-        feedInformation: FeedInformation = FeedInformation(),
-        postsPerPage: Int = 10,
-        enableAuthorPages: Bool = true,
-        enableTagPages: Bool = true
-    ) {
-        self.feedInformation = feedInformation
-        self.postsPerPage = postsPerPage
-        self.enableAuthorPages = enableAuthorPages
-        self.enableTagPages = enableTagPages
+    func configure(_ app: Application) throws {
+        _ = SPSiteInformation.query(on: app.db).first().map { info in
+            if let info = info {
+                SPSiteInformation.current = info
+            } else {
+                _ = SPSiteInformation.current.save(on: app.db)
+            }
+        }
+        
+        _ = BlogTag.query(on: app.db).first().map { tag in
+            if tag == nil {
+                let blogTag = BlogTag(name: "Blog", visibility: .public, slugURL: "blog")
+                _ = blogTag.create(on: app.db)
+            }
+        }
     }
 }

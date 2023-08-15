@@ -2,7 +2,7 @@ import Vapor
 import Fluent
 
 public final class PostTagPivot: Model {
-    public static let schema = "post_tag_pivot"
+    public static let schema = "SP_post_tag_pivot"
     
     @ID(key: .id)
     public var id: UUID?

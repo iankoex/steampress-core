@@ -10,14 +10,6 @@ extension Application {
             self.lifecycleHandler = lifecycleHandler
         }
         
-        final class Storage {
-            var configuration: SteamPressConfiguration
-            
-            init() {
-                configuration = SteamPressConfiguration()
-            }
-        }
-        
         struct Key: StorageKey {
             typealias Value = Storage
         }
@@ -32,16 +24,6 @@ extension Application {
         func initialize() {
             self.application.storage[Key.self] = .init()
             self.application.lifecycle.use(lifecycleHandler)
-        }
-        
-        public var configuration: SteamPressConfiguration {
-            get {
-                self.storage.configuration
-            }
-            set {
-                self.storage.configuration = newValue
-                self.lifecycleHandler.configuration = newValue
-            }
         }
     }
     

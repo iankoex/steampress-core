@@ -2,7 +2,7 @@ import Fluent
 
 extension BlogUser {
     public struct Migration: AsyncMigration {
-        public var name: String { "CreateBlogUser" }
+        public var name: String { "Create_SP_User" }
         
         public init() {}
         

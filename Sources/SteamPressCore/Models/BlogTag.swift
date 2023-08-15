@@ -5,7 +5,7 @@ import Fluent
 
 public final class BlogTag: Model, Codable {
     
-    public static let schema: String = "blog_tags"
+    public static let schema: String = "SP_tags"
     
     @ID
     public var id: UUID?

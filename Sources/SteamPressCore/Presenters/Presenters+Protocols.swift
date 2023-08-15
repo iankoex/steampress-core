@@ -28,4 +28,5 @@ public protocol BlogAdminPresenter: SteamPressPresenter {
     func loginView(loginWarning: Bool, errors: [String]?, email: String?, rememberMe: Bool, requireName: Bool, site: GlobalWebsiteInformation) async throws -> View
     func createMembersView(users: [BlogUser.Public], usersCount: Int, site: GlobalWebsiteInformation) async throws -> View
     func createCreateMemberView(userData: CreateUserData?, errors: [String]?, usersCount: Int, site: GlobalWebsiteInformation) async throws -> View
+    func createSettingsView(errors: [String]?, usersCount: Int, site: GlobalWebsiteInformation) async throws -> View
 }

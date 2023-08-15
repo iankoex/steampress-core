@@ -2,7 +2,7 @@ import Fluent
 
 extension PostTagPivot {
     public struct Migration: AsyncMigration {
-        public var name: String { "CreatePostTagPivot" }
+        public var name: String { "Create_SP_PostTagPivot" }
         
         public init() {}
         

@@ -64,6 +64,7 @@ struct TagsAdminController: RouteCollection {
         }
         tag.name = data.name
         tag.visibility = data.visibility
+        // should update slug?
         try await req.repositories.blogTag.update(tag)
         return req.redirect(to: BlogPathCreator.createPath(for: "steampress/tags"))
     }

@@ -1,4 +1,5 @@
 import Vapor
+import Fluent
 
 extension Request {
     func siteInformation() throws -> GlobalWebsiteInformation {
@@ -8,11 +9,11 @@ extension Request {
         }
         
         return try GlobalWebsiteInformation(
-            title: "SteamPress",
+            title: SPSiteInformation.current.title,
             url: self.rootUrl().absoluteString,
             logo: "/static/images/favicon.ico",
             image: "/static/images/steampress-og-image_1.jpg",
-            description: "The SteamPress Blog. SteamPress is an Open Source Blogging Engine and Platform written in Swift powered by Vapor.",
+            description: SPSiteInformation.current.description,
             loggedInUser: self.auth.get(BlogUser.self)?.convertToPublic(),
             currentPageURL: currentURL.absoluteString,
             currentPageEncodedURL: currentEncodedURL,

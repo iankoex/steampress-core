@@ -2,12 +2,8 @@ import Vapor
 import Fluent
 
 public class SteamPressLifecycleHandler: LifecycleHandler {
-
-    var configuration: SteamPressConfiguration
-
-    public init(configuration: SteamPressConfiguration = SteamPressConfiguration()) {
-        self.configuration = configuration
-    }
+    
+    public init() {}
     
     public func willBoot(_ application: Application) throws {
         application.routes.defaultMaxBodySize = "100mb"
@@ -20,16 +16,23 @@ public class SteamPressLifecycleHandler: LifecycleHandler {
         application.migrations.add(BlogPost.Migration())
         application.migrations.add(BlogTag.Migration())
         application.migrations.add(PostTagPivot.Migration())
+        application.migrations.add(SPSiteInformation.Migration())
         try application.autoMigrate().wait()
         
         // Routes
         let router = application.routes
         BlogPathCreator.setBlogPathFromEnv()
-        let feedController = FeedController(feedInformation: self.configuration.feedInformation)
+        let feedInfo = FeedInformation(
+            title: "The SteamPress Blog",
+            description: "SteamPress is an open-source blogging engine written for and using Vapor in Swift",
+            copyright: "Released under the MIT licence",
+            imageURL: "https://user-images.githubusercontent.com/9938337/29742058-ed41dcc0-8a6f-11e7-9cfc-680501cdfb97.png"
+        )
+        let feedController = FeedController(feedInformation: feedInfo)
         let apiController = APIController()
-        let blogController = BlogController(enableAuthorPages: self.configuration.enableAuthorPages, enableTagPages: self.configuration.enableTagPages, postsPerPage: self.configuration.postsPerPage)
+        let blogController = BlogController(enableAuthorPages: true, enableTagPages: true, postsPerPage: 10)
         let blogAdminController = BlogAdminController()
-
+        
         let blogRoutes: RoutesBuilder
         if let blogPath = BlogPathCreator.blogPath {
             blogRoutes = router.grouped(PathComponent(stringLiteral: blogPath))
@@ -43,10 +46,12 @@ public class SteamPressLifecycleHandler: LifecycleHandler {
         let steampressAuthSessions = BlogAuthSessionsMiddleware()
         let sessionedRoutes = blogRoutes.grouped(steampressSessions, steampressAuthSessions)
         application.middleware.use(BlogRememberMeMiddleware())
-
+        
         try sessionedRoutes.register(collection: feedController)
         try sessionedRoutes.register(collection: apiController)
         try sessionedRoutes.register(collection: blogController)
         try sessionedRoutes.register(collection: blogAdminController)
+        
+        try configure(application)
     }
 }
