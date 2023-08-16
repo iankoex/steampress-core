@@ -13,6 +13,7 @@ struct BlogAdminController: RouteCollection {
         adminProtectedRoutes.get("pages", use: pagesHandler)
         adminProtectedRoutes.post("uploadImage", use: imageUploadHandler)
         adminProtectedRoutes.post("uploadFile", use: fileUploadHandler)
+        adminProtectedRoutes.post("theme", use: themeUploadHandler)
         adminProtectedRoutes.get("settings", use: settingsHandler)
         adminProtectedRoutes.post("settings", use: settingsPostHandler)
         
@@ -100,5 +101,20 @@ struct BlogAdminController: RouteCollection {
         SPSiteInformation.current = info
         
         return try await req.presenters.admin.createSettingsView(errors: nil, usersCount: usersCount, site: req.siteInformation())
+    }
+    
+    func themeUploadHandler(_ req: Request) async throws -> Response {
+        let zipFileContainer = try req.content.decode(FileContainer.self)
+        let errors: [String] = try await req.updateTheme(using: zipFileContainer.file)
+        if !errors.isEmpty {
+            var errString = ""
+            for error in errors {
+                errString.append(error)
+                errString.append(" ")
+            }
+            throw Abort(.custom(code: 406, reasonPhrase: errString))
+        }
+        
+        return req.redirect(to: BlogPathCreator.createPath(for: "steampress/settings"))
     }
 }
