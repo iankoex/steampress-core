@@ -1,5 +1,5 @@
 import Vapor
-import ZIPFoundation
+import Zip
 
 extension Request {
     
@@ -17,26 +17,6 @@ extension Request {
         }
         try await updateDefaultThemeResources(using: theme, at: themeFolderPath)
         return errors
-    }
-    
-    func updateDefaultThemeResources(using theme: Theme, at path: String) async throws {
-        let themesDirectory = self.application.directory.viewsDirectory.appending("Themes")
-        let defaultThemeFolderPath = themesDirectory.appending("/default")
-        let backupPath = themesDirectory + "/backupOfDefaultTheme.zip"
-        if FileManager.default.fileExists(atPath: backupPath) {
-            try FileManager.default.removeItem(atPath: backupPath)
-        }
-        var destinationURL = URL(fileURLWithPath: backupPath)
-        try FileManager.default.zipItem(at: URL(fileURLWithPath: defaultThemeFolderPath), to: destinationURL)
-        // create the uploaded theme folder
-        let uploadedThemeFolderName = "Themes/" + theme.urlSafeName
-        let uploadedThemeFolderPath = self.application.directory.viewsDirectory.appending(uploadedThemeFolderName)
-        if FileManager.default.fileExists(atPath: uploadedThemeFolderPath) {
-            try FileManager.default.removeItem(atPath: uploadedThemeFolderPath)
-        }
-        try FileManager.default.copyItem(atPath: path, toPath: uploadedThemeFolderPath)
-        try FileManager.default.removeItem(atPath: defaultThemeFolderPath)
-        try FileManager.default.copyItem(atPath: path, toPath: defaultThemeFolderPath)
     }
 }
 
@@ -72,7 +52,7 @@ fileprivate extension Request {
             try FileManager.default.removeItem(atPath: destinationPath)
         }
         let destinationURL = URL(fileURLWithPath: destinationPath)
-        try FileManager.default.unzipItem(at: fileURL, to: destinationURL)
+        try Zip.unzipFile(fileURL, destination: destinationURL, overwrite: true, password: nil)
         return destinationPath
     }
     
@@ -105,37 +85,25 @@ fileprivate extension Request {
         }
         return themeFolderPath
     }
-}
-
-struct Theme: Codable {
-    var name: String
-    var description: String
-    var version: String
-    var license: String
-    var author: Author
     
-    struct Author: Codable {
-        var name: String
-        var email: String
-        var url: String
-    }
-}
-
-extension Theme {
-    static var requiredFiles: [String] {
-        var adminFiles: [String] = ["admin/index", "admin/explore", "admin/pages", "admin/tags", "admin/tag", "admin/posts", "admin/post", "admin/members", "admin/member", "admin/login", "admin/resetPassword", "admin/settings"]
-        var indexFiles: [String] = ["index", "tags", "tag", "authors", "author", "post", "search"]
-        indexFiles.append(contentsOf: adminFiles)
-        return indexFiles
-    }
-    
-    var urlSafeName: String {
-        let alphanumericsWithHyphenAndSpace = CharacterSet(charactersIn: " -0123456789abcdefghijklmnopqrstuvwxyz")
-        let urlSafeName = name.lowercased()
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .components(separatedBy: alphanumericsWithHyphenAndSpace.inverted).joined()
-            .components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }.joined(separator: " ")
-            .replacingOccurrences(of: " ", with: "-", options: .regularExpression)
-        return urlSafeName
+    func updateDefaultThemeResources(using theme: Theme, at path: String) async throws {
+        let themesDirectory = self.application.directory.viewsDirectory.appending("Themes")
+        let defaultThemeFolderPath = themesDirectory.appending("/default")
+        let backupPath = themesDirectory + "/backupOfDefaultTheme.zip"
+        if FileManager.default.fileExists(atPath: backupPath) {
+            try FileManager.default.removeItem(atPath: backupPath)
+        }
+        var destinationURL = URL(fileURLWithPath: backupPath)
+        try Zip.zipFiles(paths: [URL(fileURLWithPath: defaultThemeFolderPath)], zipFilePath: destinationURL, password: nil, progress: { progress in
+        })
+        // create the uploaded theme folder
+        let uploadedThemeFolderName = "Themes/" + theme.urlSafeName
+        let uploadedThemeFolderPath = self.application.directory.viewsDirectory.appending(uploadedThemeFolderName)
+        if FileManager.default.fileExists(atPath: uploadedThemeFolderPath) {
+            try FileManager.default.removeItem(atPath: uploadedThemeFolderPath)
+        }
+        try FileManager.default.copyItem(atPath: path, toPath: uploadedThemeFolderPath)
+        try FileManager.default.removeItem(atPath: defaultThemeFolderPath)
+        try FileManager.default.copyItem(atPath: path, toPath: defaultThemeFolderPath)
     }
 }
